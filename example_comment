@@ -1,0 +1,8 @@
+commit 0155eb4229851634a0f03eb265b69f5a2d56f341
+file src/example.txt:12
+author Delisa Mason <iskanamagus@gmail.com>
+1243040974 -0900
+amender Delisa Mason <iskanamagus@gmail.com>
+1243040974 -0900
+
+Too many levels of indentation here.
