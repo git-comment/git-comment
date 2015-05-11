@@ -4,12 +4,15 @@ MAN_PATH=/usr/share/man/man1/$(PROJECT).1
 SRC_PATH=$(GOPATH)/src/$(PROJECT)
 MAN_TMP_PATH=$(PROJECT).1
 MAN_ZIP_PATH=$(PROJECT).1.gz
+MAN_TITLE=Git Comment Manual
+VERSION=$(shell cat VERSION)
 
 default: build
 
 bootstrap:
-	mkdir -p man src/$(PROJECT)
-	touch README.md LICENSE CONTRIBUTING.md CHANGELOG.md TODO.md Makefile man/$(PROJECT).1
+	brew install libgit2
+	go get gopkg.in/libgit2/git2go.v22
+	go get github.com/wayn3h0/go-uuid
 
 build: copy
 	go build $(PROJECT)
@@ -23,7 +26,10 @@ copy:
 	install -d $(SRC_PATH)
 	install src/$(PROJECT)/* $(SRC_PATH)
 
-install:
+doc:
+	pod2man --center="$(MAN_TITLE)" --release="$(VERSION)" man/git-comment.pod > man/git-comment.1
+
+install: doc
 	install $(PROJECT) $(BIN_PATH)
 	cp man/$(PROJECT).1 $(MAN_TMP_PATH)
 	chown root:admin $(MAN_TMP_PATH)
