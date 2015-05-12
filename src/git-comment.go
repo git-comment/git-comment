@@ -1,52 +1,52 @@
 package main
 
 import (
-  "time"
-  "github.com/wayn3h0/go-uuid"
-  // "gopkg.in/libgit2/git2go.v22"
+	"github.com/wayn3h0/go-uuid"
+	"time"
+	// "gopkg.in/libgit2/git2go.v22"
 )
 
 type Identifier uuid.UUID
 
 type Person struct {
-  Name string
-  Email string
+	Name  string
+	Email string
 }
 
 type FileRef struct {
-  Path string
-  Line int
+	Path string
+	Line int
 }
 
 type Comment struct {
-  Author Person
-  CreateTime time.Time
-  Content string
-  Amender Person
-  AmendTime time.Time
-  Commit Identifier
-  ID Identifier
+	Author     Person
+	CreateTime time.Time
+	Content    string
+	Amender    Person
+	AmendTime  time.Time
+	Commit     Identifier
+	ID         Identifier
 }
 
 // Creates a person from the email address and name in the
 // active git config
 func CurrentPerson() *Person {
-  return &Person{}
+	return &Person{}
 }
 
 // Finds a comment by a given ID
-func CommentByID(ID Identifier) *Comment{
-
+func CommentByID(ID Identifier) *Comment {
+	return &Comment{}
 }
 
 // Finds all comments on a given commit
-func CommentsOnCommit(commit Identifier) []*Comment{
-
+func CommentsOnCommit(commit Identifier) []*Comment {
+	return []*Comment{}
 }
 
 // Creates a new comment using provided content and author
-func NewComment(message string, author *Person) *Comment{
-  return &Comment{}
+func NewComment(message string, author *Person) *Comment {
+	return &Comment{}
 }
 
 // Write git object for a given comment and update the
@@ -67,8 +67,8 @@ func WriteCommentToDisk(comment *Comment) {
 //
 //   Too many levels of indentation here.
 //
-func (comment *Comment)ObjectContent() string {
-  return ""
+func (comment *Comment) ObjectContent() string {
+	return ""
 }
 
 // Generate the path within refs for a given comment
@@ -78,10 +78,9 @@ func (comment *Comment)ObjectContent() string {
 // commit identifier, and the file name are the
 // remaining characters. The contents of the file are
 // the identifiers of all comments on the commit
-func (comment *Comment)RefPath() string {
-  return ""
+func (comment *Comment) RefPath() string {
+	return ""
 }
-
 
 func main() {
 

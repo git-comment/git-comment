@@ -1,4 +1,4 @@
-PROJECT=git-comment
+PROJECT=git_comment
 BIN_PATH=/usr/local/bin/$(PROJECT)
 MAN_PATH=/usr/share/man/man1/$(PROJECT).1
 SRC_PATH=$(GOPATH)/src/$(PROJECT)
@@ -13,6 +13,7 @@ bootstrap:
 	brew install libgit2
 	go get gopkg.in/libgit2/git2go.v22
 	go get github.com/wayn3h0/go-uuid
+	go get github.com/stvp/assert
 
 build: copy
 	go build $(PROJECT)
