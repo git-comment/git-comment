@@ -1,6 +1,7 @@
 package main
 
 import (
+	"git_comment"
 	"github.com/wayn3h0/go-uuid"
 	"time"
 	// "gopkg.in/libgit2/git2go.v22"
@@ -26,12 +27,6 @@ type Comment struct {
 	AmendTime  time.Time
 	Commit     Identifier
 	ID         Identifier
-}
-
-// Creates a person from the email address and name in the
-// active git config
-func CurrentPerson() *Person {
-	return &Person{}
 }
 
 // Finds a comment by a given ID
