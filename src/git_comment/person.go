@@ -10,16 +10,10 @@ type Person struct {
 	Email string
 }
 
-// Creates a person from the email address and name in the
-// active git config
-func ConfiguredPerson() *Person {
-	return &Person{}
-}
-
 // Parse a property string and create a person. The expected format is:
-//
+// ```
 // Name <email@example.com>
-//
+// ```
 // If a valid person cannot be created, an error is returned instead
 func CreatePerson(properties string) (*Person, error) {
 	const invalidProperties = "Invalid property format for person"

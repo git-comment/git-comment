@@ -14,6 +14,7 @@ bootstrap:
 	go get gopkg.in/libgit2/git2go.v22
 	go get github.com/wayn3h0/go-uuid
 	go get github.com/stvp/assert
+	go get github.com/cevaris/ordered_map
 
 build: copy
 	go build $(PROJECT)

@@ -3,10 +3,11 @@ package git_comment
 import (
 	"bytes"
 	"strings"
+	"github.com/cevaris/ordered_map"
 )
 
 type PropertyBlob struct {
-	Properties map[string]string
+	Properties *ordered_map.OrderedMap
 	Message    string
 }
 
@@ -14,7 +15,7 @@ const lineSeparator string = "\n"
 const itemSeparator string = " "
 
 func CreatePropertyBlob(content string) *PropertyBlob {
-	props := map[string]string{}
+	props := ordered_map.NewOrderedMap()
 	parsingMessage := false
 	lines := strings.Split(content, lineSeparator)
 	count := len(lines)
@@ -36,7 +37,7 @@ func CreatePropertyBlob(content string) *PropertyBlob {
 			if len(property) == 2 {
 				name := property[0]
 				value := property[1]
-				props[name] = value
+				props.Set(name, value)
 			}
 		}
 	}
@@ -45,11 +46,15 @@ func CreatePropertyBlob(content string) *PropertyBlob {
 
 func (p *PropertyBlob) RawContent() string {
 	var content bytes.Buffer
-	for name, value := range p.Properties {
-		content.WriteString(name)
-		content.WriteString(itemSeparator)
-		content.WriteString(value)
-		content.WriteString(lineSeparator)
+	for kv := range p.Properties.Iter() {
+		name, nOk := kv.Key.(string)
+		value, vOk := kv.Value.(string)
+		if nOk && vOk {
+			content.WriteString(name)
+			content.WriteString(itemSeparator)
+			content.WriteString(value)
+			content.WriteString(lineSeparator)
+		}
 	}
 	if len(p.Message) > 0 {
 		content.WriteString(lineSeparator)

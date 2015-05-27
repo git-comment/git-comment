@@ -4,13 +4,16 @@ import (
 	"github.com/stvp/assert"
 	"strings"
 	"testing"
+	"github.com/cevaris/ordered_map"
 )
 
 func TestPropertiesFromBlob(t *testing.T) {
 	content := "fruit Green Apple\ntree_type Redwood\n\nThe Redwood is the tallest tree in North America"
 	blob := CreatePropertyBlob(content)
-	assert.Equal(t, "Green Apple", blob.Properties["fruit"])
-	assert.Equal(t, "Redwood", blob.Properties["tree_type"])
+	fruit, _ := blob.Properties.Get("fruit")
+	tree, _ := blob.Properties.Get("tree_type")
+	assert.Equal(t, "Green Apple", fruit)
+	assert.Equal(t, "Redwood", tree)
 }
 
 func TestMessageFromBlob(t *testing.T) {
@@ -35,11 +38,11 @@ func TestEmptyMessage(t *testing.T) {
 
 func TestRawContent(t *testing.T) {
 	message := "I have a few questions.\nHow do we plan on handling the latter case?\n\nWhere can I get some chili dogs?"
+	propertyMap := ordered_map.NewOrderedMap()
+	propertyMap.Set("author", "Elira <elira@example.com>")
+	propertyMap.Set("file", "src/example.txt")
 	blob := &PropertyBlob{
-		map[string]string{
-			"author": "Elira <elira@example.com>",
-			"file":   "src/example.txt",
-		},
+		propertyMap,
 		message,
 	}
 	props := "author Elira <elira@example.com>\nfile src/example.txt\n\n"

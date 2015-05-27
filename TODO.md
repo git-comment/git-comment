@@ -4,19 +4,6 @@
 - git-comment-log: lists annotations by commit
 - git-comment-grep: searches annotation content
 
-## Comment file format
-
-Components:
-
-- author
-- timestamp
-- committer
-- committer timestamp
-- ID
-- commit
-- filepath and line
-- content
-
 ## Things that need to work
 
 - lookup by commit
