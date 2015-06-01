@@ -123,66 +123,53 @@
 .rm #[ #] #H #V #F C
 .\" ========================================================================
 .\"
-.IX Title "GIT-COMMENT 1"
-.TH GIT-COMMENT 1 "2015-06-01" "1.0.0.0" "Git Comment Manual"
+.IX Title "GIT-COMMENT-LOG 1"
+.TH GIT-COMMENT-LOG 1 "2015-06-01" "1.0.0.0" "Git Comment Manual"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
 .nh
 .SH "NAME"
 .Vb 1
-\&    git\-comment \- Annotate git commits
+\&    git\-comment\-log \- List git commit annotations
 .Ve
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
-.Vb 4
-\&    git comment [\-m <msg>] [\-\-amend <comment>] [<commit>] [<filepath:line>]
-\&    git comment \-\-delete <comment>
-\&    git comment \-\-help
-\&    git comment \-v
+.Vb 3
+\&    git comment\-log [<revision range>]
+\&    git comment\-log \-\-help
+\&    git comment\-log \-v
 .Ve
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
-git-comment adds, removes, or amends comments attached to git commits, without changing the commits themselves.
+git-comment-log lists comments attached to a range of commits, optionally with context.
 .SH "OPTIONS"
 .IX Header "OPTIONS"
-.IP "\-\-amend <comment>" 4
-.IX Item "--amend <comment>"
-Edit an existing comment. No modifications are made if a commit is specified but no comment with a given \s-1ID\s0 attached to the given commit.
-.IP "\fI\-d\fR <comment>" 4
-.IX Item "-d <comment>"
-Remove a comment
-.IP "\fI\-h\fR" 4
-.IX Item "-h"
-Gives a pretty-printed usage of the command
-.IP "\fI\-m\fR <msg>, \-\-message=<msg>" 4
-.IX Item "-m <msg>, --message=<msg>"
-Use the provided message instead of prompting for message content
+.IP "\-\-help" 4
+.IX Item "--help"
+Print a usage message
 .IP "\fI\-v\fR, \-\-version" 4
 .IX Item "-v, --version"
 Print the current version number
-.IP "<commit>" 4
-.IX Item "<commit>"
-A commit
-.IP "<filepath:line>" 4
-.IX Item "<filepath:line>"
-A reference to a file and line number, to make the annotation more specific
-.SH "ENVIRONMENT AND CONFIGURATION"
-.IX Header "ENVIRONMENT AND CONFIGURATION"
-git-comment uses the same editor, author, and pager settings as git. See
-\&\fIgit-var\fR(1) for more details.
-.SH "HOOKS"
-.IX Header "HOOKS"
-This command can run pre-comment and post-comment hooks.
-.SH "DISCUSSION"
-.IX Header "DISCUSSION"
-Comment objects are blobs containing extra information about a commit and optionally a changed line within a the commit.
+.IP "<revision range>" 4
+.IX Item "<revision range>"
+Show comments only from commits in the specified revision range. When
+not specified, it defaults to \s-1HEAD\s0.
+.SH "CONFIGURATION"
+.IX Header "CONFIGURATION"
+.IP "\fIcomment.log\-before\fR" 4
+.IX Item "comment.log-before"
+Number of lines of an attached diff to display before a comment
+.IP "\fIcomment.log\-after\fR" 4
+.IX Item "comment.log-after"
+Number of lines of an attached diff to display after a comment
 .SH "AUTHOR"
 .IX Header "AUTHOR"
-git-comment was written and is maintained by Delisa Mason <delisam@acm.org>
+git-comment-log was written and is maintained by Delisa Mason
+<delisam@acm.org>
 .SH "SEE ALSO"
 .IX Header "SEE ALSO"
-\&\fIgit-comment-log\fR(1), \fIgit-comment-grep\fR(1), \fIgit-var\fR(1)
+\&\fIgit-comment\fR(1), \fIgit-comment-grep\fR(1)
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
 Copyright (c) 2015 Delisa Mason <delisam@acm.org>

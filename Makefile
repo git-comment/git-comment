@@ -6,6 +6,8 @@ MAN_TMP_PATH=$(PROJECT).1
 MAN_ZIP_PATH=$(PROJECT).1.gz
 MAN_TITLE=Git Comment Manual
 VERSION=$(shell cat VERSION)
+DOC_CMD=pod2man --center="$(MAN_TITLE)" --release="$(VERSION)"
+BIN_BUILD_CMD=go build -ldflags "-X main.buildVersion $(VERSION)"
 
 default: build
 
@@ -19,7 +21,9 @@ bootstrap:
 
 build: copy
 	go build $(PROJECT)
-	go build -ldflags "-X main.buildVersion $(VERSION)" src/git-comment.go
+	$(BIN_BUILD_CMD) src/git-comment.go
+	$(BIN_BUILD_CMD) src/git-comment-log.go
+	$(BIN_BUILD_CMD) src/git-comment-grep.go
 
 clean:
 	go clean -i -x $(PROJECT)
@@ -31,7 +35,9 @@ copy:
 	install src/$(PROJECT)/* $(SRC_PATH)
 
 doc:
-	pod2man --center="$(MAN_TITLE)" --release="$(VERSION)" man/git-comment.pod > man/git-comment.1
+	$(DOC_CMD) man/git-comment.pod > man/git-comment.1
+	$(DOC_CMD) man/git-comment-log.pod > man/git-comment-log.1
+	$(DOC_CMD) man/git-comment-grep.pod > man/git-comment-grep.1
 
 install: doc
 	install $(PROJECT) $(BIN_PATH)

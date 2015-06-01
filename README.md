@@ -57,7 +57,7 @@ git comment-grep --help
 git comment-grep -v
 ```
 
-### `pre_comment` and `post_comment` git hooks
+### `pre-comment` and `post-comment` git hooks
 
 Execute commands before or after creating comments, aborting the
 operation when the scripts fail.

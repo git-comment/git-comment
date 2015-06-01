@@ -38,7 +38,7 @@ func main() {
 		if len(*amendID) > 0 {
 			err = gitc.UpdateComment(pwd, *amendID, *message)
 		} else {
-			_, err = gitc.CreateComment(pwd, commit, gitc.CreateFileRef(fileref), *message)
+			_, err = gitc.CreateComment(pwd, &commit, gitc.CreateFileRef(fileref), *message)
 		}
 		handleError(err)
 	} else {

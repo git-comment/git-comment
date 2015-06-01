@@ -9,6 +9,7 @@
     git comment [-m <msg>] [--amend <comment>] [<commit>] [<filepath:line>]
     git comment --delete <comment>
     git comment --help
+    git comment -v
 
 =head1 DESCRIPTION
 
@@ -34,6 +35,10 @@ Gives a pretty-printed usage of the command
 
 Use the provided message instead of prompting for message content
 
+=item I<-v>, --version
+
+Print the current version number
+
 =item <commit>
 
 A commit
@@ -43,6 +48,15 @@ A commit
 A reference to a file and line number, to make the annotation more specific
 
 =back
+
+=head1 ENVIRONMENT AND CONFIGURATION
+
+git-comment uses the same editor, author, and pager settings as git. See
+I<git-var>(1) for more details.
+
+=head1 HOOKS
+
+This command can run pre-comment and post-comment hooks.
 
 =head1 DISCUSSION
 
@@ -54,7 +68,7 @@ git-comment was written and is maintained by Delisa Mason <delisam@acm.org>
 
 =head1 SEE ALSO
 
-I<git-comment-log>(1), I<git-comment-grep>(1), I<git>(1)
+I<git-comment-log>(1), I<git-comment-grep>(1), I<git-var>(1)
 
 =head1 COPYRIGHT
 
