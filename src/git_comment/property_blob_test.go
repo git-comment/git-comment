@@ -1,10 +1,10 @@
 package git_comment
 
 import (
+	"github.com/cevaris/ordered_map"
 	"github.com/stvp/assert"
 	"strings"
 	"testing"
-	"github.com/cevaris/ordered_map"
 )
 
 func TestPropertiesFromBlob(t *testing.T) {
@@ -36,7 +36,7 @@ func TestEmptyMessage(t *testing.T) {
 	assert.Equal(t, "", blob.Message)
 }
 
-func TestRawContent(t *testing.T) {
+func TestSerialize(t *testing.T) {
 	message := "I have a few questions.\nHow do we plan on handling the latter case?\n\nWhere can I get some chili dogs?"
 	propertyMap := ordered_map.NewOrderedMap()
 	propertyMap.Set("author", "Elira <elira@example.com>")
@@ -47,5 +47,5 @@ func TestRawContent(t *testing.T) {
 	}
 	props := "author Elira <elira@example.com>\nfile src/example.txt\n\n"
 	content := strings.Join([]string{props, message}, "")
-	assert.Equal(t, content, blob.RawContent())
+	assert.Equal(t, content, blob.Serialize())
 }

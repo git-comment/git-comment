@@ -2,8 +2,8 @@ package git_comment
 
 import (
 	"bytes"
-	"strings"
 	"github.com/cevaris/ordered_map"
+	"strings"
 )
 
 type PropertyBlob struct {
@@ -13,6 +13,11 @@ type PropertyBlob struct {
 
 const lineSeparator string = "\n"
 const itemSeparator string = " "
+
+func NewPropertyBlob() *PropertyBlob {
+	props := ordered_map.NewOrderedMap()
+	return &PropertyBlob{props, ""}
+}
 
 func CreatePropertyBlob(content string) *PropertyBlob {
 	props := ordered_map.NewOrderedMap()
@@ -44,7 +49,7 @@ func CreatePropertyBlob(content string) *PropertyBlob {
 	return &PropertyBlob{props, message.String()}
 }
 
-func (p *PropertyBlob) RawContent() string {
+func (p *PropertyBlob) Serialize() string {
 	var content bytes.Buffer
 	for kv := range p.Properties.Iter() {
 		name, nOk := kv.Key.(string)
