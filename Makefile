@@ -15,9 +15,11 @@ bootstrap:
 	go get github.com/wayn3h0/go-uuid
 	go get github.com/stvp/assert
 	go get github.com/cevaris/ordered_map
+	go get github.com/droundy/goopt
 
 build: copy
 	go build $(PROJECT)
+	go build -ldflags "-X main.buildVersion $(VERSION)" src/git-comment.go
 
 clean:
 	go clean -i -x $(PROJECT)

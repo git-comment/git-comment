@@ -7,8 +7,8 @@
 =head1 SYNOPSIS
 
     git comment [-m <msg>] [--amend <comment>] [<commit>] [<filepath:line>]
-    git comment -d <comment>
-    git comment -h
+    git comment --delete <comment>
+    git comment --help
 
 =head1 DESCRIPTION
 
