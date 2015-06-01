@@ -2,7 +2,6 @@ package git_comment
 
 import (
 	"errors"
-	"fmt"
 	git "gopkg.in/libgit2/git2go.v22"
 )
 
@@ -35,9 +34,7 @@ func CreateComment(repoPath string, commit *string, fileRef *FileRef, message st
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(comment.Serialize())
-	writeErr := writeCommentToDisk(repoPath, comment)
-	if writeErr != nil {
+	if writeErr := writeCommentToDisk(repoPath, comment); writeErr != nil {
 		return nil, writeErr
 	}
 	return &comment.ID, nil
