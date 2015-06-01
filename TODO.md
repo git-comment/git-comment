@@ -18,6 +18,16 @@
 - export from gh/bb/other
   * support setting a custom creation time
 - documentation for each binary
+- signed comments, a la `git tag`:
+
+```
+ -s, --sign
+    Make a GPG-signed comment, using the default e-mail address's
+key.
+
+ -u <key-id>, --local-user=<key-id>
+    Make a GPG-signed comment, using the given key.
+```
 
 ## Finding a comment by commit
 * nest comment refs under commit hashes
