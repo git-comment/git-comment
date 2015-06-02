@@ -16,12 +16,12 @@ type Person struct {
 // ```
 // If a valid person cannot be created, an error is returned instead
 func CreatePerson(properties string) *Person {
-	fullRe := regexp.MustCompile(`(.*)\s<(.*@.*)>$`)
+	fullRe := regexp.MustCompile(`(.*)\s<(.*@.*)>`)
 	match := fullRe.FindStringSubmatch(properties)
 	if len(match) == 3 {
 		return &Person{match[1], match[2]}
 	} else {
-		emailRe := regexp.MustCompile(`\s?<(.*@.*)>$`)
+		emailRe := regexp.MustCompile(`\s?<(.*@.*)>`)
 		match = emailRe.FindStringSubmatch(properties)
 		if len(match) == 2 {
 			return &Person{"", match[1]}
