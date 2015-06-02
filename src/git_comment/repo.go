@@ -9,45 +9,45 @@ const (
 	authorNotFoundError  = "No name or email found in git config for commenting"
 	commitNotFoundError  = "Commit not found"
 	commentNotFoundError = "Comment not found"
-	userNameKey          = "user.name"
-	userEmailKey         = "user.email"
 	headCommit           = "HEAD"
 )
 
 // Create a new comment on a commit, optionally with a file and line
 func CreateComment(repoPath string, commit *string, fileRef *FileRef, message string) (*string, error) {
-	var hash = commit
-	author, cErr := author(repoPath)
-	if cErr != nil {
-		return nil, cErr
+	repo, err := repo(repoPath)
+	if err != nil {
+		return nil, err
 	}
-	if *hash == "HEAD" || hash == nil {
-		head, hErr := head(repoPath)
-		if hErr != nil {
-			return nil, hErr
-		}
-		hash = head
-	} else {
-		// check if commit hash exists
+	author, err := author(repo)
+	if err != nil {
+		return nil, err
+	}
+	hash, err := parseCommit(repo, commit)
+	if err != nil {
+		return nil, err
 	}
 	comment, err := NewComment(message, *hash, fileRef, author)
 	if err != nil {
 		return nil, err
 	}
-	if writeErr := writeCommentToDisk(repoPath, comment); writeErr != nil {
-		return nil, writeErr
+	if err := writeCommentToDisk(repoPath, comment); err != nil {
+		return nil, err
 	}
 	return &comment.ID, nil
 }
 
 func UpdateComment(repoPath string, ID string, message string) error {
+	repo, err := repo(repoPath)
+	if err != nil {
+		return err
+	}
 	comment, err := CommentByID(repoPath, ID)
 	if err != nil {
 		return err
 	}
-	author, cErr := author(repoPath)
-	if cErr != nil {
-		return cErr
+	author, err := author(repo)
+	if err != nil {
+		return err
 	}
 	comment.Amend(message, author)
 	return writeCommentToDisk(repoPath, comment)
@@ -83,28 +83,45 @@ func repo(repoPath string) (*git.Repository, error) {
 	return git.OpenRepository(repoPath)
 }
 
-func author(repoPath string) (*Person, error) {
-	repo, err := repo(repoPath)
+func author(repo *git.Repository) (*Person, error) {
+	sig, err := repo.DefaultSignature()
 	if err != nil {
 		return nil, err
 	}
-	config, cErr := repo.Config()
-	if cErr != nil {
-		return nil, cErr
-	}
-	name, nErr := config.LookupString(userNameKey)
-	email, eErr := config.LookupString(userEmailKey)
-	if nErr != nil && eErr != nil {
-		return nil, errors.New(authorNotFoundError)
-	}
-	return &Person{name, email}, nil
+	return &Person{sig.Name, sig.Email}, nil
 }
 
-func head(repoPath string) (*string, error) {
-	repo, err := repo(repoPath)
+// parse a commit hash, converting to the HEAD commit where needed
+func parseCommit(repo *git.Repository, commit *string) (*string, error) {
+	var hash string
+	var id string
+	if commit == nil {
+		hash = headCommit
+	} else {
+		hash = *commit
+	}
+	ref, err := repo.LookupReference(hash)
+	if err != nil {
+		oid, err := git.NewOid(hash)
+		if err != nil {
+			return nil, errors.New(commitNotFoundError)
+		}
+		obj, err := repo.Lookup(oid)
+		if err != nil {
+			return nil, errors.New(commitNotFoundError)
+		}
+		id = obj.Id().String()
+		return nil, errors.New(commitNotFoundError)
+	}
+	res, err := ref.Resolve()
 	if err != nil {
 		return nil, err
 	}
+	id = res.Target().String()
+	return &id, nil
+}
+
+func head(repo *git.Repository) (*string, error) {
 	head, hErr := repo.Head()
 	if hErr != nil {
 		return nil, hErr
