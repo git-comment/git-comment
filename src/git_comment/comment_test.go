@@ -2,7 +2,6 @@ package git_comment
 
 import (
 	"github.com/stvp/assert"
-	"github.com/wayn3h0/go-uuid"
 	"regexp"
 	"strings"
 	"testing"
@@ -51,10 +50,7 @@ func TestNewCommentID(t *testing.T) {
 	comment, err := NewComment("This behavior is undocumented", "abcdefg", nil, nil)
 	assert.Nil(t, err)
 	assert.NotNil(t, comment)
-	assert.NotNil(t, comment.ID)
-	identifier, uErr := uuid.Parse(comment.ID)
-	assert.Nil(t, uErr)
-	assert.NotNil(t, identifier)
+	assert.Nil(t, comment.ID)
 }
 
 func TestNewCommentDeleted(t *testing.T) {
@@ -75,13 +71,6 @@ func TestNewCommentFileRef(t *testing.T) {
 func TestCreateWithoutContent(t *testing.T) {
 	_, err := NewComment("", "azerty", new(FileRef), new(Person))
 	assert.NotNil(t, err)
-}
-
-func TestRefPath(t *testing.T) {
-	comment, _ := NewComment("Unsure of the intent here.", "0155eb4229851634a0f03eb265b69f5a2d56f341", new(FileRef), new(Person))
-	path, err := comment.RefPath()
-	assert.Nil(t, err)
-	assert.Equal(t, *path, "refs/comments/0155/eb4229851634a0f03eb265b69f5a2d56f341")
 }
 
 func TestSerializeComment(t *testing.T) {

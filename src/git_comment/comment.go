@@ -3,9 +3,6 @@ package git_comment
 import (
 	"errors"
 	"fmt"
-	"github.com/wayn3h0/go-uuid"
-	"github.com/wayn3h0/go-uuid/random"
-	"path"
 	"time"
 )
 
@@ -16,7 +13,7 @@ type Comment struct {
 	Amender    *Person
 	AmendTime  time.Time
 	Commit     string
-	ID         string
+	ID         *string
 	Deleted    bool
 	FileRef    *FileRef
 }
@@ -30,10 +27,6 @@ func NewComment(message string, commit string, fileRef *FileRef, author *Person)
 	} else if len(commit) == 0 {
 		return nil, errors.New(missingCommitMessage)
 	}
-	id, idErr := random.New()
-	if idErr != nil {
-		return nil, idErr
-	}
 	createTime := time.Now()
 	return &Comment{
 		author,
@@ -42,7 +35,7 @@ func NewComment(message string, commit string, fileRef *FileRef, author *Person)
 		author,
 		createTime,
 		commit,
-		id.Format(uuid.StyleWithoutDash),
+		nil,
 		false,
 		fileRef,
 	}, nil
@@ -83,21 +76,4 @@ func (c *Comment) Serialize() string {
 		blob.Message = c.Content
 	}
 	return blob.Serialize()
-}
-
-// Generate the path within refs for a given comment
-//
-// Comment refs are nested under refs/comments. The
-// directory name is the first four characters of the
-// commit identifier, and the file name are the
-// remaining characters. The contents of the file are
-// the identifiers of all comments on the commit
-func (c *Comment) RefPath() (*string, error) {
-	const invalidHash = "Invalid commit hash for storage"
-	const commentPath = "refs/comments"
-	if len(c.Commit) > 4 {
-		refPath := path.Join(commentPath, c.Commit[0:4], c.Commit[4:len(c.Commit)])
-		return &refPath, nil
-	}
-	return nil, errors.New(invalidHash)
 }

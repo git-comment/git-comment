@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	git "gopkg.in/libgit2/git2go.v22"
+	"path"
 	"time"
 )
 
@@ -35,7 +36,9 @@ func CreateComment(repoPath string, commit *string, fileRef *FileRef, message st
 	if err := writeCommentToDisk(repo, comment); err != nil {
 		return nil, err
 	}
-	return &comment.ID, nil
+
+	id := comment.ID
+	return id, nil
 }
 
 // Update an existing comment with a new message
@@ -87,20 +90,50 @@ func writeCommentToDisk(repo *git.Repository, comment *Comment) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("[%v] Comment created", oid)
 	committer := comment.Amender
 	sig := &git.Signature{committer.Name, committer.Email, time.Now()}
-	path, err := comment.RefPath()
+	id := fmt.Sprintf("%v", oid)
+	file, err := refPath(comment, &id)
 	if err != nil {
 		return err
 	}
-	target := fmt.Sprintf("%v", *oid)
-	ref, err := repo.CreateSymbolicReference(*path, target, false, sig, "some message")
+	_, err = repo.CreateReference(*file, oid, false, sig, "some message")
 	if err != nil {
 		return err
 	}
-	fmt.Println("Ref created: %v", ref.Name())
+	comment.ID = &id
 	return nil
+}
+
+// Generate the path within refs for a given comment
+//
+// Comment refs are nested under refs/comments. The
+// format is as follows:
+//
+// ```
+// refs/comments/[<commit prefix>]/[<rest of commit>]/[<comment id>]
+// ```
+//
+func refPath(comment *Comment, id *string) (*string, error) {
+	dir, err := commitRefDir(&comment.Commit)
+	if err != nil {
+		return nil, err
+	}
+	hash := path.Join(*dir, *id)
+	return &hash, nil
+}
+
+func commitRefDir(commit *string) (*string, error) {
+	const invalidHash = "Invalid commit hash for storage"
+	const commentPath = "refs/comments"
+	hash := *commit
+	if len(hash) > 4 {
+		dir := path.Join(commentPath,
+			hash[0:4],
+			hash[4:len(hash)])
+		return &dir, nil
+	}
+	return nil, errors.New(invalidHash)
 }
 
 func repo(repoPath string) (*git.Repository, error) {
