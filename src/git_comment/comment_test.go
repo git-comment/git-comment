@@ -81,7 +81,7 @@ func TestRefPath(t *testing.T) {
 	comment, _ := NewComment("Unsure of the intent here.", "0155eb4229851634a0f03eb265b69f5a2d56f341", new(FileRef), new(Person))
 	path, err := comment.RefPath()
 	assert.Nil(t, err)
-	assert.Equal(t, path, "0155/eb4229851634a0f03eb265b69f5a2d56f341")
+	assert.Equal(t, *path, "refs/comments/0155/eb4229851634a0f03eb265b69f5a2d56f341")
 }
 
 func TestSerializeComment(t *testing.T) {

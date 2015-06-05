@@ -2,7 +2,9 @@ package git_comment
 
 import (
 	"errors"
+	"fmt"
 	git "gopkg.in/libgit2/git2go.v22"
+	"time"
 )
 
 const (
@@ -30,18 +32,19 @@ func CreateComment(repoPath string, commit *string, fileRef *FileRef, message st
 	if err != nil {
 		return nil, err
 	}
-	if err := writeCommentToDisk(repoPath, comment); err != nil {
+	if err := writeCommentToDisk(repo, comment); err != nil {
 		return nil, err
 	}
 	return &comment.ID, nil
 }
 
+// Update an existing comment with a new message
 func UpdateComment(repoPath string, ID string, message string) error {
 	repo, err := repo(repoPath)
 	if err != nil {
 		return err
 	}
-	comment, err := CommentByID(repoPath, ID)
+	comment, err := CommentByID(repo, ID)
 	if err != nil {
 		return err
 	}
@@ -50,21 +53,25 @@ func UpdateComment(repoPath string, ID string, message string) error {
 		return err
 	}
 	comment.Amend(message, author)
-	return writeCommentToDisk(repoPath, comment)
+	return writeCommentToDisk(repo, comment)
 }
 
 // Remove a comment from a commit
 func DeleteComment(repoPath string, ID string) error {
-	comment, err := CommentByID(repoPath, ID)
+	repo, err := repo(repoPath)
+	if err != nil {
+		return err
+	}
+	comment, err := CommentByID(repo, ID)
 	if err != nil {
 		return err
 	}
 	comment.Deleted = true
-	return writeCommentToDisk(repoPath, comment)
+	return writeCommentToDisk(repo, comment)
 }
 
 // Finds a comment by a given ID
-func CommentByID(repoPath string, identifier string) (*Comment, error) {
+func CommentByID(repo *git.Repository, identifier string) (*Comment, error) {
 	return &Comment{}, errors.New(commentNotFoundError)
 }
 
@@ -75,7 +82,24 @@ func CommentsOnCommit(repoPath string, commit string) []*Comment {
 
 // Write git object for a given comment and update the
 // comment refs
-func writeCommentToDisk(repoPath string, comment *Comment) error {
+func writeCommentToDisk(repo *git.Repository, comment *Comment) error {
+	oid, err := repo.CreateBlobFromBuffer([]byte(comment.Serialize()))
+	if err != nil {
+		return err
+	}
+	fmt.Println("[%v] Comment created", oid)
+	committer := comment.Amender
+	sig := &git.Signature{committer.Name, committer.Email, time.Now()}
+	path, err := comment.RefPath()
+	if err != nil {
+		return err
+	}
+	target := fmt.Sprintf("%v", *oid)
+	ref, err := repo.CreateSymbolicReference(*path, target, false, sig, "some message")
+	if err != nil {
+		return err
+	}
+	fmt.Println("Ref created: %v", ref.Name())
 	return nil
 }
 

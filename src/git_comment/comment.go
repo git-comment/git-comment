@@ -92,10 +92,12 @@ func (c *Comment) Serialize() string {
 // commit identifier, and the file name are the
 // remaining characters. The contents of the file are
 // the identifiers of all comments on the commit
-func (c *Comment) RefPath() (string, error) {
+func (c *Comment) RefPath() (*string, error) {
 	const invalidHash = "Invalid commit hash for storage"
+	const commentPath = "refs/comments"
 	if len(c.Commit) > 4 {
-		return path.Join(c.Commit[0:4], c.Commit[4:len(c.Commit)]), nil
+		refPath := path.Join(commentPath, c.Commit[0:4], c.Commit[4:len(c.Commit)])
+		return &refPath, nil
 	}
-	return "", errors.New(invalidHash)
+	return nil, errors.New(invalidHash)
 }
