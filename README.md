@@ -62,6 +62,16 @@ git comment-grep -v
 Execute commands before or after creating comments, aborting the
 operation when the scripts fail.
 
+### Import/Export scripts
+
+Retrieve all commits from external services including as GitHub and
+BitBucket. Check the `scripts` directory.
+
+### Editor integrations
+
+A reference plugin for vim can be found [here](). Submissions for other
+editor integrations are encouraged!
+
 ## how?
 
 Comments are regular git objects, stored in a format similar to tags,
