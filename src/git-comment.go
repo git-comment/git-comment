@@ -27,20 +27,22 @@ func main() {
 		err = gitc.DeleteComment(pwd, *deleteID)
 		handleError(err)
 	} else if len(*message) > 0 {
-		var commit = ""
+		var commit *string = nil
 		var fileref = ""
 		if len(goopt.Args) > 1 {
 			fileref = goopt.Args[1]
 		}
 		if len(goopt.Args) > 0 {
-			commit = goopt.Args[0]
+			commit = &goopt.Args[0]
 		}
 		if len(*amendID) > 0 {
 			err = gitc.UpdateComment(pwd, *amendID, *message)
+			handleError(err)
 		} else {
-			_, err = gitc.CreateComment(pwd, &commit, gitc.CreateFileRef(fileref), *message)
+			id, err := gitc.CreateComment(pwd, commit, gitc.CreateFileRef(fileref), *message)
+			handleError(err)
+			fmt.Printf("[%v] Comment created", (*id)[:7])
 		}
-		handleError(err)
 	} else {
 		fmt.Println(goopt.Help())
 	}
