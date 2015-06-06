@@ -107,3 +107,11 @@ Copyright (c) 2015, Delisa Mason <delisam@acm.org>. All rights reserved.
 Dependencies are listed in the `Makefile` and can be installed by running `make bootstrap`. The default command installs `libgit2` via [Homebrew](http://brew.sh), but it can be substituted for any other suitable package manager or installation method.
 
 The manual is written using [pod2man](http://perldoc.perl.org/pod2man.html), which should be available on most GNU/Linux and OS X distributions by default. Changes should be documented with friendliness in mind.
+
+### reference
+
+* [Git Internals
+  Guide](http://www.git-scm.com/book/en/v2/Git-Internals-Plumbing-and-Porcelain)
+* gitcore-tutorial(7)
+* gitrepository-layout(5)
+* gitcli(7)
