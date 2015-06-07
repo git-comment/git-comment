@@ -13,6 +13,7 @@ const (
 	commitNotFoundError  = "Commit not found"
 	commentNotFoundError = "Comment not found"
 	headCommit           = "HEAD"
+	defaultMessageFormat = "Created a comment ref on [%v] to [%v]"
 )
 
 // Create a new comment on a commit, optionally with a file and line
@@ -97,7 +98,8 @@ func writeCommentToDisk(repo *git.Repository, comment *Comment) error {
 	if err != nil {
 		return err
 	}
-	_, err = repo.CreateReference(*file, oid, false, sig, "some message")
+	message := fmt.Sprintf(defaultMessageFormat, comment.Commit[:7], id[:7])
+	_, err = repo.CreateReference(*file, oid, false, sig, message)
 	if err != nil {
 		return err
 	}
@@ -129,7 +131,7 @@ func commitRefDir(commit *string) (*string, error) {
 	hash := *commit
 	if len(hash) > 4 {
 		dir := path.Join(commentPath,
-			hash[0:4],
+			hash[:4],
 			hash[4:len(hash)])
 		return &dir, nil
 	}

@@ -1,55 +1,53 @@
 PROJECT=git_comment
-BIN_PATH=/usr/local/bin/$(PROJECT)
-MAN_PATH=/usr/share/man/man1/$(PROJECT).1
+VERSION=$(shell cat VERSION)
 SRC_PATH=$(GOPATH)/src/$(PROJECT)
-MAN_TMP_PATH=$(PROJECT).1
+BIN_PATH=/usr/local/bin/
+BIN_FILE_LIST=git-comment git-comment-grep git-comment-log
+BIN_BUILD_CMD=go build -ldflags "-X main.buildVersion $(VERSION)"
+MAN_PATH=/usr/share/man/man1/
+MAN_TMP_PATH=build/doc/
 MAN_ZIP_PATH=$(PROJECT).1.gz
 MAN_TITLE=Git Comment Manual
-VERSION=$(shell cat VERSION)
-DOC_CMD=pod2man --center="$(MAN_TITLE)" --release="$(VERSION)"
-BIN_BUILD_CMD=go build -ldflags "-X main.buildVersion $(VERSION)"
+MAN_CMD=pod2man --center="$(MAN_TITLE)" --release="$(VERSION)"
 
 default: build
 
 bootstrap:
 	brew install libgit2
 	go get gopkg.in/libgit2/git2go.v22
-	go get github.com/wayn3h0/go-uuid
 	go get github.com/stvp/assert
 	go get github.com/cevaris/ordered_map
 	go get github.com/droundy/goopt
 
 build: copy
 	go build $(PROJECT)
-	$(BIN_BUILD_CMD) src/git-comment.go
-	$(BIN_BUILD_CMD) src/git-comment-log.go
-	$(BIN_BUILD_CMD) src/git-comment-grep.go
+	$(foreach bin,$(BIN_FILE_LIST),$(BIN_BUILD_CMD) bin/$(bin).go;)
 
 clean:
 	go clean -i -x $(PROJECT)
 	rm -rf $(SRC_PATH)
-	rm $(PROJECT)
+	$(foreach bin,$(BIN_FILE_LIST),rm $(bin);)
 
 copy:
 	install -d $(SRC_PATH)
 	install src/$(PROJECT)/* $(SRC_PATH)
 
 doc:
-	$(DOC_CMD) man/git-comment.pod > man/git-comment.1
-	$(DOC_CMD) man/git-comment-log.pod > man/git-comment-log.1
-	$(DOC_CMD) man/git-comment-grep.pod > man/git-comment-grep.1
+	$(foreach bin,$(BIN_FILE_LIST), $(MAN_CMD) man/$(bin).pod > man/$(bin).1;)
 
 install: doc
-	install $(PROJECT) $(BIN_PATH)
-	cp man/$(PROJECT).1 $(MAN_TMP_PATH)
-	chown root:admin $(MAN_TMP_PATH)
-	chmod 444 $(MAN_TMP_PATH)
-	tar -czf $(MAN_ZIP_PATH) $(MAN_TMP_PATH)
-	install -C $(MAN_TMP_PATH) $(MAN_PATH)
-	rm $(MAN_TMP_PATH) $(MAN_ZIP_PATH)
+	mkdir -p $(MAN_TMP_PATH)
+	$(foreach bin,$(BIN_FILE_LIST), \
+		cp man/$(bin).1 $(MAN_TMP_PATH)$(bin).1; \
+		chown root:admin $(MAN_TMP_PATH)$(bin).1; \
+		chmod 444 $(MAN_TMP_PATH)$(bin).1; \
+		install $(bin) $(BIN_PATH)$(bin); \
+		gzip -f $(MAN_TMP_PATH)$(bin).1; \
+		install -C $(MAN_TMP_PATH)$(bin).1.gz $(MAN_PATH)$(bin).1.gz;)
+	rm -r $(MAN_TMP_PATH)
 
 uninstall:
-	rm $(MAN_PATH) $(BIN_PATH)
+	$(foreach bin,$(BIN_FILE_LIST), rm $(MAN_PATH)$(bin).1 $(BIN_PATH)$(bin);)
 
 test: copy
 	go test $(PROJECT)
