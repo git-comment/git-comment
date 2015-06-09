@@ -4,9 +4,8 @@ SRC_PATH=$(GOPATH)/src/$(PROJECT)
 BIN_PATH=/usr/local/bin/
 BIN_FILE_LIST=git-comment git-comment-grep git-comment-log git-comment-web
 BIN_BUILD_CMD=go build -ldflags "-X main.buildVersion $(VERSION)"
-MAN_PATH=/usr/share/man/man1/
+MAN_PATH=/usr/local/man/man1/
 MAN_TMP_PATH=build/doc/
-MAN_ZIP_PATH=$(PROJECT).1.gz
 MAN_TITLE=Git Comment Manual
 MAN_CMD=pod2man --center="$(MAN_TITLE)" --release="$(VERSION)"
 
