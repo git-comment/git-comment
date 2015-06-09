@@ -10,10 +10,10 @@ import (
 func TestPropertiesFromBlob(t *testing.T) {
 	content := "fruit Green Apple\ntree_type Redwood\n\nThe Redwood is the tallest tree in North America"
 	blob := CreatePropertyBlob(content)
-	fruit, _ := blob.Properties.Get("fruit")
-	tree, _ := blob.Properties.Get("tree_type")
-	assert.Equal(t, "Green Apple", fruit)
-	assert.Equal(t, "Redwood", tree)
+	fruit := blob.Get("fruit")
+	tree := blob.Get("tree_type")
+	assert.Equal(t, "Green Apple", *fruit)
+	assert.Equal(t, "Redwood", *tree)
 }
 
 func TestMessageFromBlob(t *testing.T) {

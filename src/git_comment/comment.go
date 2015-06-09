@@ -2,7 +2,6 @@ package git_comment
 
 import (
 	"errors"
-	"fmt"
 	"time"
 )
 
@@ -12,11 +11,23 @@ type Comment struct {
 	Content    string
 	Amender    *Person
 	AmendTime  time.Time
-	Commit     string
+	Commit     *string
 	ID         *string
 	Deleted    bool
 	FileRef    *FileRef
 }
+
+const timeFormat string = time.RFC822Z
+
+const (
+	authorKey  = "author"
+	commitKey  = "commit"
+	createdKey = "created"
+	amenderKey = "amender"
+	amendedKey = "amended"
+	fileRefKey = "file"
+	deletedKey = "deleted"
+)
 
 // Creates a new comment using provided content and author
 func NewComment(message string, commit string, fileRef *FileRef, author *Person) (*Comment, error) {
@@ -34,11 +45,33 @@ func NewComment(message string, commit string, fileRef *FileRef, author *Person)
 		message,
 		author,
 		createTime,
-		commit,
+		&commit,
 		nil,
 		false,
 		fileRef,
 	}, nil
+}
+
+func DeserializeComment(content string) (*Comment, error) {
+	const serializationErrorMessage = "Could not deserialize object into comment"
+	blob := CreatePropertyBlob(content)
+	comment := &Comment{}
+	comment.Content = blob.Message
+	comment.Commit = blob.Get(commitKey)
+	comment.Author = blob.GetPerson(authorKey)
+	comment.Amender = blob.GetPerson(amenderKey)
+	comment.FileRef = blob.GetFileRef(fileRefKey)
+	cTime := blob.GetTime(createdKey)
+	if cTime == nil {
+		return nil, errors.New(serializationErrorMessage)
+	}
+	comment.CreateTime = *cTime
+	aTime := blob.GetTime(amendedKey)
+	if aTime == nil {
+		return nil, errors.New(serializationErrorMessage)
+	}
+	comment.AmendTime = *aTime
+	return comment, nil
 }
 
 // Update the message content of the comment
@@ -64,14 +97,14 @@ func (c *Comment) Amend(message string, amender *Person) {
 //
 func (c *Comment) Serialize() string {
 	blob := NewPropertyBlob()
-	blob.Properties.Set("commit", c.Commit)
-	blob.Properties.Set("file", c.FileRef.Serialize())
-	blob.Properties.Set("author", c.Author.Serialize())
-	blob.Properties.Set("created", fmt.Sprintf("%d %v", c.CreateTime.Unix(), c.CreateTime.Format("-0700")))
-	blob.Properties.Set("amender", c.Amender.Serialize())
-	blob.Properties.Set("amended", fmt.Sprintf("%d %v", c.AmendTime.Unix(), c.CreateTime.Format("-0700")))
+	blob.Set(commitKey, *c.Commit)
+	blob.Set(fileRefKey, c.FileRef.Serialize())
+	blob.Set(authorKey, c.Author.Serialize())
+	blob.Set(createdKey, c.CreateTime.Format(timeFormat))
+	blob.Set(amenderKey, c.Amender.Serialize())
+	blob.Set(amendedKey, c.CreateTime.Format(timeFormat))
 	if c.Deleted {
-		blob.Properties.Set("deleted", "true")
+		blob.Set(deletedKey, "true")
 	} else {
 		blob.Message = c.Content
 	}

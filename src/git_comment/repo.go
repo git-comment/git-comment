@@ -98,7 +98,8 @@ func writeCommentToDisk(repo *git.Repository, comment *Comment) error {
 	if err != nil {
 		return err
 	}
-	message := fmt.Sprintf(defaultMessageFormat, comment.Commit[:7], id[:7])
+	commit := *comment.Commit
+	message := fmt.Sprintf(defaultMessageFormat, commit[:7], id[:7])
 	_, err = repo.CreateReference(*file, oid, false, sig, message)
 	if err != nil {
 		return err
@@ -117,7 +118,7 @@ func writeCommentToDisk(repo *git.Repository, comment *Comment) error {
 // ```
 //
 func refPath(comment *Comment, id *string) (*string, error) {
-	dir, err := commitRefDir(&comment.Commit)
+	dir, err := commitRefDir(comment.Commit)
 	if err != nil {
 		return nil, err
 	}

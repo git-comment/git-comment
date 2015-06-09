@@ -2,9 +2,9 @@ package git_comment
 
 import (
 	"github.com/stvp/assert"
-	"regexp"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestNewCommentAuthor(t *testing.T) {
@@ -36,7 +36,7 @@ func TestNewCommentCommit(t *testing.T) {
 	comment, err := NewComment("Wat?", "abcdefg", nil, nil)
 	assert.Nil(t, err)
 	assert.NotNil(t, comment)
-	assert.Equal(t, comment.Commit, "abcdefg")
+	assert.Equal(t, *comment.Commit, "abcdefg")
 }
 
 func TestNewCommentContent(t *testing.T) {
@@ -85,11 +85,6 @@ func TestSerializeComment(t *testing.T) {
 	assert.Equal(t, lines[4], "amender Selina Kyle <cat@example.com>")
 	assert.Equal(t, lines[6], "")
 	assert.Equal(t, lines[7], "This line is too long")
-
-	createdRe := regexp.MustCompile(`^created (\d{10} \-\d{4})$`)
-	amendedRe := regexp.MustCompile(`^amended (\d{10} \-\d{4})$`)
-	assert.Equal(t, len(createdRe.FindStringSubmatch(lines[3])), 2)
-	assert.Equal(t, len(amendedRe.FindStringSubmatch(lines[5])), 2)
 }
 
 func TestSerializeDeletedComment(t *testing.T) {
@@ -104,4 +99,18 @@ func TestSerializeDeletedComment(t *testing.T) {
 	assert.Equal(t, lines[4], "amender Morpheus <redpill@example.com>")
 	assert.Equal(t, lines[6], "deleted true")
 	assert.Equal(t, lines[7], "")
+}
+
+func TestDeserializeComment(t *testing.T) {
+	author := &Person{"Morpheus", "redpill@example.com"}
+	comment, _ := NewComment("Pick one", "afdafdafd", CreateFileRef("bin/exec:15"), author)
+	newComment, err := DeserializeComment(comment.Serialize())
+	assert.Nil(t, err)
+	assert.Equal(t, *comment.Commit, *newComment.Commit)
+	assert.Equal(t, *comment.FileRef, *newComment.FileRef)
+	assert.Equal(t, *comment.Author, *newComment.Author)
+	assert.Equal(t, *comment.Amender, *newComment.Amender)
+	assert.Equal(t, comment.Content, newComment.Content)
+	assert.Equal(t, comment.CreateTime.Format(time.RFC822Z), newComment.CreateTime.Format(time.RFC822Z))
+	assert.Equal(t, comment.AmendTime.Format(time.RFC822Z), newComment.AmendTime.Format(time.RFC822Z))
 }

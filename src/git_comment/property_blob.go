@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"github.com/cevaris/ordered_map"
 	"strings"
+	"time"
 )
 
 type PropertyBlob struct {
-	Properties *ordered_map.OrderedMap
+	properties *ordered_map.OrderedMap
 	Message    string
 }
 
@@ -49,9 +50,53 @@ func CreatePropertyBlob(content string) *PropertyBlob {
 	return &PropertyBlob{props, message.String()}
 }
 
+func (p *PropertyBlob) Set(name string, value interface{}) {
+	p.properties.Set(name, value)
+}
+
+func (p *PropertyBlob) Get(property string) *string {
+	prop, ok := p.properties.Get(property)
+	if !ok {
+		return nil
+	}
+	as, ok := prop.(string)
+	if ok {
+		return &as
+	}
+	return nil
+}
+
+func (p *PropertyBlob) GetTime(property string) *time.Time {
+	prop := p.Get(property)
+	if prop == nil {
+		return nil
+	}
+	stamp, err := time.Parse(time.RFC822Z, *prop)
+	if err != nil {
+		return nil
+	}
+	return &stamp
+}
+
+func (p *PropertyBlob) GetPerson(property string) *Person {
+	prop := p.Get(property)
+	if prop == nil {
+		return nil
+	}
+	return CreatePerson(*prop)
+}
+
+func (p *PropertyBlob) GetFileRef(property string) *FileRef {
+	prop := p.Get(property)
+	if prop == nil {
+		return nil
+	}
+	return CreateFileRef(*prop)
+}
+
 func (p *PropertyBlob) Serialize() string {
 	var content bytes.Buffer
-	for kv := range p.Properties.Iter() {
+	for kv := range p.properties.Iter() {
 		name, nOk := kv.Key.(string)
 		value, vOk := kv.Value.(string)
 		if nOk && vOk {
