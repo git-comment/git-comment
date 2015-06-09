@@ -57,6 +57,17 @@ git comment-grep --help
 git comment-grep -v
 ```
 
+### `git-comment-web`
+
+Starts a web server hosting a friendly interface for editing comments on
+diffs
+
+```
+git comment-web [<revision range>] [--port <port>]
+git comment-web --help
+git comment-web -v
+```
+
 ### `pre-comment` and `post-comment` git hooks
 
 Execute commands before or after creating comments, aborting the
