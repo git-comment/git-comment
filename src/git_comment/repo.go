@@ -38,26 +38,29 @@ func CreateComment(repoPath string, commit *string, fileRef *FileRef, message st
 		return nil, err
 	}
 
-	id := comment.ID
-	return id, nil
+	return comment.ID, nil
 }
 
 // Update an existing comment with a new message
-func UpdateComment(repoPath string, ID string, message string) error {
+func UpdateComment(repoPath string, ID string, message string) (*string, error) {
 	repo, err := repo(repoPath)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	comment, err := CommentByID(repo, ID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	author, err := author(repo)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	comment.Amend(message, author)
-	return writeCommentToDisk(repo, comment)
+	if err := writeCommentToDisk(repo, comment); err != nil {
+		return nil, err
+	}
+
+	return comment.ID, nil
 }
 
 // Remove a comment from a commit
