@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	git "gopkg.in/libgit2/git2go.v22"
+	"os"
 	"path"
 	"time"
 )
@@ -18,7 +19,7 @@ const (
 
 // Create a new comment on a commit, optionally with a file and line
 func CreateComment(repoPath string, commit *string, fileRef *FileRef, message string) (*string, error) {
-	repo, err := repo(repoPath)
+	repo, err := git.OpenRepository(repoPath)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +44,7 @@ func CreateComment(repoPath string, commit *string, fileRef *FileRef, message st
 
 // Update an existing comment with a new message
 func UpdateComment(repoPath string, ID string, message string) (*string, error) {
-	repo, err := repo(repoPath)
+	repo, err := git.OpenRepository(repoPath)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +66,7 @@ func UpdateComment(repoPath string, ID string, message string) (*string, error) 
 
 // Remove a comment from a commit
 func DeleteComment(repoPath string, ID string) error {
-	repo, err := repo(repoPath)
+	repo, err := git.OpenRepository(repoPath)
 	if err != nil {
 		return err
 	}
@@ -93,7 +94,7 @@ func ConfigureRemoteForComments(repoPath string, remoteName string) error {
 		commentDefaultFetch = "+refs/comments/*:refs/remotes/%v/comments/*"
 		commentDefaultPush  = "refs/comments/*"
 	)
-	repo, err := repo(repoPath)
+	repo, err := git.OpenRepository(repoPath)
 	if err != nil {
 		return err
 	}
@@ -138,10 +139,32 @@ func ConfigureRemoteForComments(repoPath string, remoteName string) error {
 // * `$VISUAL`
 // * `$EDITOR`
 // * vi
-func ConfiguredEditor(repo *git.Repository) *string {
+func ConfiguredEditor(repoPath string) *string {
 	const defaultEditor = "vi"
-	var editor string
-	editor = defaultEditor
+	repo, err := git.OpenRepository(repoPath)
+	if err != nil {
+		return nil
+	}
+
+	if gitEditor := os.Getenv("GIT_EDITOR"); len(gitEditor) > 0 {
+		return &gitEditor
+	}
+	config, err := repo.Config()
+	if err == nil {
+		confEditor, err := config.LookupString("core.editor")
+		if err == nil {
+			if len(confEditor) > 0 {
+				return &confEditor
+			}
+		}
+	}
+
+	if visual := os.Getenv("VISUAL"); len(visual) > 0 {
+		return &visual
+	} else if envEditor := os.Getenv("EDITOR"); len(envEditor) > 0 {
+		return &envEditor
+	}
+	editor := defaultEditor
 	return &editor
 }
 
@@ -153,10 +176,30 @@ func ConfiguredEditor(repo *git.Repository) *string {
 // * `core.pager` configuration
 // * `$PAGER`
 // * less
-func ConfiguredPager(repo *git.Repository) *string {
+func ConfiguredPager(repoPath string) *string {
 	const defaultPager = "less"
-	var pager string
-	pager = defaultPager
+	repo, err := git.OpenRepository(repoPath)
+	if err != nil {
+		return nil
+	}
+
+	if pager := os.Getenv("GIT_PAGER"); len(pager) > 0 {
+		return &pager
+	}
+	config, err := repo.Config()
+	if err == nil {
+		pager, err := config.LookupString("core.pager")
+		if err == nil {
+			if len(pager) > 0 {
+				return &pager
+			}
+		}
+	}
+
+	if pager := os.Getenv("PAGER"); len(pager) > 0 {
+		return &pager
+	}
+	pager := defaultPager
 	return &pager
 }
 
@@ -243,18 +286,6 @@ func commitRefDir(commit *string) (*string, error) {
 		return &dir, nil
 	}
 	return nil, errors.New(invalidHash)
-}
-
-func repo(repoPath string) (*git.Repository, error) {
-	return git.OpenRepository(repoPath)
-}
-
-func author(repo *git.Repository) (*Person, error) {
-	sig, err := repo.DefaultSignature()
-	if err != nil {
-		return nil, err
-	}
-	return &Person{sig.Name, sig.Email}, nil
 }
 
 // parse a commit hash, converting to the HEAD commit where needed
