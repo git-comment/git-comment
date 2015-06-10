@@ -22,7 +22,7 @@ func CreateComment(repoPath string, commit *string, fileRef *FileRef, message st
 	if err != nil {
 		return nil, err
 	}
-	author, err := author(repo)
+	author, err := ConfiguredAuthor(repo)
 	if err != nil {
 		return nil, err
 	}
@@ -51,11 +51,11 @@ func UpdateComment(repoPath string, ID string, message string) (*string, error) 
 	if err != nil {
 		return nil, err
 	}
-	author, err := author(repo)
+	committer, err := ConfiguredCommitter(repo)
 	if err != nil {
 		return nil, err
 	}
-	comment.Amend(message, author)
+	comment.Amend(message, committer)
 	if err := writeCommentToDisk(repo, comment); err != nil {
 		return nil, err
 	}
@@ -127,6 +127,58 @@ func ConfigureRemoteForComments(repoPath string, remoteName string) error {
 		return err
 	}
 	return nil
+}
+
+// The editor to use for editing comments interactively.
+// Emulates the behavior of `git-var(1)` to determine which
+// editor to use from this list of options:
+//
+// * `$GIT_EDITOR` environment variable
+// * `core.editor` configuration
+// * `$VISUAL`
+// * `$EDITOR`
+// * vi
+func ConfiguredEditor(repo *git.Repository) *string {
+	const defaultEditor = "vi"
+	var editor string
+	editor = defaultEditor
+	return &editor
+}
+
+// The text viewer to use for viewing text interactively.
+// Emulates the behavior of `git-var(1)` by checking the
+// options in this list of options:
+//
+// * `$GIT_PAGER` environment variable
+// * `core.pager` configuration
+// * `$PAGER`
+// * less
+func ConfiguredPager(repo *git.Repository) *string {
+	const defaultPager = "less"
+	var pager string
+	pager = defaultPager
+	return &pager
+}
+
+// The author of a piece of code, fetched from:
+//
+// * `$GIT_AUTHOR_NAME` and `$GIT_AUTHOR_EMAIL`
+// * configured default from `user.name` and `user.email`
+func ConfiguredAuthor(repo *git.Repository) (*Person, error) {
+	// TODO: update impl
+	sig, err := repo.DefaultSignature()
+	if err != nil {
+		return nil, errors.New(authorNotFoundError)
+	}
+	return &Person{sig.Name, sig.Email}, nil
+}
+
+// The committer of a piece of code
+//
+// * `$GIT_COMMITTER_NAME` and `$GIT_COMMITTER_EMAIL`
+// * configured default from `user.name` and `user.email`
+func ConfiguredCommitter(repo *git.Repository) (*Person, error) {
+	return ConfiguredAuthor(repo)
 }
 
 // Write git object for a given comment and update the
