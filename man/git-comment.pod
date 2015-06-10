@@ -8,6 +8,7 @@
 
     git comment [-m <msg>] [--amend <comment>] [<commit>] [<filepath:line>]
     git comment --delete <comment>
+    git comment --configure-remote <remote>
     git comment --help
     git comment -v
 
@@ -39,6 +40,10 @@ Use the provided message instead of prompting for message content
 
 Print the current version number
 
+=item --configure-remote
+
+Update the remote configuration to fetch and push comment changes by default
+
 =item <commit>
 
 A commit
@@ -46,6 +51,10 @@ A commit
 =item <filepath:line>
 
 A reference to a file and line number, to make the annotation more specific
+
+=item <remote>
+
+A remote name
 
 =back
 

@@ -87,6 +87,48 @@ func CommentsOnCommit(repoPath string, commit string) []*Comment {
 	return []*Comment{}
 }
 
+// Configure a remote to fetch and push comment changes by default
+func ConfigureRemoteForComments(repoPath string, remoteName string) error {
+	const (
+		commentDefaultFetch = "+refs/comments/*:refs/remotes/%v/comments/*"
+		commentDefaultPush  = "refs/comments/*"
+	)
+	repo, err := repo(repoPath)
+	if err != nil {
+		return err
+	}
+	remote, err := repo.LookupRemote(remoteName)
+	if err != nil {
+		return err
+	}
+	fetch := fmt.Sprintf(commentDefaultFetch, remoteName)
+	fetches, err := remote.FetchRefspecs()
+	if err != nil {
+		return err
+	}
+	if !contains(fetches, fetch) {
+		err = remote.AddFetch(fetch)
+		if err != nil {
+			return err
+		}
+	}
+	pushes, err := remote.PushRefspecs()
+	if err != nil {
+		return err
+	}
+	if !contains(pushes, commentDefaultPush) {
+		err = remote.AddPush(commentDefaultPush)
+		if err != nil {
+			return err
+		}
+	}
+	err = remote.Save()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Write git object for a given comment and update the
 // comment refs
 func writeCommentToDisk(repo *git.Repository, comment *Comment) error {
@@ -109,6 +151,15 @@ func writeCommentToDisk(repo *git.Repository, comment *Comment) error {
 	}
 	comment.ID = &id
 	return nil
+}
+
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }
 
 // Generate the path within refs for a given comment

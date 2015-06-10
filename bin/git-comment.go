@@ -13,6 +13,7 @@ var message = goopt.String([]string{"-m", "--message"}, "", "comment message")
 var amendID = goopt.String([]string{"--amend"}, "", "ID of a comment to amend. `--message` is required")
 var deleteID = goopt.String([]string{"--delete"}, "", "ID of a comment to delete")
 var printVersion = goopt.Flag([]string{"-v", "--version"}, []string{}, "Show the version number", "")
+var remoteToConfig = goopt.String([]string{"--configure-remote"}, "", "remote to configure for fetching and pushing comments")
 
 func main() {
 	goopt.Parse(nil)
@@ -23,6 +24,10 @@ func main() {
 		handleError(errors.New("Too many arguments provided"))
 	} else if *printVersion {
 		fmt.Println(buildVersion)
+	} else if len(*remoteToConfig) > 0 {
+		err = gitc.ConfigureRemoteForComments(pwd, *remoteToConfig)
+		handleError(err)
+		fmt.Printf("Remote '%v' updated\n", *remoteToConfig)
 	} else if len(*deleteID) > 0 {
 		err = gitc.DeleteComment(pwd, *deleteID)
 		handleError(err)
