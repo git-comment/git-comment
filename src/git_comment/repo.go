@@ -10,6 +10,7 @@ import (
 
 const (
 	authorNotFoundError  = "No name or email found in git config for commenting"
+	invalidHashError     = "Invalid commit hash for storage"
 	commitNotFoundError  = "Commit not found"
 	commentNotFoundError = "Comment not found"
 	headCommit           = "HEAD"
@@ -79,7 +80,20 @@ func DeleteComment(repoPath string, ID string) error {
 
 // Finds a comment by a given ID
 func CommentByID(repo *git.Repository, identifier string) (*Comment, error) {
-	return &Comment{}, errors.New(commentNotFoundError)
+	oid, err := git.NewOid(identifier)
+	if err != nil {
+		return nil, errors.New(commentNotFoundError)
+	}
+	blob, err := repo.LookupBlob(oid)
+	if err != nil {
+		return nil, errors.New(commentNotFoundError)
+	}
+	comment, err := DeserializeComment(string(blob.Contents()))
+	if err != nil {
+		return nil, err
+	}
+	comment.ID = &identifier
+	return comment, nil
 }
 
 // Finds all comments on a given commit
@@ -132,6 +146,12 @@ func ConfigureRemoteForComments(repoPath string, remoteName string) error {
 // Write git object for a given comment and update the
 // comment refs
 func writeCommentToDisk(repo *git.Repository, comment *Comment) error {
+	if comment.ID != nil {
+		err := deleteReference(repo, comment, *comment.ID)
+		if err != nil {
+			return err
+		}
+	}
 	oid, err := repo.CreateBlobFromBuffer([]byte(comment.Serialize()))
 	if err != nil {
 		return err
@@ -162,6 +182,22 @@ func contains(s []string, e string) bool {
 	return false
 }
 
+func deleteReference(repo *git.Repository, comment *Comment, identifier string) error {
+	refPath, err := refPath(comment, &identifier)
+	if err != nil {
+		return nil
+	}
+	ref, err := repo.LookupReference(*refPath)
+	if err != nil {
+		return errors.New(commentNotFoundError)
+	}
+	err = ref.Delete()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Generate the path within refs for a given comment
 //
 // Comment refs are nested under refs/comments. The
@@ -181,7 +217,6 @@ func refPath(comment *Comment, id *string) (*string, error) {
 }
 
 func commitRefDir(commit *string) (*string, error) {
-	const invalidHash = "Invalid commit hash for storage"
 	const commentPath = "refs/comments"
 	hash := *commit
 	if len(hash) > 4 {
@@ -190,7 +225,7 @@ func commitRefDir(commit *string) (*string, error) {
 			hash[4:len(hash)])
 		return &dir, nil
 	}
-	return nil, errors.New(invalidHash)
+	return nil, errors.New(invalidHashError)
 }
 
 func repo(repoPath string) (*git.Repository, error) {
