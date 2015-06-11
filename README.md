@@ -29,7 +29,8 @@ components:
 
 The core binary can add comments to commits, optionally with a file and
 line reference. It includes a helper command (`--configure-remote`) for
-fetching and pushing comments by default with other refs.
+fetching and pushing comments by default with other refs. Creating a
+comment without a supplied message opens the default git editor.
 
 ```
 git comment [-m <msg>] [--amend <comment>] [<commit>] [<filepath:line>]
