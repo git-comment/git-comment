@@ -123,8 +123,7 @@ func ConfigureRemoteForComments(repoPath string, remoteName string) error {
 			return err
 		}
 	}
-	err = remote.Save()
-	if err != nil {
+	if err = remote.Save(); err != nil {
 		return err
 	}
 	return nil
