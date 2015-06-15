@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	git "gopkg.in/libgit2/git2go.v22"
+	"os"
 	"path"
 	"time"
 )
@@ -19,11 +20,11 @@ const (
 
 // Create a new comment on a commit, optionally with a file and line
 func CreateComment(repoPath string, commit *string, fileRef *FileRef, message string) (*string, error) {
-	repo, err := repo(repoPath)
+	repo, err := git.OpenRepository(repoPath)
 	if err != nil {
 		return nil, err
 	}
-	author, err := author(repo)
+	author, err := ConfiguredAuthor(repo)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +45,7 @@ func CreateComment(repoPath string, commit *string, fileRef *FileRef, message st
 
 // Update an existing comment with a new message
 func UpdateComment(repoPath string, ID string, message string) (*string, error) {
-	repo, err := repo(repoPath)
+	repo, err := git.OpenRepository(repoPath)
 	if err != nil {
 		return nil, err
 	}
@@ -52,11 +53,11 @@ func UpdateComment(repoPath string, ID string, message string) (*string, error) 
 	if err != nil {
 		return nil, err
 	}
-	author, err := author(repo)
+	committer, err := ConfiguredCommitter(repo)
 	if err != nil {
 		return nil, err
 	}
-	comment.Amend(message, author)
+	comment.Amend(message, committer)
 	if err := writeCommentToDisk(repo, comment); err != nil {
 		return nil, err
 	}
@@ -66,7 +67,7 @@ func UpdateComment(repoPath string, ID string, message string) (*string, error) 
 
 // Remove a comment from a commit
 func DeleteComment(repoPath string, ID string) error {
-	repo, err := repo(repoPath)
+	repo, err := git.OpenRepository(repoPath)
 	if err != nil {
 		return err
 	}
@@ -107,7 +108,7 @@ func ConfigureRemoteForComments(repoPath string, remoteName string) error {
 		commentDefaultFetch = "+refs/comments/*:refs/remotes/%v/comments/*"
 		commentDefaultPush  = "refs/comments/*"
 	)
-	repo, err := repo(repoPath)
+	repo, err := git.OpenRepository(repoPath)
 	if err != nil {
 		return err
 	}
@@ -136,11 +137,104 @@ func ConfigureRemoteForComments(repoPath string, remoteName string) error {
 			return err
 		}
 	}
-	err = remote.Save()
-	if err != nil {
+	if err = remote.Save(); err != nil {
 		return err
 	}
 	return nil
+}
+
+// The editor to use for editing comments interactively.
+// Emulates the behavior of `git-var(1)` to determine which
+// editor to use from this list of options:
+//
+// * `$GIT_EDITOR` environment variable
+// * `core.editor` configuration
+// * `$VISUAL`
+// * `$EDITOR`
+// * vi
+func ConfiguredEditor(repoPath string) *string {
+	const defaultEditor = "vi"
+	repo, err := git.OpenRepository(repoPath)
+	if err != nil {
+		return nil
+	}
+
+	if gitEditor := os.Getenv("GIT_EDITOR"); len(gitEditor) > 0 {
+		return &gitEditor
+	}
+	config, err := repo.Config()
+	if err == nil {
+		confEditor, err := config.LookupString("core.editor")
+		if err == nil {
+			if len(confEditor) > 0 {
+				return &confEditor
+			}
+		}
+	}
+
+	if visual := os.Getenv("VISUAL"); len(visual) > 0 {
+		return &visual
+	} else if envEditor := os.Getenv("EDITOR"); len(envEditor) > 0 {
+		return &envEditor
+	}
+	editor := defaultEditor
+	return &editor
+}
+
+// The text viewer to use for viewing text interactively.
+// Emulates the behavior of `git-var(1)` by checking the
+// options in this list of options:
+//
+// * `$GIT_PAGER` environment variable
+// * `core.pager` configuration
+// * `$PAGER`
+// * less
+func ConfiguredPager(repoPath string) *string {
+	const defaultPager = "less"
+	repo, err := git.OpenRepository(repoPath)
+	if err != nil {
+		return nil
+	}
+
+	if pager := os.Getenv("GIT_PAGER"); len(pager) > 0 {
+		return &pager
+	}
+	config, err := repo.Config()
+	if err == nil {
+		pager, err := config.LookupString("core.pager")
+		if err == nil {
+			if len(pager) > 0 {
+				return &pager
+			}
+		}
+	}
+
+	if pager := os.Getenv("PAGER"); len(pager) > 0 {
+		return &pager
+	}
+	pager := defaultPager
+	return &pager
+}
+
+// The author of a piece of code, fetched from:
+//
+// * `$GIT_AUTHOR_NAME` and `$GIT_AUTHOR_EMAIL`
+// * configured default from `user.name` and `user.email`
+func ConfiguredAuthor(repo *git.Repository) (*Person, error) {
+	// TODO: update impl
+	sig, err := repo.DefaultSignature()
+	if err != nil {
+		return nil, errors.New(authorNotFoundError)
+	}
+	return &Person{sig.Name, sig.Email}, nil
+}
+
+// The committer of a piece of code
+//
+// * `$GIT_COMMITTER_NAME` and `$GIT_COMMITTER_EMAIL`
+// * configured default from `user.name` and `user.email`
+func ConfiguredCommitter(repo *git.Repository) (*Person, error) {
+	return ConfiguredAuthor(repo)
 }
 
 // Write git object for a given comment and update the
@@ -226,18 +320,6 @@ func commitRefDir(commit *string) (*string, error) {
 		return &dir, nil
 	}
 	return nil, errors.New(invalidHashError)
-}
-
-func repo(repoPath string) (*git.Repository, error) {
-	return git.OpenRepository(repoPath)
-}
-
-func author(repo *git.Repository) (*Person, error) {
-	sig, err := repo.DefaultSignature()
-	if err != nil {
-		return nil, err
-	}
-	return &Person{sig.Name, sig.Email}, nil
 }
 
 // parse a commit hash, converting to the HEAD commit where needed
