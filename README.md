@@ -126,6 +126,8 @@ The manual is written using [pod2man](http://perldoc.perl.org/pod2man.html), whi
 
 * [Git Internals
   Guide](http://www.git-scm.com/book/en/v2/Git-Internals-Plumbing-and-Porcelain)
+* [libgit2 Documentation](https://libgit2.github.com) (and its [Go
+  bindings](http://godoc.org/github.com/libgit2/git2go))
 * gitcore-tutorial(7)
 * gitrepository-layout(5)
 * gitcli(7)
