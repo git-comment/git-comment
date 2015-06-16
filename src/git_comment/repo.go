@@ -98,8 +98,42 @@ func CommentByID(repo *git.Repository, identifier string) (*Comment, error) {
 }
 
 // Finds all comments on a given commit
-func CommentsOnCommit(repoPath string, commit string) []*Comment {
-	return []*Comment{}
+func CommentsOnCommit(repoPath string, commit *string) ([]*Comment, error) {
+	const glob = "*"
+	var comments []*Comment
+	repo, err := git.OpenRepository(repoPath)
+	if err != nil {
+		return nil, err
+	}
+	parsedCommit, err := parseCommit(repo, commit)
+	if err != nil {
+		return nil, err
+	}
+	dir, err := commitRefDir(parsedCommit)
+	if err != nil {
+		return nil, err
+	}
+
+	refIterator, err := repo.NewReferenceIteratorGlob(path.Join(*dir, glob))
+	if err != nil {
+		return nil, err
+	}
+	ref, err := refIterator.Next()
+	for {
+		if err != nil {
+			if err.(*git.GitError).Code == git.ErrIterOver {
+				break
+			} else {
+				return nil, err
+			}
+		}
+		comment := commentFromRef(repo, ref.Name())
+		if comment != nil {
+			comments = append(comments, comment)
+		}
+		ref, err = refIterator.Next()
+	}
+	return comments, nil
 }
 
 // Configure a remote to fetch and push comment changes by default
@@ -237,6 +271,15 @@ func ConfiguredCommitter(repo *git.Repository) (*Person, error) {
 	return ConfiguredAuthor(repo)
 }
 
+func commentFromRef(repo *git.Repository, refName string) *Comment {
+	_, identifier := path.Split(refName)
+	comment, err := CommentByID(repo, identifier)
+	if err != nil {
+		return nil
+	}
+	return comment
+}
+
 // Write git object for a given comment and update the
 // comment refs
 func writeCommentToDisk(repo *git.Repository, comment *Comment) error {
@@ -326,7 +369,7 @@ func commitRefDir(commit *string) (*string, error) {
 func parseCommit(repo *git.Repository, commit *string) (*string, error) {
 	var hash string
 	var id string
-	if commit == nil {
+	if commit == nil || len(*commit) == 0 {
 		hash = headCommit
 	} else {
 		hash = *commit
