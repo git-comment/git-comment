@@ -16,7 +16,7 @@ bootstrap:
 	go get gopkg.in/libgit2/git2go.v22
 	go get github.com/stvp/assert
 	go get github.com/cevaris/ordered_map
-	go get github.com/droundy/goopt
+	go get gopkg.in/alecthomas/kingpin.v2
 
 build: copy
 	go build $(PROJECT)

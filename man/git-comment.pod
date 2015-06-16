@@ -10,7 +10,7 @@
     git comment --delete <comment>
     git comment --configure-remote <remote>
     git comment --help
-    git comment -v
+    git comment --version
 
 =head1 DESCRIPTION
 
@@ -36,7 +36,7 @@ Gives a pretty-printed usage of the command
 
 Use the provided message instead of prompting for message content
 
-=item I<-v>, --version
+=item --version
 
 Print the current version number
 

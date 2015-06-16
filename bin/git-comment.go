@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	gitc "git_comment"
-	goopt "github.com/droundy/goopt"
+	kp "gopkg.in/alecthomas/kingpin.v2"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -13,33 +13,29 @@ import (
 )
 
 const (
-	tooManyArguments  = "Too many arguments provided"
 	noMessageProvided = "Aborting comment, no message provided"
 	editorFailed      = "Failed to launch preferred editor"
 	defaultMessage    = "\n# Enter comment content\n# Lines beginning with '#' will be stripped"
+	errorPrefix       = "git-comment:"
 )
 
-var buildVersion string
-var message = goopt.String([]string{"-m", "--message"}, "", "comment message")
-var amendID = goopt.String([]string{"--amend"}, "", "ID of a comment to amend.")
-var deleteID = goopt.String([]string{"--delete"}, "", "ID of a comment to delete")
-var printVersion = goopt.Flag([]string{"-v", "--version"}, []string{}, "Show the version number", "")
-var remoteToConfig = goopt.String([]string{"--configure-remote"}, "", "remote to configure for fetching and pushing comments")
+var (
+	buildVersion   string
+	app            = kp.New("git-comment", "Add comments to commits and diffs within git repositories")
+	message        = app.Flag("message", "comment content").Short('m').String()
+	amendID        = app.Flag("amend", "ID of a comment to amend").String()
+	deleteID       = app.Flag("delete", "ID of a comment to delete").String()
+	remoteToConfig = app.Flag("configure-remote", "remote to configure for fetch and pushing comments").String()
+	commit         = app.Arg("commit", "ID of a commit to annotate").String()
+	fileref        = app.Arg("file:line", "File and line number to annotate").String()
+)
 
 func main() {
-	goopt.Description = func() string {
-		return "Add comments to commits and files within git repositories"
-	}
-	goopt.Version = buildVersion
-	goopt.Summary = "Annotate git commits"
-	goopt.Parse(nil)
+	app.Version(buildVersion)
+	kp.MustParse(app.Parse(os.Args[1:]))
 	pwd, err := os.Getwd()
 	handleError(err)
-	if len(goopt.Args) > 2 {
-		handleInputError(errors.New(tooManyArguments))
-	} else if *printVersion {
-		fmt.Println(buildVersion)
-	} else if len(*remoteToConfig) > 0 {
+	if len(*remoteToConfig) > 0 {
 		handleError(gitc.ConfigureRemoteForComments(pwd, *remoteToConfig))
 		fmt.Printf("Remote '%v' updated\n", *remoteToConfig)
 	} else if len(*deleteID) > 0 {
@@ -50,19 +46,8 @@ func main() {
 	}
 }
 
-func handleInputError(err error) {
-	if err != nil {
-		fmt.Println(err)
-		fmt.Println(goopt.Help())
-		os.Exit(1)
-	}
-}
-
 func handleError(err error) {
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	app.FatalIfError(err, errorPrefix)
 }
 
 func editComment(pwd string) {
@@ -70,19 +55,12 @@ func editComment(pwd string) {
 	if len(*message) == 0 {
 		*message = getMessageFromEditor(pwd)
 	}
-	var fileref = ""
-	if len(goopt.Args) > 1 {
-		fileref = goopt.Args[1]
-	}
-	if len(goopt.Args) > 0 {
-		commit = &goopt.Args[0]
-	}
 	if len(*amendID) > 0 {
 		id, err := gitc.UpdateComment(pwd, *amendID, *message)
 		handleError(err)
 		fmt.Printf("[%v] Comment updated\n", (*id)[:7])
 	} else {
-		id, err := gitc.CreateComment(pwd, commit, gitc.CreateFileRef(fileref), *message)
+		id, err := gitc.CreateComment(pwd, commit, gitc.CreateFileRef(*fileref), *message)
 		handleError(err)
 		fmt.Printf("[%v] Comment created\n", (*id)[:7])
 	}
