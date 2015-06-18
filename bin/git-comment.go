@@ -16,7 +16,7 @@ const (
 	noMessageProvided = "Aborting comment, no message provided"
 	editorFailed      = "Failed to launch preferred editor"
 	defaultMessage    = "\n# Enter comment content\n# Lines beginning with '#' will be stripped"
-	errorPrefix       = "git-comment:"
+	errorPrefix       = "bin"
 )
 
 var (

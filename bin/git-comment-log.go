@@ -25,6 +25,11 @@ func main() {
 	app.FatalIfError(err, errorPrefix)
 	comments, err := gitc.CommentsOnCommit(pwd, revision)
 	app.FatalIfError(err, errorPrefix)
+	// concat all output
+	// check length
+	// check $LINES
+	// if length > $LINES open pager with content
+	// otherwise print content
 	for i := 0; i < len(comments); i++ {
 		comment := comments[i]
 		fmt.Println(*comment.ID)
