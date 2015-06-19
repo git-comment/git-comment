@@ -1,15 +1,15 @@
 package main
 
 import (
-	// "errors"
 	"fmt"
 	gitc "git_comment"
 	kp "gopkg.in/alecthomas/kingpin.v2"
 	"io"
 	"os"
 	"os/exec"
-	"strconv"
 	"strings"
+	"syscall"
+	"unsafe"
 )
 
 const (
@@ -26,14 +26,14 @@ func main() {
 	app.Version(buildVersion)
 	kp.MustParse(app.Parse(os.Args[1:]))
 	pwd, err := os.Getwd()
-	app.FatalIfError(err, errorPrefix)
+	app.FatalIfError(err, "pwd")
+	showComments(pwd)
+}
+
+func showComments(pwd string) {
 	comments, err := gitc.CommentsOnCommit(pwd, revision)
-	app.FatalIfError(err, errorPrefix)
-	var lineCount int = 0
-	if lineEnv := getEnv("LINES"); lineEnv != nil {
-		lines, _ := strconv.ParseInt(*lineEnv, 10, 0)
-		lineCount = int(lines)
-	}
+	app.FatalIfError(err, "git")
+	lineCount := calculateLineCount()
 	var usePager bool = lineCount == 0
 	var content []byte
 	var writer io.WriteCloser
@@ -49,10 +49,15 @@ func main() {
 		if usePager {
 			if writer == nil {
 				cmd, writer, err = execPager(pwd)
-				app.FatalIfError(err, errorPrefix)
+				app.FatalIfError(err, "pager")
 			}
-			_, err = writer.Write(formatted)
-			app.FatalIfError(err, errorPrefix)
+			if len(content) > 0 {
+				_, err = writer.Write(content)
+				content = []byte{}
+			} else {
+				_, err = writer.Write(formatted)
+			}
+			app.FatalIfError(err, "writer")
 		}
 	}
 	if writer != nil {
@@ -83,6 +88,14 @@ func execPager(pwd string) (*exec.Cmd, io.WriteCloser, error) {
 		return nil, nil, err
 	}
 	return cmd, pipe, nil
+}
+
+func calculateLineCount() int {
+	var dimensions [4]uint16
+	if _, _, err := syscall.Syscall6(syscall.SYS_IOCTL, 2, uintptr(syscall.TIOCGWINSZ), uintptr(unsafe.Pointer(&dimensions)), 0, 0, 0); err != 0 {
+		return 0
+	}
+	return int(dimensions[0])
 }
 
 func getEnv(name string) *string {
