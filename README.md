@@ -33,7 +33,7 @@ fetching and pushing comments by default with other refs. Creating a
 comment without a supplied message opens the default git editor.
 
 ```
-git comment [-m <msg>] [--amend <comment>] [<commit>] [<filepath:line>]
+git comment [-m <msg>] [--amend <comment>] [-c <commit>] [<filepath:line>]
 git comment --delete <comment>
 git comment --configure-remote <remote>
 git comment --help

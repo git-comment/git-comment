@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "GIT-COMMENT 1"
-.TH GIT-COMMENT 1 "2015-06-15" "1.0.0.0" "Git Comment Manual"
+.TH GIT-COMMENT 1 "2015-06-18" "1.0.0.0" "Git Comment Manual"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -145,7 +145,7 @@
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
 .Vb 5
-\&    git comment [\-m <msg>] [\-\-amend <comment>] [<commit>] [<filepath:line>]
+\&    git comment [\-m <msg>] [\-\-amend <comment>] [\-c <commit>] [<filepath:line>]
 \&    git comment \-\-delete <comment>
 \&    git comment \-\-configure\-remote <remote>
 \&    git comment \-\-help
@@ -174,8 +174,8 @@ Print the current version number
 .IP "\-\-configure\-remote" 4
 .IX Item "--configure-remote"
 Update the remote configuration to fetch and push comment changes by default
-.IP "<commit>" 4
-.IX Item "<commit>"
+.IP "\fI\-c\fR <commit>, \-\-commit <commit>" 4
+.IX Item "-c <commit>, --commit <commit>"
 A commit
 .IP "<filepath:line>" 4
 .IX Item "<filepath:line>"

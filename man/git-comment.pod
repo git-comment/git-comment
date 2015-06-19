@@ -6,7 +6,7 @@
 
 =head1 SYNOPSIS
 
-    git comment [-m <msg>] [--amend <comment>] [<commit>] [<filepath:line>]
+    git comment [-m <msg>] [--amend <comment>] [-c <commit>] [<filepath:line>]
     git comment --delete <comment>
     git comment --configure-remote <remote>
     git comment --help
@@ -44,7 +44,7 @@ Print the current version number
 
 Update the remote configuration to fetch and push comment changes by default
 
-=item <commit>
+=item I<-c> <commit>, --commit <commit>
 
 A commit
 

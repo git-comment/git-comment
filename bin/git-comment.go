@@ -24,7 +24,7 @@ var (
 	amendID        = app.Flag("amend", "ID of a comment to amend").String()
 	deleteID       = app.Flag("delete", "ID of a comment to delete").String()
 	remoteToConfig = app.Flag("configure-remote", "remote to configure for fetch and pushing comments").String()
-	commit         = app.Arg("commit", "ID of a commit to annotate").String()
+	commit         = app.Flag("commit", "ID of a commit to annotate").Short('c').String()
 	fileref        = app.Arg("file:line", "File and line number to annotate").String()
 )
 
