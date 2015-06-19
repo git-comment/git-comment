@@ -4,19 +4,17 @@ import (
 	"errors"
 	"fmt"
 	gitc "git_comment"
+	ex "git_comment/exec"
 	kp "gopkg.in/alecthomas/kingpin.v2"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"regexp"
 	"strings"
 )
 
 const (
-	noMessageProvided = "Aborting comment, no message provided"
 	editorFailed      = "Failed to launch preferred editor"
-	defaultMessage    = "\n# Enter comment content\n# Lines beginning with '#' will be stripped"
-	errorPrefix       = "bin"
+	noMessageProvided = "Aborting comment, no message provided"
 )
 
 var (
@@ -34,20 +32,16 @@ func main() {
 	app.Version(buildVersion)
 	kp.MustParse(app.Parse(os.Args[1:]))
 	pwd, err := os.Getwd()
-	handleError(err)
+	app.FatalIfError(err, "pwd")
 	if len(*remoteToConfig) > 0 {
-		handleError(gitc.ConfigureRemoteForComments(pwd, *remoteToConfig))
+		app.FatalIfError(gitc.ConfigureRemoteForComments(pwd, *remoteToConfig), "git")
 		fmt.Printf("Remote '%v' updated\n", *remoteToConfig)
 	} else if len(*deleteID) > 0 {
-		handleError(gitc.DeleteComment(pwd, *deleteID))
+		app.FatalIfError(gitc.DeleteComment(pwd, *deleteID), "git")
 		fmt.Println("Comment deleted")
 	} else {
 		editComment(pwd)
 	}
-}
-
-func handleError(err error) {
-	app.FatalIfError(err, errorPrefix)
 }
 
 func editComment(pwd string) {
@@ -57,11 +51,11 @@ func editComment(pwd string) {
 	}
 	if len(*amendID) > 0 {
 		id, err := gitc.UpdateComment(pwd, *amendID, *message)
-		handleError(err)
+		app.FatalIfError(err, "git")
 		fmt.Printf("[%v] Comment updated\n", (*id)[:7])
 	} else {
 		id, err := gitc.CreateComment(pwd, commit, gitc.CreateFileRef(*fileref), *message)
-		handleError(err)
+		app.FatalIfError(err, "git")
 		fmt.Printf("[%v] Comment created\n", (*id)[:7])
 	}
 }
@@ -69,32 +63,25 @@ func editComment(pwd string) {
 func getMessageFromEditor(pwd string) string {
 	editor := gitc.ConfiguredEditor(pwd)
 	file, err := ioutil.TempFile("", "gitc")
-	handleError(err)
+	app.FatalIfError(err, "io")
 	path := file.Name()
-	file.Write([]byte(defaultMessage))
+	file.Write([]byte(gitc.DefaultMessageTemplate))
 	file.Close()
-	execCommand(*editor, path)
+	err = ex.ExecCommand(*editor, path)
+	app.FatalIfError(err, "io")
 	content, err := ioutil.ReadFile(path)
 	os.Remove(path)
-	handleError(err)
+	app.FatalIfError(err, "io")
 	return sanitizeMessage(string(content))
 }
 
 func sanitizeMessage(message string) string {
 	reg, err := regexp.Compile("(?m)^#.*$")
-	handleError(err)
+	app.FatalIfError(err, "regex")
 	stripped := reg.ReplaceAllString(message, "")
 	content := strings.TrimSpace(stripped)
 	if len(content) == 0 {
-		handleError(errors.New(noMessageProvided))
+		app.FatalIfError(errors.New(noMessageProvided), "git-comment")
 	}
 	return content
-}
-
-func execCommand(program string, args ...string) {
-	cmd := exec.Command(program, args...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	handleError(cmd.Run())
 }

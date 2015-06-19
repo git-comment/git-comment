@@ -9,12 +9,13 @@ import (
 )
 
 const (
-	authorNotFoundError  = "No name or email found in git config for commenting"
-	invalidHashError     = "Invalid commit hash for storage"
-	commitNotFoundError  = "Commit not found"
-	commentNotFoundError = "Comment not found"
-	headCommit           = "HEAD"
-	defaultMessageFormat = "Created a comment ref on [%v] to [%v]"
+	DefaultMessageTemplate = "\n# Enter comment content\n# Lines beginning with '#' will be stripped"
+	authorNotFoundError    = "No name or email found in git config for commenting"
+	invalidHashError       = "Invalid commit hash for storage"
+	commitNotFoundError    = "Commit not found"
+	commentNotFoundError   = "Comment not found"
+	headCommit             = "HEAD"
+	defaultMessageFormat   = "Created a comment ref on [%v] to [%v]"
 )
 
 // Create a new comment on a commit, optionally with a file and line

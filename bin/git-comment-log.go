@@ -3,13 +3,12 @@ package main
 import (
 	"fmt"
 	gitc "git_comment"
+	ex "git_comment/exec"
 	kp "gopkg.in/alecthomas/kingpin.v2"
 	"io"
 	"os"
 	"os/exec"
 	"strings"
-	"syscall"
-	"unsafe"
 )
 
 const (
@@ -33,7 +32,7 @@ func main() {
 func showComments(pwd string) {
 	comments, err := gitc.CommentsOnCommit(pwd, revision)
 	app.FatalIfError(err, "git")
-	lineCount := calculateLineCount()
+	lineCount := ex.CalculateLineCount()
 	var usePager bool = lineCount == 0
 	var content []byte
 	var writer io.WriteCloser
@@ -48,7 +47,7 @@ func showComments(pwd string) {
 		}
 		if usePager {
 			if writer == nil {
-				cmd, writer, err = execPager(pwd)
+				cmd, writer, err = ex.ExecPager(pwd)
 				app.FatalIfError(err, "pager")
 			}
 			if len(content) > 0 {
@@ -70,37 +69,7 @@ func showComments(pwd string) {
 
 func formattedContent(comment *gitc.Comment) []byte {
 	if comment.ID != nil && len(*comment.ID) > 0 {
-		return []byte(fmt.Sprintf("comment %v\n%v", *comment.ID, comment.Serialize()))
+		return []byte(fmt.Sprintf("comment %v\n%v\n", *comment.ID, comment.Serialize()))
 	}
 	return []byte(comment.Serialize())
-}
-
-func execPager(pwd string) (*exec.Cmd, io.WriteCloser, error) {
-	pager := gitc.ConfiguredPager(pwd)
-	cmd := exec.Command(*pager)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	pipe, err := cmd.StdinPipe()
-	if err != nil {
-		return nil, nil, err
-	}
-	if err := cmd.Start(); err != nil {
-		return nil, nil, err
-	}
-	return cmd, pipe, nil
-}
-
-func calculateLineCount() int {
-	var dimensions [4]uint16
-	if _, _, err := syscall.Syscall6(syscall.SYS_IOCTL, 2, uintptr(syscall.TIOCGWINSZ), uintptr(unsafe.Pointer(&dimensions)), 0, 0, 0); err != 0 {
-		return 0
-	}
-	return int(dimensions[0])
-}
-
-func getEnv(name string) *string {
-	if env := os.Getenv(name); len(env) > 0 {
-		return &env
-	}
-	return nil
 }

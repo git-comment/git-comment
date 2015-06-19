@@ -1,6 +1,6 @@
 PROJECT=git_comment
 VERSION=$(shell cat VERSION)
-SRC_PATH=$(GOPATH)/src/$(PROJECT)
+SRC_PATH=$(GOPATH)src/$(PROJECT)
 BIN_PATH=/usr/local/bin/
 BIN_FILE_LIST=git-comment git-comment-grep git-comment-log git-comment-web
 BIN_BUILD_CMD=go build -ldflags "-X main.buildVersion $(VERSION)"
@@ -28,8 +28,9 @@ clean:
 	$(foreach bin,$(BIN_FILE_LIST),rm $(bin);)
 
 copy:
-	install -d $(SRC_PATH)
-	install src/$(PROJECT)/* $(SRC_PATH)
+	install -d $(SRC_PATH)/exec
+	install src/$(PROJECT)/*.go $(SRC_PATH)
+	install src/$(PROJECT)/exec/*.go $(SRC_PATH)/exec
 
 doc:
 	$(foreach bin,$(BIN_FILE_LIST), $(MAN_CMD) man/$(bin).pod > man/$(bin).1;)
