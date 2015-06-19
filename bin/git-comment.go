@@ -45,7 +45,8 @@ func main() {
 }
 
 func editComment(pwd string) {
-	var commit *string = nil
+	parsedCommit, err := gitc.ValidatedCommit(pwd, commit)
+	app.FatalIfError(err, "git")
 	if len(*message) == 0 {
 		*message = getMessageFromEditor(pwd)
 	}
@@ -54,7 +55,7 @@ func editComment(pwd string) {
 		app.FatalIfError(err, "git")
 		fmt.Printf("[%v] Comment updated\n", (*id)[:7])
 	} else {
-		id, err := gitc.CreateComment(pwd, commit, gitc.CreateFileRef(*fileref), *message)
+		id, err := gitc.CreateComment(pwd, parsedCommit, gitc.CreateFileRef(*fileref), *message)
 		app.FatalIfError(err, "git")
 		fmt.Printf("[%v] Comment created\n", (*id)[:7])
 	}

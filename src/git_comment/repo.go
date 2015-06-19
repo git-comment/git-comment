@@ -135,6 +135,14 @@ func CommentsOnCommit(repoPath string, commit *string) ([]*Comment, error) {
 	return comments, nil
 }
 
+func ValidatedCommit(repoPath string, commit *string) (*string, error) {
+	repo, err := git.OpenRepository(repoPath)
+	if err != nil {
+		return nil, err
+	}
+	return parseCommit(repo, commit)
+}
+
 func commentFromRef(repo *git.Repository, refName string) *Comment {
 	_, identifier := path.Split(refName)
 	comment, err := CommentByID(repo, identifier)
@@ -223,30 +231,16 @@ func commitRefDir(commit *string) (*string, error) {
 // parse a commit hash, converting to the HEAD commit where needed
 func parseCommit(repo *git.Repository, commit *string) (*string, error) {
 	var hash string
-	var id string
 	if commit == nil || len(*commit) == 0 {
 		hash = headCommit
 	} else {
 		hash = *commit
 	}
-	ref, err := repo.LookupReference(hash)
-	if err != nil {
-		oid, err := git.NewOid(hash)
-		if err != nil {
-			return nil, errors.New(commitNotFoundError)
-		}
-		obj, err := repo.Lookup(oid)
-		if err != nil {
-			return nil, errors.New(commitNotFoundError)
-		}
-		id = obj.Id().String()
-		return nil, errors.New(commitNotFoundError)
-	}
-	res, err := ref.Resolve()
+	object, err := repo.RevparseSingle(hash)
 	if err != nil {
 		return nil, err
 	}
-	id = res.Target().String()
+	id := object.Id().String()
 	return &id, nil
 }
 
