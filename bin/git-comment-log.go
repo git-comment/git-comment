@@ -72,8 +72,15 @@ func showComments(pwd string) {
 	for i := 0; i < len(comments); i++ {
 		comment := comments[i]
 		formatted := formattedContent(comment)
+		diff := gitc.DiffLines(pwd, *comment.Commit, comment.FileRef)
 		if !usePager {
+			if diff != nil {
+				content = append(content, []byte(diff.LinesBefore)...)
+			}
 			content = append(content, formatted...)
+			if diff != nil {
+				content = append(content, []byte(diff.LinesAfter)...)
+			}
 			lines := strings.Split(string(content), "\n")
 			usePager = len(lines) > int(termHeight-1)
 		}
