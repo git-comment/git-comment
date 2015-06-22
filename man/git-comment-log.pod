@@ -77,6 +77,8 @@ Print using the provided custom placeholders:
 
 =item %n:  new line
 
+=item %d:  divider line
+
 =item %C:  comment hash
 
 =item %c:  short comment hash

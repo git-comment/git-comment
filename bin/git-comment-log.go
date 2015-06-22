@@ -29,6 +29,7 @@ const (
 	bodyContent          = "%b"
 	titleLine            = "%t"
 	newLine              = "%n"
+	dividerLine          = "%d"
 )
 
 const (
@@ -45,6 +46,8 @@ const (
 
 var (
 	buildVersion string
+	termWidth    uint16
+	termHeight   uint16
 	app          = kp.New("git-comment-log", "List git commit comments")
 	pretty       = app.Flag("pretty", "Pretty-print the comments in a format such as short, full, raw, or custom placeholders.").String()
 	revision     = app.Arg("revision range", "Filter comments to comments on commits from the specified range").String()
@@ -55,14 +58,14 @@ func main() {
 	kp.MustParse(app.Parse(os.Args[1:]))
 	pwd, err := os.Getwd()
 	app.FatalIfError(err, "pwd")
+	termHeight, termWidth = ex.CalculateDimensions()
 	showComments(pwd)
 }
 
 func showComments(pwd string) {
 	comments, err := gitc.CommentsOnCommit(pwd, revision)
 	app.FatalIfError(err, "git")
-	lineCount := ex.CalculateLineCount()
-	var usePager bool = lineCount == 0
+	var usePager bool = termHeight == 0
 	var content []byte
 	var writer io.WriteCloser
 	var cmd *exec.Cmd
@@ -72,7 +75,7 @@ func showComments(pwd string) {
 		if !usePager {
 			content = append(content, formatted...)
 			lines := strings.Split(string(content), "\n")
-			usePager = len(lines) > lineCount-1
+			usePager = len(lines) > int(termHeight-1)
 		}
 		if usePager {
 			if writer == nil {
@@ -137,5 +140,6 @@ func substituteVariables(format string, comment *gitc.Comment) []byte {
 	format = strings.Replace(format, filePath, path, -1)
 	format = strings.Replace(format, lineNumber, line, -1)
 	format = strings.Replace(format, newLine, "\n", -1)
+	format = strings.Replace(format, dividerLine, strings.Repeat("-", int(termWidth)), -1)
 	return []byte(format)
 }
