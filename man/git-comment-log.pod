@@ -95,7 +95,7 @@ Print using the provided custom placeholders:
 
 =item %ae: author email
 
-=item %ad: author date, RFC822 format
+=item %ad: author date, RFC3339 format
 
 =item %aD: author date, Unix timestamp
 
@@ -103,7 +103,7 @@ Print using the provided custom placeholders:
 
 =item %ce: committer email
 
-=item %cd: committer date, RFC822 format
+=item %cd: committer date, RFC3339 format
 
 =item %cD: committer date, Unix timestamp
 

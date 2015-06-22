@@ -145,7 +145,7 @@
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
 .Vb 3
-\&    git comment\-log [<revision range>]
+\&    git comment\-log [\-\-pretty <format>] [<revision range>]
 \&    git comment\-log \-\-help
 \&    git comment\-log \-\-version
 .Ve
@@ -207,6 +207,9 @@ Print using the provided custom placeholders:
 .el .IP "\f(CW%n:\fR  new line" 4
 .IX Item "%n: new line"
 .PD 0
+.ie n .IP "%d:  divider line" 4
+.el .IP "\f(CW%d:\fR  divider line" 4
+.IX Item "%d: divider line"
 .ie n .IP "%C:  comment hash" 4
 .el .IP "\f(CW%C:\fR  comment hash" 4
 .IX Item "%C: comment hash"
@@ -231,9 +234,9 @@ Print using the provided custom placeholders:
 .ie n .IP "%ae: author email" 4
 .el .IP "\f(CW%ae:\fR author email" 4
 .IX Item "%ae: author email"
-.ie n .IP "%ad: author date, \s-1RFC822\s0 format" 4
-.el .IP "\f(CW%ad:\fR author date, \s-1RFC822\s0 format" 4
-.IX Item "%ad: author date, RFC822 format"
+.ie n .IP "%ad: author date, \s-1RFC3339\s0 format" 4
+.el .IP "\f(CW%ad:\fR author date, \s-1RFC3339\s0 format" 4
+.IX Item "%ad: author date, RFC3339 format"
 .ie n .IP "%aD: author date, Unix timestamp" 4
 .el .IP "\f(CW%aD:\fR author date, Unix timestamp" 4
 .IX Item "%aD: author date, Unix timestamp"
@@ -243,9 +246,9 @@ Print using the provided custom placeholders:
 .ie n .IP "%ce: committer email" 4
 .el .IP "\f(CW%ce:\fR committer email" 4
 .IX Item "%ce: committer email"
-.ie n .IP "%cd: committer date, \s-1RFC822\s0 format" 4
-.el .IP "\f(CW%cd:\fR committer date, \s-1RFC822\s0 format" 4
-.IX Item "%cd: committer date, RFC822 format"
+.ie n .IP "%cd: committer date, \s-1RFC3339\s0 format" 4
+.el .IP "\f(CW%cd:\fR committer date, \s-1RFC3339\s0 format" 4
+.IX Item "%cd: committer date, RFC3339 format"
 .ie n .IP "%cD: committer date, Unix timestamp" 4
 .el .IP "\f(CW%cD:\fR committer date, Unix timestamp" 4
 .IX Item "%cD: committer date, Unix timestamp"

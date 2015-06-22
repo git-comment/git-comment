@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 )
 
 const (
@@ -39,7 +40,6 @@ const (
 	ShortFormat   = "[%h] %c %an <%ae>\n%t\n\n"
 	FullFormat    = "commit  %H\ncomment %C\nAuthor: %an <%ae>\n%b\n\n"
 	RawFormat     = "comment %C\n%v\n\n"
-	ISO8601       = "2015-06-21T18:24:18Z"
 	formatPrefix  = "format:"
 	invalidFormat = "Unknown pretty format."
 )
@@ -125,11 +125,11 @@ func substituteVariables(format string, comment *gitc.Comment) []byte {
 	}
 	format = strings.Replace(format, authorName, comment.Author.Name, -1)
 	format = strings.Replace(format, authorEmail, comment.Author.Email, -1)
-	format = strings.Replace(format, authorDateISO8601, comment.CreateTime.Format(ISO8601), -1)
+	format = strings.Replace(format, authorDateISO8601, comment.CreateTime.Format(time.RFC3339), -1)
 	format = strings.Replace(format, authorDateUnix, fmt.Sprintf("%v", comment.CreateTime.Unix()), -1)
 	format = strings.Replace(format, committerName, comment.Amender.Name, -1)
 	format = strings.Replace(format, committerEmail, comment.Amender.Email, -1)
-	format = strings.Replace(format, committerDateISO8601, comment.AmendTime.Format(ISO8601), -1)
+	format = strings.Replace(format, committerDateISO8601, comment.AmendTime.Format(time.RFC3339), -1)
 	format = strings.Replace(format, committerDateUnix, fmt.Sprintf("%v", comment.AmendTime.Unix()), -1)
 	format = strings.Replace(format, commentFull, *comment.ID, -1)
 	format = strings.Replace(format, commentShort, (*comment.ID)[:7], -1)
