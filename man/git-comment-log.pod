@@ -2,11 +2,11 @@
 
 =head1 NAME
 
-    git-comment-log - List git commit annotations
+    git-comment-log - List git commit comments
 
 =head1 SYNOPSIS
 
-    git comment-log [<revision range>]
+    git comment-log [--pretty <format>] [<revision range>]
     git comment-log --help
     git comment-log --version
 
@@ -26,10 +26,90 @@ Print a usage message
 
 Print the current version number
 
+=item --pretty <format>
+
+Pretty-print comments in a format specified by PRETTY FORMATS
+
 =item <revision range>
 
 Show comments only from commits in the specified revision range. When
 not specified, it defaults to HEAD.
+
+=back
+
+=head1 PRETTY FORMATS
+
+There are a few built-in formats for specifying how a commit can be displayed, or alternately you can define your own using the built-in placeholders. The default format is 'short'. The predefined formats are:
+
+=over 4
+
+=item I<short>
+
+  <commit sha1> <comment sha1>
+  <author>
+  <title line>
+
+=item I<full>
+
+  commit <commit sha1>
+  comment <comment sha1>
+  Author: <author>
+
+  <content>
+
+=item I<raw>
+
+  comment <sha1>
+  commit <sha1>
+  file <file:line>
+  author <person>
+  created <date>
+  amender <person>
+  amended <date>
+
+  <content>
+
+=item I<format:string>
+
+Print using the provided custom placeholders:
+
+=over 4
+
+=item %n:  new line
+
+=item %C:  comment hash
+
+=item %c:  short comment hash
+
+=item %H:  commit hash
+
+=item %h:  short commit hash
+
+=item %f:  file path
+
+=item %L:  line number
+
+=item %an: author name
+
+=item %ae: author email
+
+=item %ad: author date, RFC822 format
+
+=item %aD: author date, Unix timestamp
+
+=item %cn: committer name
+
+=item %ce: committer email
+
+=item %cd: committer date, RFC822 format
+
+=item %cD: committer date, Unix timestamp
+
+=item %b:  body content
+
+=item %t:  title line
+
+=back
 
 =back
 

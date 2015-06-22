@@ -133,14 +133,14 @@
 .\" ========================================================================
 .\"
 .IX Title "GIT-COMMENT-LOG 1"
-.TH GIT-COMMENT-LOG 1 "2015-06-15" "1.0.0.0" "Git Comment Manual"
+.TH GIT-COMMENT-LOG 1 "2015-06-21" "1.0.0.0" "Git Comment Manual"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
 .nh
 .SH "NAME"
 .Vb 1
-\&    git\-comment\-log \- List git commit annotations
+\&    git\-comment\-log \- List git commit comments
 .Ve
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
@@ -160,18 +160,113 @@ Print a usage message
 .IP "\-\-version" 4
 .IX Item "--version"
 Print the current version number
+.IP "\-\-pretty <format>" 4
+.IX Item "--pretty <format>"
+Pretty-print comments in a format specified by \s-1PRETTY FORMATS\s0
 .IP "<revision range>" 4
 .IX Item "<revision range>"
 Show comments only from commits in the specified revision range. When
 not specified, it defaults to \s-1HEAD.\s0
+.SH "PRETTY FORMATS"
+.IX Header "PRETTY FORMATS"
+There are a few built-in formats for specifying how a commit can be displayed, or alternately you can define your own using the built-in placeholders. The default format is 'short'. The predefined formats are:
+.IP "\fIshort\fR" 4
+.IX Item "short"
+.Vb 3
+\&  <commit sha1> <comment sha1>
+\&  <author>
+\&  <title line>
+.Ve
+.IP "\fIfull\fR" 4
+.IX Item "full"
+.Vb 3
+\&  commit <commit sha1>
+\&  comment <comment sha1>
+\&  Author: <author>
+\&
+\&  <content>
+.Ve
+.IP "\fIraw\fR" 4
+.IX Item "raw"
+.Vb 7
+\&  comment <sha1>
+\&  commit <sha1>
+\&  file <file:line>
+\&  author <person>
+\&  created <date>
+\&  amender <person>
+\&  amended <date>
+\&
+\&  <content>
+.Ve
+.IP "\fIformat:string\fR" 4
+.IX Item "format:string"
+Print using the provided custom placeholders:
+.RS 4
+.ie n .IP "%n:  new line" 4
+.el .IP "\f(CW%n:\fR  new line" 4
+.IX Item "%n: new line"
+.PD 0
+.ie n .IP "%C:  comment hash" 4
+.el .IP "\f(CW%C:\fR  comment hash" 4
+.IX Item "%C: comment hash"
+.ie n .IP "%c:  short comment hash" 4
+.el .IP "\f(CW%c:\fR  short comment hash" 4
+.IX Item "%c: short comment hash"
+.ie n .IP "%H:  commit hash" 4
+.el .IP "\f(CW%H:\fR  commit hash" 4
+.IX Item "%H: commit hash"
+.ie n .IP "%h:  short commit hash" 4
+.el .IP "\f(CW%h:\fR  short commit hash" 4
+.IX Item "%h: short commit hash"
+.ie n .IP "%f:  file path" 4
+.el .IP "\f(CW%f:\fR  file path" 4
+.IX Item "%f: file path"
+.ie n .IP "%L:  line number" 4
+.el .IP "\f(CW%L:\fR  line number" 4
+.IX Item "%L: line number"
+.ie n .IP "%an: author name" 4
+.el .IP "\f(CW%an:\fR author name" 4
+.IX Item "%an: author name"
+.ie n .IP "%ae: author email" 4
+.el .IP "\f(CW%ae:\fR author email" 4
+.IX Item "%ae: author email"
+.ie n .IP "%ad: author date, \s-1RFC822\s0 format" 4
+.el .IP "\f(CW%ad:\fR author date, \s-1RFC822\s0 format" 4
+.IX Item "%ad: author date, RFC822 format"
+.ie n .IP "%aD: author date, Unix timestamp" 4
+.el .IP "\f(CW%aD:\fR author date, Unix timestamp" 4
+.IX Item "%aD: author date, Unix timestamp"
+.ie n .IP "%cn: committer name" 4
+.el .IP "\f(CW%cn:\fR committer name" 4
+.IX Item "%cn: committer name"
+.ie n .IP "%ce: committer email" 4
+.el .IP "\f(CW%ce:\fR committer email" 4
+.IX Item "%ce: committer email"
+.ie n .IP "%cd: committer date, \s-1RFC822\s0 format" 4
+.el .IP "\f(CW%cd:\fR committer date, \s-1RFC822\s0 format" 4
+.IX Item "%cd: committer date, RFC822 format"
+.ie n .IP "%cD: committer date, Unix timestamp" 4
+.el .IP "\f(CW%cD:\fR committer date, Unix timestamp" 4
+.IX Item "%cD: committer date, Unix timestamp"
+.ie n .IP "%b:  body content" 4
+.el .IP "\f(CW%b:\fR  body content" 4
+.IX Item "%b: body content"
+.ie n .IP "%t:  title line" 4
+.el .IP "\f(CW%t:\fR  title line" 4
+.IX Item "%t: title line"
+.RE
+.RS 4
+.RE
+.PD
 .SH "CONFIGURATION"
 .IX Header "CONFIGURATION"
 .IP "\fIcomment.log\-before\fR" 4
 .IX Item "comment.log-before"
-Number of lines of the attached diff to display before a comment
+Number of lines of an attached diff to display before a comment
 .IP "\fIcomment.log\-after\fR" 4
 .IX Item "comment.log-after"
-Number of lines of the attached diff to display after a comment
+Number of lines of an attached diff to display after a comment
 .SH "AUTHOR"
 .IX Header "AUTHOR"
 git-comment-log was written and is maintained by Delisa Mason
