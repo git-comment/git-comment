@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-    git-comment - Annotate git commits
+    git-comment - Add comments to git commits
 
 =head1 SYNOPSIS
 
@@ -50,7 +50,7 @@ A commit
 
 =item <filepath:line>
 
-A reference to a file and line number, to make the annotation more specific
+A reference to a file and line number, to make the comment more specific
 
 =item <remote>
 

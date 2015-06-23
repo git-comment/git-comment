@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	gitc "git_comment"
+	gc "git_comment"
 	ex "git_comment/exec"
 	kp "gopkg.in/alecthomas/kingpin.v2"
 	"io/ioutil"
@@ -34,10 +34,10 @@ func main() {
 	pwd, err := os.Getwd()
 	app.FatalIfError(err, "pwd")
 	if len(*remoteToConfig) > 0 {
-		app.FatalIfError(gitc.ConfigureRemoteForComments(pwd, *remoteToConfig), "git")
+		app.FatalIfError(gc.ConfigureRemoteForComments(pwd, *remoteToConfig), "git")
 		fmt.Printf("Remote '%v' updated\n", *remoteToConfig)
 	} else if len(*deleteID) > 0 {
-		app.FatalIfError(gitc.DeleteComment(pwd, *deleteID), "git")
+		app.FatalIfError(gc.DeleteComment(pwd, *deleteID), "git")
 		fmt.Println("Comment deleted")
 	} else {
 		editComment(pwd)
@@ -45,28 +45,28 @@ func main() {
 }
 
 func editComment(pwd string) {
-	parsedCommit, err := gitc.ValidatedCommit(pwd, commit)
+	parsedCommit, err := gc.ValidatedCommit(pwd, commit)
 	app.FatalIfError(err, "git")
 	if len(*message) == 0 {
 		*message = getMessageFromEditor(pwd)
 	}
 	if len(*amendID) > 0 {
-		id, err := gitc.UpdateComment(pwd, *amendID, *message)
+		id, err := gc.UpdateComment(pwd, *amendID, *message)
 		app.FatalIfError(err, "git")
 		fmt.Printf("[%v] Comment updated\n", (*id)[:7])
 	} else {
-		id, err := gitc.CreateComment(pwd, parsedCommit, gitc.CreateFileRef(*fileref), *message)
+		id, err := gc.CreateComment(pwd, parsedCommit, gc.CreateFileRef(*fileref), *message)
 		app.FatalIfError(err, "git")
 		fmt.Printf("[%v] Comment created\n", (*id)[:7])
 	}
 }
 
 func getMessageFromEditor(pwd string) string {
-	editor := gitc.ConfiguredEditor(pwd)
+	editor := gc.ConfiguredEditor(pwd)
 	file, err := ioutil.TempFile("", "gitc")
 	app.FatalIfError(err, "io")
 	path := file.Name()
-	file.Write([]byte(gitc.DefaultMessageTemplate))
+	file.Write([]byte(gc.DefaultMessageTemplate))
 	file.Close()
 	err = ex.ExecCommand(*editor, path)
 	app.FatalIfError(err, "io")
