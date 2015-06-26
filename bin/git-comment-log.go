@@ -63,24 +63,15 @@ func main() {
 }
 
 func showComments(pwd string) {
-	comments, err := gitc.CommentsOnCommit(pwd, revision)
-	app.FatalIfError(err, "git")
 	var usePager bool = termHeight == 0
 	var content []byte
 	var writer io.WriteCloser
 	var cmd *exec.Cmd
-	for i := 0; i < len(comments); i++ {
-		comment := comments[i]
-		formatted := formattedContent(comment)
-		diff := gitc.DiffLines(pwd, *comment.Commit, comment.FileRef)
+	diff, err := gitc.DiffCommits(pwd, *revision)
+	app.FatalIfError(err, "diff")
+	pageContent := func(data string) {
+		content = append(content, []byte(data)...)
 		if !usePager {
-			if diff != nil {
-				content = append(content, []byte(diff.LinesBefore)...)
-			}
-			content = append(content, formatted...)
-			if diff != nil {
-				content = append(content, []byte(diff.LinesAfter)...)
-			}
 			lines := strings.Split(string(content), "\n")
 			usePager = len(lines) > int(termHeight-1)
 		}
@@ -92,36 +83,111 @@ func showComments(pwd string) {
 			if len(content) > 0 {
 				_, err = writer.Write(content)
 				content = []byte{}
-			} else {
-				_, err = writer.Write(formatted)
+				app.FatalIfError(err, "writer")
 			}
-			app.FatalIfError(err, "writer")
 		}
 	}
+	for _, file := range diff.Files {
+		pageContent(formattedFilePath(file))
+		for _, line := range file.Lines {
+			pageContent(formattedLine(line))
+			for _, comment := range line.Comments {
+				pageContent(formattedComment(comment))
+			}
+		}
+	}
+	if !usePager {
+		fmt.Println(string(content))
+	}
+
 	if writer != nil {
 		writer.Close()
 		cmd.Wait()
-	} else {
-		fmt.Println(string(content))
 	}
 }
 
-func formattedContent(comment *gitc.Comment) []byte {
+func formattedLineNumber(number int) string {
+	const lineNumberMax = 5
+	var line string
+	if number < 0 {
+		line = " "
+	} else {
+		line = fmt.Sprintf("%d", number)
+	}
+	for len(line) < lineNumberMax {
+		line = fmt.Sprintf(" %v", line)
+	}
+	return line
+}
+
+func formattedLineNumbers(oldNum, newNum int) string {
+	var newLine string
+	oldLine := formattedLineNumber(oldNum)
+	if oldNum == newNum {
+		newLine = formattedLineNumber(-1)
+	} else {
+		newLine = formattedLineNumber(newNum)
+	}
+	return fmt.Sprintf("%v %v", oldLine, newLine)
+}
+
+func formattedFilePath(file *gitc.DiffFile) string {
+	var path string
+	if file.OldPath == file.NewPath {
+		path = file.OldPath
+	} else if len(file.OldPath) > 0 && len(file.NewPath) > 0 {
+		path = fmt.Sprintf("%v -> %v", file.OldPath, file.NewPath)
+	} else if len(file.OldPath) > 0 {
+		path = file.OldPath
+	} else {
+		path = file.NewPath
+	}
+	return fmt.Sprintf("%v\n", path)
+}
+
+func formattedLinePrefix(line *gitc.DiffLine) string {
+	switch line.Type {
+	case gitc.DiffAdd, gitc.DiffAddNewline:
+		return "+"
+	case gitc.DiffRemove, gitc.DiffRemoveNewline:
+		return "-"
+	default:
+		return " "
+	}
+}
+
+func formattedLineContent(line *gitc.DiffLine) string {
+	switch line.Type {
+	case gitc.DiffAddNewline, gitc.DiffRemoveNewline:
+		return "↵"
+	default:
+		return line.Content
+	}
+}
+
+func formattedLine(line *gitc.DiffLine) string {
+	prefix := formattedLinePrefix(line)
+	number := formattedLineNumbers(line.OldLineNumber, line.NewLineNumber)
+	content := formattedLineContent(line)
+	return fmt.Sprintf("%v %v %v", prefix, number, content)
+}
+
+func formattedComment(comment *gitc.Comment) string {
 	if *pretty == Short || len(*pretty) == 0 {
 		return substituteVariables(ShortFormat, comment)
 	} else if *pretty == Full {
 		return substituteVariables(FullFormat, comment)
 	} else if *pretty == Raw {
 		format := string(substituteVariables(RawFormat, comment))
-		return []byte(fmt.Sprintf(format, *comment.ID))
+		return fmt.Sprintf(format, *comment.ID)
 	} else if strings.HasPrefix(*pretty, formatPrefix) {
 		return substituteVariables((*pretty)[len(formatPrefix):], comment)
 	}
 	app.FatalUsage(invalidFormat)
-	return []byte{}
+	return ""
 }
 
-func substituteVariables(format string, comment *gitc.Comment) []byte {
+func substituteVariables(format string, comment *gitc.Comment) string {
 	var path = ""
 	var line = ""
 	if len(comment.FileRef.Path) > 0 {
@@ -148,5 +214,5 @@ func substituteVariables(format string, comment *gitc.Comment) []byte {
 	format = strings.Replace(format, lineNumber, line, -1)
 	format = strings.Replace(format, newLine, "\n", -1)
 	format = strings.Replace(format, dividerLine, strings.Repeat("-", int(termWidth)), -1)
-	return []byte(format)
+	return format
 }

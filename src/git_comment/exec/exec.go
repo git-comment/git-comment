@@ -11,6 +11,7 @@ import (
 
 // Start an arbitrary command with arguments and wait got
 // it to finish
+// Windows compatibility is uncertain
 func ExecCommand(program string, args ...string) error {
 	cmd := exec.Command(program, args...)
 	cmd.Stdin = os.Stdin

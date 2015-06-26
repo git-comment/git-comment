@@ -45,7 +45,7 @@ func main() {
 }
 
 func editComment(pwd string) {
-	parsedCommit, err := gc.ValidatedCommit(pwd, commit)
+	parsedCommit, err := gc.ResolvedCommit(pwd, commit)
 	app.FatalIfError(err, "git")
 	if len(*message) == 0 {
 		*message = getMessageFromEditor(pwd)

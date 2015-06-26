@@ -27,7 +27,7 @@ func TestRefPath(t *testing.T) {
 	id := "23caf9710a71e3736597415c57bdcf5eebae6bcb"
 	comment, _ := NewComment("Unsure of the intent here.",
 		commit, new(FileRef), new(Person))
-	p, err := refPath(comment, &id)
+	p, err := RefPath(comment, &id)
 	assert.Nil(t, err)
 	expected := path.Join("refs/comments", "0155",
 		"eb4229851634a0f03eb265b69f5a2d56f341", id)
