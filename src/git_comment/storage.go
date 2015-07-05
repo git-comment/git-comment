@@ -19,7 +19,7 @@ func CreateComment(repoPath string, commit *string, fileRef *FileRef, message st
 	if err != nil {
 		return nil, err
 	}
-	author, err := ConfiguredAuthor(repo)
+	author, err := ConfiguredAuthor(repoPath)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +48,7 @@ func UpdateComment(repoPath string, ID string, message string) (*string, error) 
 	if err != nil {
 		return nil, err
 	}
-	committer, err := ConfiguredCommitter(repo)
+	committer, err := ConfiguredCommitter(repoPath)
 	if err != nil {
 		return nil, err
 	}

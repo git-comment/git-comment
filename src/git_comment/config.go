@@ -5,6 +5,13 @@ import (
 	"fmt"
 	git "gopkg.in/libgit2/git2go.v22"
 	"os"
+	"os/exec"
+	"strings"
+)
+
+const (
+	defaultEditor = "vi"
+	defaultPager  = "less"
 )
 
 // Configure a remote to fetch and push comment changes by default
@@ -48,98 +55,78 @@ func ConfigureRemoteForComments(repoPath string, remoteName string) error {
 	return nil
 }
 
-// The editor to use for editing comments interactively.
-// Emulates the behavior of `git-var(1)` to determine which
-// editor to use from this list of options:
-//
-// * `$GIT_EDITOR` environment variable
-// * `core.editor` configuration
-// * `$VISUAL`
-// * `$EDITOR`
-// * vi
+// The editor to use for editing comments interactively, as
+// configured through git-var(1)
 func ConfiguredEditor(repoPath string) *string {
-	const defaultEditor = "vi"
-	repo, err := git.OpenRepository(repoPath)
-	if err != nil {
-		return nil
-	}
-
-	if gitEditor := os.Getenv("GIT_EDITOR"); len(gitEditor) > 0 {
-		return &gitEditor
-	}
-	config, err := repo.Config()
-	if err == nil {
-		confEditor, err := config.LookupString("core.editor")
-		if err == nil {
-			if len(confEditor) > 0 {
-				return &confEditor
-			}
-		}
-	}
-
-	if visual := os.Getenv("VISUAL"); len(visual) > 0 {
-		return &visual
-	} else if envEditor := os.Getenv("EDITOR"); len(envEditor) > 0 {
-		return &envEditor
-	}
-	editor := defaultEditor
-	return &editor
+	return gitVariable(repoPath, "GIT_EDITOR", defaultEditor)
 }
 
-// The text viewer to use for viewing text interactively.
-// Emulates the behavior of `git-var(1)` by checking the
-// options in this list of options:
-//
-// * `$GIT_PAGER` environment variable
-// * `core.pager` configuration
-// * `$PAGER`
-// * less
+// The text viewer to use for viewing text interactively, as
+// configured through git-var(1)
 func ConfiguredPager(repoPath string) *string {
-	const defaultPager = "less"
-	repo, err := git.OpenRepository(repoPath)
-	if err != nil {
-		return nil
-	}
-
-	if pager := os.Getenv("GIT_PAGER"); len(pager) > 0 {
-		return &pager
-	}
-	config, err := repo.Config()
-	if err == nil {
-		pager, err := config.LookupString("core.pager")
-		if err == nil {
-			if len(pager) > 0 {
-				return &pager
-			}
-		}
-	}
-
-	if pager := os.Getenv("PAGER"); len(pager) > 0 {
-		return &pager
-	}
-	pager := defaultPager
-	return &pager
+	return gitVariable(repoPath, "GIT_PAGER", defaultPager)
 }
 
-// The author of a piece of code, fetched from:
-//
-// * `$GIT_AUTHOR_NAME` and `$GIT_AUTHOR_EMAIL`
-// * configured default from `user.name` and `user.email`
-func ConfiguredAuthor(repo *git.Repository) (*Person, error) {
-	// TODO: update impl
-	sig, err := repo.DefaultSignature()
-	if err != nil {
+// The author of a piece of code as configured through git-var(1)
+func ConfiguredAuthor(repoPath string) (*Person, error) {
+	author := gitVariable(repoPath, "GIT_AUTHOR_IDENT", "")
+	if len(*author) == 0 {
 		return nil, errors.New(authorNotFoundError)
 	}
-	return &Person{sig.Name, sig.Email}, nil
+	return CreatePerson(*author), nil
 }
 
-// The committer of a piece of code
-//
-// * `$GIT_COMMITTER_NAME` and `$GIT_COMMITTER_EMAIL`
-// * configured default from `user.name` and `user.email`
-func ConfiguredCommitter(repo *git.Repository) (*Person, error) {
-	return ConfiguredAuthor(repo)
+// The committer of a piece of code as configured through git-var(1)
+func ConfiguredCommitter(repoPath string) (*Person, error) {
+	author := gitVariable(repoPath, "GIT_COMMITTER_IDENT", "")
+	if len(*author) == 0 {
+		return nil, errors.New(committerNotFoundError)
+	}
+	return CreatePerson(*author), nil
+}
+
+func ConfiguredString(repoPath, name string) (*string, error) {
+	config, err := repoConfig(repoPath)
+	if err != nil {
+		return nil, err
+	}
+	option, err := config.LookupString(name)
+	if err != nil {
+		return nil, err
+	}
+	return &option, nil
+}
+
+func ConfiguredInt32(repoPath, name string, fallback int32) int32 {
+	config, err := repoConfig(repoPath)
+	if err != nil {
+		return fallback
+	}
+	option, err := config.LookupInt32(name)
+	if err != nil {
+		return fallback
+	}
+	return option
+}
+
+func ConfiguredBool(repoPath, name string, fallback bool) bool {
+	config, err := repoConfig(repoPath)
+	if err != nil {
+		return fallback
+	}
+	option, err := config.LookupBool(name)
+	if err != nil {
+		return fallback
+	}
+	return option
+}
+
+func repoConfig(repoPath string) (*git.Config, error) {
+	repo, err := git.OpenRepository(repoPath)
+	if err != nil {
+		return nil, err
+	}
+	return repo.Config()
 }
 
 func contains(s []string, e string) bool {
@@ -149,4 +136,20 @@ func contains(s []string, e string) bool {
 		}
 	}
 	return false
+}
+
+func gitVariable(path, name, fallback string) *string {
+	err := os.Chdir(path)
+	if err != nil {
+		return &fallback
+	}
+	cmd := exec.Command("git", "var", name)
+	cmd.Env = os.Environ()
+	output, err := cmd.Output()
+	if err != nil {
+		fmt.Println(err)
+		return &fallback
+	}
+	variable := strings.TrimSpace(string(output))
+	return &variable
 }
