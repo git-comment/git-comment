@@ -94,7 +94,7 @@ func parseDiffForLines(diff *git.Diff, comments []*Comment) []*DiffFile {
 		return func(hunk git.DiffHunk) (git.DiffForEachLineCallback, error) {
 			return func(line git.DiffLine) error {
 				var comments []*Comment = nil
-				commentKey := fileRefMappingKey(delta.OldFile.Path, line.OldLineno)
+				commentKey := fileRefMappingKey(delta.NewFile.Path, line.NewLineno)
 				if list, ok := commentMapping[commentKey]; ok {
 					comments = list
 				}
