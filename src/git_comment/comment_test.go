@@ -8,8 +8,9 @@ import (
 )
 
 func TestNewCommentAuthor(t *testing.T) {
-	author := CreatePerson("Sam Wafers <sam@example.com>")
-	comment, err := NewComment("Curious decision here.", "123", nil, author)
+	author := &Person{"Sam Wafers", "<sam@example.com>"}
+	c, err := NewComment("Curious decision here.", "123", nil, author).Dematerialize()
+	comment := c.(*Comment)
 	assert.Nil(t, err)
 	assert.NotNil(t, comment)
 	assert.Equal(t, comment.Author, author)
@@ -17,15 +18,17 @@ func TestNewCommentAuthor(t *testing.T) {
 }
 
 func TestNewCommentAmender(t *testing.T) {
-	author := CreatePerson("Sam Wafers <sam@example.com>")
-	comment, err := NewComment("Doesn't this violate the laws of physics?", "123", nil, author)
+	author := &Person{"Sam Wafers", "<sam@example.com>"}
+	c, err := NewComment("Doesn't this violate the laws of physics?", "123", nil, author).Dematerialize()
+	comment := c.(*Comment)
 	assert.Nil(t, err)
 	assert.NotNil(t, comment)
 	assert.Equal(t, comment.Amender, author)
 }
 
 func TestNewCommentTime(t *testing.T) {
-	comment, err := NewComment("ELI5?", "123", nil, nil)
+	c, err := NewComment("ELI5?", "123", nil, nil).Dematerialize()
+	comment := c.(*Comment)
 	assert.Nil(t, err)
 	assert.NotNil(t, comment)
 	assert.NotNil(t, comment.CreateTime)
@@ -33,28 +36,32 @@ func TestNewCommentTime(t *testing.T) {
 }
 
 func TestNewCommentCommit(t *testing.T) {
-	comment, err := NewComment("Wat?", "abcdefg", nil, nil)
+	c, err := NewComment("Wat?", "abcdefg", nil, nil).Dematerialize()
+	comment := c.(*Comment)
 	assert.Nil(t, err)
 	assert.NotNil(t, comment)
 	assert.Equal(t, *comment.Commit, "abcdefg")
 }
 
 func TestNewCommentContent(t *testing.T) {
-	comment, err := NewComment("Season the chex mix", "abcdefg", nil, nil)
+	c, err := NewComment("Season the chex mix", "abcdefg", nil, nil).Dematerialize()
+	comment := c.(*Comment)
 	assert.Nil(t, err)
 	assert.NotNil(t, comment)
 	assert.Equal(t, comment.Content, "Season the chex mix")
 }
 
 func TestNewCommentID(t *testing.T) {
-	comment, err := NewComment("This behavior is undocumented", "abcdefg", nil, nil)
+	c, err := NewComment("This behavior is undocumented", "abcdefg", nil, nil).Dematerialize()
+	comment := c.(*Comment)
 	assert.Nil(t, err)
 	assert.NotNil(t, comment)
 	assert.Nil(t, comment.ID)
 }
 
 func TestNewCommentDeleted(t *testing.T) {
-	comment, err := NewComment("What is happening here?", "abcdefg", nil, nil)
+	c, err := NewComment("What is happening here?", "abcdefg", nil, nil).Dematerialize()
+	comment := c.(*Comment)
 	assert.Nil(t, err)
 	assert.NotNil(t, comment)
 	assert.False(t, comment.Deleted)
@@ -62,21 +69,23 @@ func TestNewCommentDeleted(t *testing.T) {
 
 func TestNewCommentFileRef(t *testing.T) {
 	ref := &FileRef{"src/example.c", 12}
-	comment, err := NewComment("This should be more modular", "abcdefg", ref, nil)
+	c, err := NewComment("This should be more modular", "abcdefg", ref, nil).Dematerialize()
+	comment := c.(*Comment)
 	assert.Nil(t, err)
 	assert.NotNil(t, comment)
 	assert.Equal(t, comment.FileRef, ref)
 }
 
 func TestCreateWithoutContent(t *testing.T) {
-	_, err := NewComment("", "azerty", new(FileRef), new(Person))
+	_, err := NewComment("", "azerty", new(FileRef), new(Person)).Dematerialize()
 	assert.NotNil(t, err)
 }
 
 func TestSerializeComment(t *testing.T) {
 	ref := &FileRef{"src/example.c", 12}
 	author := &Person{"Selina Kyle", "cat@example.com"}
-	comment, _ := NewComment("This line is too long", "acdacdacd", ref, author)
+	c, _ := NewComment("This line is too long", "acdacdacd", ref, author).Dematerialize()
+	comment := c.(*Comment)
 	lines := strings.Split(comment.Serialize(), "\n")
 	assert.Equal(t, len(lines), 8)
 	assert.Equal(t, lines[0], "commit acdacdacd")
@@ -89,7 +98,8 @@ func TestSerializeComment(t *testing.T) {
 
 func TestSerializeDeletedComment(t *testing.T) {
 	author := &Person{"Morpheus", "redpill@example.com"}
-	comment, _ := NewComment("Pick one", "afdafdafd", new(FileRef), author)
+	c, _ := NewComment("Pick one", "afdafdafd", new(FileRef), author).Dematerialize()
+	comment := c.(*Comment)
 	comment.Deleted = true
 	lines := strings.Split(comment.Serialize(), "\n")
 	assert.Equal(t, len(lines), 8)
@@ -103,8 +113,10 @@ func TestSerializeDeletedComment(t *testing.T) {
 
 func TestDeserializeComment(t *testing.T) {
 	author := &Person{"Morpheus", "redpill@example.com"}
-	comment, _ := NewComment("Pick one", "afdafdafd", CreateFileRef("bin/exec:15"), author)
-	newComment, err := DeserializeComment(comment.Serialize())
+	c, _ := NewComment("Pick one", "afdafdafd", CreateFileRef("bin/exec:15"), author).Dematerialize()
+	comment := c.(*Comment)
+	newC, err := DeserializeComment(comment.Serialize()).Dematerialize()
+	newComment := newC.(*Comment)
 	assert.Nil(t, err)
 	assert.Equal(t, *comment.Commit, *newComment.Commit)
 	assert.Equal(t, *comment.FileRef, *newComment.FileRef)

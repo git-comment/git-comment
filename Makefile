@@ -17,6 +17,7 @@ bootstrap:
 	go get github.com/stvp/assert
 	go get github.com/cevaris/ordered_map
 	go get gopkg.in/alecthomas/kingpin.v2
+	go get github.com/kylef/result.go/src/result
 
 build: copy
 	go build $(PROJECT)

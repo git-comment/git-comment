@@ -5,6 +5,7 @@ import (
 	"fmt"
 	gc "git_comment"
 	ex "git_comment/exec"
+	"github.com/kylef/result.go/src/result"
 	kp "gopkg.in/alecthomas/kingpin.v2"
 	"io/ioutil"
 	"os"
@@ -34,10 +35,10 @@ func main() {
 	pwd, err := os.Getwd()
 	app.FatalIfError(err, "pwd")
 	if len(*remoteToConfig) > 0 {
-		app.FatalIfError(gc.ConfigureRemoteForComments(pwd, *remoteToConfig), "git")
+		app.FatalIfError(gc.ConfigureRemoteForComments(pwd, *remoteToConfig).Failure, "git")
 		fmt.Printf("Remote '%v' updated\n", *remoteToConfig)
 	} else if len(*deleteID) > 0 {
-		app.FatalIfError(gc.DeleteComment(pwd, *deleteID), "git")
+		app.FatalIfError(gc.DeleteComment(pwd, *deleteID).Failure, "git")
 		fmt.Println("Comment deleted")
 	} else {
 		editComment(pwd)
@@ -45,20 +46,25 @@ func main() {
 }
 
 func editComment(pwd string) {
-	parsedCommit, err := gc.ResolvedCommit(pwd, commit)
-	app.FatalIfError(err, "git")
+	parsedCommit := fatalIfError(gc.ResolvedCommit(pwd, commit), "git")
 	if len(*message) == 0 {
 		*message = getMessageFromEditor(pwd)
 	}
 	if len(*amendID) > 0 {
-		id, err := gc.UpdateComment(pwd, *amendID, *message)
-		app.FatalIfError(err, "git")
-		fmt.Printf("[%v] Comment updated\n", (*id)[:7])
+		id := fatalIfError(gc.UpdateComment(pwd, *amendID, *message), "git")
+		fmt.Printf("[%v] Comment updated\n", (*id.(*string))[:7])
 	} else {
-		id, err := gc.CreateComment(pwd, parsedCommit, gc.CreateFileRef(*fileref), *message)
-		app.FatalIfError(err, "git")
-		fmt.Printf("[%v] Comment created\n", (*id)[:7])
+		id := fatalIfError(gc.CreateComment(pwd,
+			parsedCommit.(*string),
+			gc.CreateFileRef(*fileref), *message), "git")
+		hash := *(id.(*string))
+		fmt.Printf("[%v] Comment created\n", hash[:7])
 	}
+}
+
+func fatalIfError(r result.Result, code string) interface{} {
+	app.FatalIfError(r.Failure, code)
+	return r.Success
 }
 
 func getMessageFromEditor(pwd string) string {
@@ -68,7 +74,7 @@ func getMessageFromEditor(pwd string) string {
 	path := file.Name()
 	file.Write([]byte(gc.DefaultMessageTemplate))
 	file.Close()
-	err = ex.ExecCommand(*editor, path)
+	err = ex.ExecCommand(editor, path)
 	app.FatalIfError(err, "io")
 	content, err := ioutil.ReadFile(path)
 	os.Remove(path)

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	gitc "git_comment"
 	ex "git_comment/exec"
+	"github.com/kylef/result.go/src/result"
 	kp "gopkg.in/alecthomas/kingpin.v2"
 	"io"
 	"os"
@@ -62,18 +63,23 @@ func main() {
 	showComments(pwd)
 }
 
+func fatalIfError(r result.Result, code string) interface{} {
+	app.FatalIfError(r.Failure, code)
+	return r.Success
+}
+
 func showComments(pwd string) {
 	var usePager bool = termHeight == 0
 	var content []byte
 	var writer io.WriteCloser
 	var cmd *exec.Cmd
-	diff, err := gitc.DiffCommits(pwd, *revision)
-	app.FatalIfError(err, "diff")
+	var err error
+	diff := fatalIfError(gitc.DiffCommits(pwd, *revision), "diff")
 	pageContent := func(data string) {
 		content = append(content, []byte(data)...)
 		if !usePager {
 			lines := strings.Split(string(content), "\n")
-			usePager = len(lines) > int(termHeight-1)
+			usePager = uint16(len(lines)) > termHeight-1
 		}
 		if usePager {
 			if writer == nil {
@@ -87,7 +93,7 @@ func showComments(pwd string) {
 			}
 		}
 	}
-	for _, file := range diff.Files {
+	for _, file := range diff.(*gitc.Diff).Files {
 		pageContent(formattedFilePath(file))
 		for _, line := range file.Lines {
 			pageContent(formattedLine(line))

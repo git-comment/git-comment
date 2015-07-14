@@ -83,7 +83,10 @@ func (p *PropertyBlob) GetPerson(property string) *Person {
 	if prop == nil {
 		return nil
 	}
-	return CreatePerson(*prop)
+	if person, _ := CreatePerson(*prop).Dematerialize(); person != nil {
+		return person.(*Person)
+	}
+	return nil
 }
 
 func (p *PropertyBlob) GetFileRef(property string) *FileRef {

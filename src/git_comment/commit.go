@@ -4,7 +4,7 @@ package git_comment
 
 import (
 	"errors"
-	"fmt"
+	"github.com/kylef/result.go/src/result"
 	git "gopkg.in/libgit2/git2go.v22"
 )
 
@@ -12,91 +12,71 @@ const (
 	headCommit            = "HEAD"
 	noParentError         = "No parent commit to compare"
 	noCommitsMatchedError = "No commits found for '%v'"
+	noCommitError         = "No commmit found"
 )
 
 // Resolve a single commit from a given commitish string
-func ResolvedCommit(repoPath string, commitish *string) (*string, error) {
-	repo, err := git.OpenRepository(repoPath)
-	if err != nil {
-		return nil, err
-	}
-	return ResolveSingleCommitHash(repo, commitish)
+//
+// return result.Result<*string, error>
+func ResolvedCommit(repoPath string, commitish *string) result.Result {
+	return WithRepository(repoPath, func(repo *git.Repository) result.Result {
+		return ResolveSingleCommitHash(repo, commitish)
+	})
 }
 
 // Parse the commit hash of a single commit from a reference, converting to HEAD
 // where needed
-func ResolveSingleCommitHash(repo *git.Repository, commitish *string) (*string, error) {
-	var hash string
+//
+// return result.Result<*string, error>
+func ResolveSingleCommitHash(repo *git.Repository, commitish *string) result.Result {
+	return result.NewResult(repo.RevparseSingle(expandCommitish(commitish))).FlatMap(getObjectId)
+}
+
+// Parse commits from commitish string, populating a CommitRange. If a
+// single commit is matched, it is paired with its first parent commit
+// or resolves to an error
+//
+// return result.Result<*git.Commit, error>
+func ResolveCommits(repo *git.Repository, commitish string) result.Result {
+	return result.NewResult(repo.Revparse(commitish)).FlatMap(func(value interface{}) result.Result {
+		spec := value.(*git.Revspec)
+		return resolveCommit(repo, spec.From()).FlatMap(func(f interface{}) result.Result {
+			fromCommit := f.(*git.Commit)
+			return resolveCommit(repo, spec.To()).Analysis(func(t interface{}) result.Result {
+				toCommit := t.(*git.Commit)
+				return result.NewSuccess(&CommitRange{fromCommit, toCommit})
+			}, func(err error) result.Result {
+				return resolveCommitParent(fromCommit).FlatMap(func(parent interface{}) result.Result {
+					return result.NewSuccess(&CommitRange{parent.(*git.Commit), fromCommit})
+				})
+			})
+		})
+	})
+}
+
+func getObjectId(value interface{}) result.Result {
+	id := value.(git.Object).Id().String()
+	return result.NewSuccess(&id)
+}
+
+func expandCommitish(commitish *string) string {
 	if commitish == nil || len(*commitish) == 0 {
-		hash = headCommit
-	} else {
-		hash = *commitish
+		return headCommit
 	}
-	object, err := repo.RevparseSingle(hash)
-	if err != nil {
-		return nil, err
-	}
-	id := object.Id().String()
-	return &id, nil
+	return *commitish
 }
 
-// Parse commits from commitish string. If multiple commits are resolved from
-// the string, returns the parent and child respectively.
-func ResolveCommits(repo *git.Repository, commitish string) (*git.Commit, *git.Commit, error) {
-	spec, err := repo.Revparse(commitish)
-	if err != nil {
-		return nil, nil, err
+func resolveCommit(repo *git.Repository, object git.Object) result.Result {
+	if object != nil && object.Type() == git.ObjectCommit {
+		return result.NewResult(repo.LookupCommit(object.Id()))
 	}
-	var toCommit *git.Commit
-	var fromCommit *git.Commit
-	to := spec.To()
-	if to != nil && to.Type() == git.ObjectCommit {
-		toCommit, err = repo.LookupCommit(to.Id())
-		if err != nil {
-			return nil, nil, err
-		}
-	}
-	from := spec.From()
-	if from != nil && from.Type() == git.ObjectCommit {
-		fromCommit, err = repo.LookupCommit(from.Id())
-		if err != nil {
-			return nil, nil, err
-		}
-	}
-	if toCommit == nil {
-		toCommit = fromCommit
-		fromCommit = nil
-	}
-	if toCommit == nil {
-		return nil, nil, errors.New(fmt.Sprintf(noCommitsMatchedError, commitish))
-	}
-	if fromCommit == nil {
-		if fromCommit = toCommit.Parent(0); fromCommit == nil {
-			return nil, nil, errors.New(noParentError)
-		}
-	}
-	return fromCommit, toCommit, nil
+	return result.NewFailure(errors.New(noCommitError))
 }
 
-// Find all intermediate commits between a parent and child
-func CommitsFromRange(fromCommit *git.Commit, toCommit *git.Commit) []*git.Commit {
-	commits := make([]*git.Commit, 0)
-	if toCommit != nil && fromCommit != nil {
-		commit := toCommit
-		for {
-			if commit == nil {
-				break
-			}
-			commits = append(commits, commit)
-			if commit.Id().String() == fromCommit.Id().String() {
-				break
-			}
-			commit = commit.Parent(0)
-		}
-	} else if fromCommit != nil {
-		commits = append(commits, fromCommit)
-	} else if toCommit != nil {
-		commits = append(commits, toCommit)
+func resolveCommitParent(commit *git.Commit) result.Result {
+	parent := commit.Parent(0)
+	if parent == nil {
+		return result.NewFailure(errors.New(noParentError))
 	}
-	return commits
+	return result.NewSuccess(parent)
 }

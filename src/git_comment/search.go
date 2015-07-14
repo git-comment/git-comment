@@ -1,116 +1,93 @@
 package git_comment
 
 import (
-	"errors"
+	"github.com/kylef/result.go/src/result"
 	git "gopkg.in/libgit2/git2go.v22"
 	"path"
 )
 
-func CommentsWithContent(content string) []*Comment {
-	return nil
+// Find all comments matching text
+// @return result.Result<[]*Comment, error>
+func CommentsWithContent(content string) result.Result {
+	return result.NewSuccess(nil)
 }
 
-// Finds a comment by a given ID
-func CommentByID(repo *git.Repository, identifier string) (*Comment, error) {
-	oid, err := git.NewOid(identifier)
-	if err != nil {
-		return nil, errors.New(commentNotFoundError)
-	}
-	blob, err := repo.LookupBlob(oid)
-	if err != nil {
-		return nil, errors.New(commentNotFoundError)
-	}
-	comment, err := DeserializeComment(string(blob.Contents()))
-	if err != nil {
-		return nil, err
-	}
-	comment.ID = &identifier
-	return comment, nil
+// Finds a comment by ID
+// @return result.Result<*Comment, error>
+func CommentByID(repo *git.Repository, identifier string) result.Result {
+	return LookupBlob(repo, identifier).FlatMap(func(blob interface{}) result.Result {
+		return DeserializeComment(string(blob.(*git.Blob).Contents()))
+	}).FlatMap(func(c interface{}) result.Result {
+		comment := c.(*Comment)
+		comment.ID = &identifier
+		return result.NewSuccess(comment)
+	})
 }
 
-func CommentsOnCommittish(repoPath string, committish string) ([]*Comment, error) {
-	repo, err := git.OpenRepository(repoPath)
-	if err != nil {
-		return nil, err
-	}
-	parentCommit, childCommit, err := ResolveCommits(repo, committish)
-	if err != nil {
-		return nil, err
-	}
-	if parentCommit != nil && childCommit != nil {
-		return CommentsOnCommits(repo, CommitsFromRange(parentCommit, childCommit))
-	} else if parentCommit != nil {
-		return commentsOnCommit(repo, parentCommit)
-	}
-	return commentsOnCommit(repo, childCommit)
+// Find comments in a commit range or on a single commit
+// @return result.Result<[]*Comment, error>
+func CommentsOnCommittish(repoPath string, committish string) result.Result {
+	return WithRepository(repoPath, func(repo *git.Repository) result.Result {
+		resolution := ResolveCommits(repo, committish)
+		return resolution.FlatMap(func(commitRange interface{}) result.Result {
+			return CommentsOnCommits(repo, commitRange.(*CommitRange).Commits())
+		})
+	})
 }
 
 // Finds all comments on a given commit
-func CommentsOnCommit(repoPath string, commit *string) ([]*Comment, error) {
-	repo, err := git.OpenRepository(repoPath)
-	if err != nil {
-		return nil, err
-	}
-	parsedCommit, err := ResolveSingleCommitHash(repo, commit)
-	if err != nil {
-		return nil, err
-	}
-	commitObj, err := repo.LookupCommit(git.NewOidFromBytes([]byte(*parsedCommit)))
-	if err != nil {
-		return nil, err
-	}
-	return commentsOnCommit(repo, commitObj)
+// @return result.Result<[]*Comment, error>
+func CommentsOnCommit(repoPath string, commitHash *string) result.Result {
+	return WithRepository(repoPath, func(repo *git.Repository) result.Result {
+		hash := ResolveSingleCommitHash(repo, commitHash)
+		return hash.FlatMap(func(commit interface{}) result.Result {
+			return LookupCommit(repo, *(commit.(*string)))
+		}).FlatMap(func(commit interface{}) result.Result {
+			return commentsOnCommit(repo, commit.(*git.Commit))
+		})
+	})
 }
 
-func CommentsOnCommits(repo *git.Repository, commits []*git.Commit) ([]*Comment, error) {
-	comments := make([]*Comment, 0)
-	for _, commit := range commits {
-		commitComments, err := commentsOnCommit(repo, commit)
-		if err != nil {
-			return nil, err
-		}
-		for _, comment := range commitComments {
-			comments = append(comments, comment)
-		}
+// Finds all comments on an array of commits
+// @return result.Result<[]*Comment, error>
+func CommentsOnCommits(repo *git.Repository, commits []*git.Commit) result.Result {
+	results := make([]result.Result, len(commits))
+	for index, commit := range commits {
+		results[index] = commentsOnCommit(repo, commit)
 	}
-	return comments, nil
+	return result.Combine(func(values ...interface{}) result.Result {
+		comments := make([]interface{}, 0)
+		for _, list := range values {
+			comments = append(comments, list.([]interface{})...)
+		}
+		return result.NewSuccess(comments)
+	}, results...)
 }
 
-func commentsOnCommit(repo *git.Repository, commit *git.Commit) ([]*Comment, error) {
-	const glob = "*"
-	var comments []*Comment
-	id := commit.Id().String()
-	dir, err := CommitRefDir(&id)
-	if err != nil {
-		return nil, err
-	}
-	refIterator, err := repo.NewReferenceIteratorGlob(path.Join(*dir, glob))
-	if err != nil {
-		return nil, err
-	}
-	ref, err := refIterator.Next()
-	for {
-		if err != nil {
-			if err.(*git.GitError).Code == git.ErrIterOver {
+// Finds all comments on a commit
+// @return result.Result<[]*Comment, error>
+func commentsOnCommit(repo *git.Repository, commit *git.Commit) result.Result {
+	return CommentRefIterator(repo, commit.Id().String()).FlatMap(func(iterator interface{}) result.Result {
+		refIterator := iterator.(*git.ReferenceIterator)
+		var comments []interface{}
+		ref, err := refIterator.Next()
+		for {
+			if err != nil && err.(*git.GitError).Code == git.ErrIterOver {
 				break
-			} else {
-				return nil, err
+			} else if err != nil {
+				return result.NewFailure(err)
 			}
+			commentFromRef(repo, ref.Name()).FlatMap(func(comment interface{}) result.Result {
+				comments = append(comments, comment)
+				return result.Result{}
+			})
+			ref, err = refIterator.Next()
 		}
-		comment := commentFromRef(repo, ref.Name())
-		if comment != nil {
-			comments = append(comments, comment)
-		}
-		ref, err = refIterator.Next()
-	}
-	return comments, nil
+		return result.NewSuccess(comments)
+	})
 }
 
-func commentFromRef(repo *git.Repository, refName string) *Comment {
+func commentFromRef(repo *git.Repository, refName string) result.Result {
 	_, identifier := path.Split(refName)
-	comment, err := CommentByID(repo, identifier)
-	if err != nil {
-		return nil
-	}
-	return comment
+	return CommentByID(repo, identifier)
 }

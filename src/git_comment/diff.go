@@ -1,9 +1,8 @@
 package git_comment
 
-// package git
-
 import (
 	"fmt"
+	"github.com/kylef/result.go/src/result"
 	git "gopkg.in/libgit2/git2go.v22"
 )
 
@@ -42,80 +41,79 @@ type DiffLine struct {
 //
 // If commitish resolves to a single commit, the diff is performed
 // between the commit and its parent.
-func DiffCommits(repoPath string, commitish string) (*Diff, error) {
-	repo, err := git.OpenRepository(repoPath)
-	if err != nil {
-		return nil, err
-	}
-	parent, child, err := ResolveCommits(repo, commitish)
-	if err != nil {
-		return nil, err
-	}
-	if child == nil {
-		child = parent
-		parent = child.Parent(0)
-	}
-	return diffCommits(repo, parent, child)
+// @return result.Result<*Diff, error>
+func DiffCommits(repoPath string, commitish string) result.Result {
+	return WithRepository(repoPath, func(repo *git.Repository) result.Result {
+		return ResolveCommits(repo, commitish).FlatMap(func(commitRange interface{}) result.Result {
+			return diffCommits(repo, commitRange.(*CommitRange))
+		})
+	})
 }
 
-func diffCommits(repo *git.Repository, parent *git.Commit, child *git.Commit) (*Diff, error) {
-	commitTree, err := child.Tree()
-	if err != nil {
-		return nil, err
-	}
-	parentTree, err := parent.Tree()
-	if err != nil {
-		return nil, err
-	}
-	opts, err := defaultDiffOptions()
-	if err != nil {
-		return nil, err
-	}
-	diff, err := repo.DiffTreeToTree(parentTree, commitTree, opts)
-	if err != nil {
-		return nil, err
-	}
-	commits := CommitsFromRange(parent, child)
-	comments, err := CommentsOnCommits(repo, commits)
-	if err != nil {
-		return nil, err
-	}
-	files := parseDiffForLines(diff, comments)
-	return &Diff{files, parent.Id().String(), child.Id().String()}, nil
+// @return result.Result<*Diff, error>
+func diffCommits(repo *git.Repository, commitRange *CommitRange) result.Result {
+	comments := CommentsOnCommits(repo, commitRange.Commits())
+	diff := diffRange(repo, commitRange)
+	return result.Combine(func(values ...interface{}) result.Result {
+		parentID := commitRange.Parent.Id().String()
+		childID := commitRange.Child.Id().String()
+		files := parseDiffForLines(values[0].(*git.Diff), values[1].([]interface{}))
+		return result.NewSuccess(&Diff{files, parentID, childID})
+	}, diff, comments)
 }
 
-func parseDiffForLines(diff *git.Diff, comments []*Comment) []*DiffFile {
+func commitTree(commit *git.Commit) result.Result {
+	return result.NewResult(commit.Tree())
+}
+
+func diffRange(repo *git.Repository, commitRange *CommitRange) result.Result {
+	return result.Combine(func(values ...interface{}) result.Result {
+		opts := values[2].(git.DiffOptions)
+		return result.NewResult(repo.DiffTreeToTree(
+			values[0].(*git.Tree),
+			values[1].(*git.Tree),
+			&opts))
+	}, commitTree(commitRange.Parent), commitTree(commitRange.Child), defaultDiffOptions())
+}
+
+func parseDiffForLines(diff *git.Diff, comments []interface{}) []*DiffFile {
 	commentMapping := commentsByFileRef(comments)
 	files := make([]*DiffFile, 0)
-	cbFile := func(delta git.DiffDelta, progress float64) (git.DiffForEachHunkCallback, error) {
+	var file *DiffFile
+	var delta git.DiffDelta
+	cbLine := func(line git.DiffLine) error {
+		var comments []*Comment = nil
+		commentKey := fileRefMappingKey(delta.NewFile.Path, line.NewLineno)
+		if list, ok := commentMapping[commentKey]; ok {
+			comments = list
+		}
+		file.Lines = append(file.Lines, &DiffLine{
+			diffTypeFromLine(line),
+			line.Content,
+			line.OldLineno,
+			line.NewLineno,
+			comments,
+		})
+		return nil
+	}
+	cbHunk := func(hunk git.DiffHunk) (git.DiffForEachLineCallback, error) {
+		return cbLine, nil
+	}
+	cbFile := func(diffDelta git.DiffDelta, progress float64) (git.DiffForEachHunkCallback, error) {
+		delta = diffDelta
 		lines := make([]*DiffLine, 0)
-		file := &DiffFile{delta.OldFile.Path, delta.NewFile.Path, lines}
+		file = &DiffFile{delta.OldFile.Path, delta.NewFile.Path, lines}
 		files = append(files, file)
-		return func(hunk git.DiffHunk) (git.DiffForEachLineCallback, error) {
-			return func(line git.DiffLine) error {
-				var comments []*Comment = nil
-				commentKey := fileRefMappingKey(delta.NewFile.Path, line.NewLineno)
-				if list, ok := commentMapping[commentKey]; ok {
-					comments = list
-				}
-				file.Lines = append(file.Lines, &DiffLine{
-					diffTypeFromLine(line),
-					line.Content,
-					line.OldLineno,
-					line.NewLineno,
-					comments,
-				})
-				return nil
-			}, nil
-		}, nil
+		return cbHunk, nil
 	}
 	diff.ForEach(cbFile, git.DiffDetailLines)
 	return files
 }
 
-func commentsByFileRef(comments []*Comment) map[string][]*Comment {
+func commentsByFileRef(comments []interface{}) map[string][]*Comment {
 	mapping := make(map[string][]*Comment)
-	for _, comment := range comments {
+	for _, c := range comments {
+		comment := c.(*Comment)
 		ref := comment.FileRef
 		if ref != nil && len(ref.Path) > 0 && ref.Line > 0 {
 			key := fileRefMappingKey(ref.Path, ref.Line)
@@ -151,11 +149,7 @@ func diffTypeFromLine(line git.DiffLine) DiffLineType {
 	}
 }
 
-func defaultDiffOptions() (*git.DiffOptions, error) {
-	opts, err := git.DefaultDiffOptions()
-	if err != nil {
-		return nil, err
-	}
-	// TODO: set context lines from config
-	return &opts, nil
+// @return result.Result<git.DiffOptions, error>
+func defaultDiffOptions() result.Result {
+	return result.NewResult(git.DefaultDiffOptions())
 }
