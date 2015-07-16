@@ -13,7 +13,7 @@ default: build
 
 bootstrap:
 	brew install libgit2
-	go get gopkg.in/libgit2/git2go.v22
+	go get github.com/libgit2/git2go
 	go get github.com/stvp/assert
 	go get github.com/cevaris/ordered_map
 	go get gopkg.in/alecthomas/kingpin.v2

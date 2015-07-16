@@ -3,7 +3,7 @@ package git_comment
 import (
 	"fmt"
 	"github.com/kylef/result.go/src/result"
-	git "gopkg.in/libgit2/git2go.v22"
+	git "github.com/libgit2/git2go"
 )
 
 const (

@@ -2,7 +2,7 @@ package git_comment
 
 import (
 	"github.com/kylef/result.go/src/result"
-	git "gopkg.in/libgit2/git2go.v22"
+	git "github.com/libgit2/git2go"
 )
 
 // Lookup a remote by name, performing a block if found

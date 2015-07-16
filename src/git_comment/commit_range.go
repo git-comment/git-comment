@@ -1,7 +1,7 @@
 package git_comment
 
 import (
-	git "gopkg.in/libgit2/git2go.v22"
+	git "github.com/libgit2/git2go"
 )
 
 type CommitRange struct {
