@@ -57,7 +57,7 @@ func diffCommits(repo *git.Repository, commitRange *CommitRange) result.Result {
 	return result.Combine(func(values ...interface{}) result.Result {
 		parentID := commitRange.Parent.Id().String()
 		childID := commitRange.Child.Id().String()
-		files := parseDiffForLines(values[0].(*git.Diff), values[1].([]interface{}))
+		files := parseDiffForLines(values[0].(*git.Diff), values[1].(CommentSlice))
 		return result.NewSuccess(&Diff{files, parentID, childID})
 	}, diff, comments)
 }
@@ -76,7 +76,7 @@ func diffRange(repo *git.Repository, commitRange *CommitRange) result.Result {
 	}, commitTree(commitRange.Parent), commitTree(commitRange.Child), defaultDiffOptions())
 }
 
-func parseDiffForLines(diff *git.Diff, comments []interface{}) []*DiffFile {
+func parseDiffForLines(diff *git.Diff, comments CommentSlice) []*DiffFile {
 	commentMapping := commentsByFileRef(comments)
 	files := make([]*DiffFile, 0)
 	var file *DiffFile
@@ -110,10 +110,9 @@ func parseDiffForLines(diff *git.Diff, comments []interface{}) []*DiffFile {
 	return files
 }
 
-func commentsByFileRef(comments []interface{}) map[string][]*Comment {
+func commentsByFileRef(comments CommentSlice) map[string][]*Comment {
 	mapping := make(map[string][]*Comment)
-	for _, c := range comments {
-		comment := c.(*Comment)
+	for _, comment := range comments {
 		ref := comment.FileRef
 		if ref != nil && len(ref.Path) > 0 && ref.Line > 0 {
 			key := fileRefMappingKey(ref.Path, ref.Line)

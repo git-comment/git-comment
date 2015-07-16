@@ -2,10 +2,23 @@ package git_comment
 
 import (
 	"github.com/stvp/assert"
+	"sort"
 	"strings"
 	"testing"
 	"time"
 )
+
+func TestSortComments(t *testing.T) {
+	var comments = make(CommentSlice, 3)
+	comments[0] = &Comment{CreateTime: time.Now().Add(12 * time.Hour)}
+	comments[1] = &Comment{CreateTime: time.Now()}
+	comments[2] = &Comment{CreateTime: time.Now().Add(24 * time.Hour)}
+	sortedComments := []*Comment{comments[1], comments[0], comments[2]}
+	sort.Stable(comments)
+	for idx, comment := range comments {
+		assert.Equal(t, comment, sortedComments[idx])
+	}
+}
 
 func TestNewCommentAuthor(t *testing.T) {
 	author := &Person{"Sam Wafers", "<sam@example.com>"}

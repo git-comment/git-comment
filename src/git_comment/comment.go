@@ -20,6 +20,8 @@ type Comment struct {
 
 const timeFormat string = time.RFC822Z
 
+type CommentSlice []*Comment
+
 const (
 	authorKey  = "author"
 	commitKey  = "commit"
@@ -29,6 +31,18 @@ const (
 	fileRefKey = "file"
 	deletedKey = "deleted"
 )
+
+func (cs CommentSlice) Len() int {
+	return len(cs)
+}
+
+func (cs CommentSlice) Less(i, j int) bool {
+	return cs[i].CreateTime.Before(cs[j].CreateTime)
+}
+
+func (cs CommentSlice) Swap(i, j int) {
+	cs[i], cs[j] = cs[j], cs[i]
+}
 
 // Creates a new comment using provided content and author
 func NewComment(message string, commit string, fileRef *FileRef, author *Person) result.Result {

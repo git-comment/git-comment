@@ -4,6 +4,7 @@ import (
 	"github.com/kylef/result.go/src/result"
 	git "github.com/libgit2/git2go"
 	"path"
+	"sort"
 )
 
 // Find all comments matching text
@@ -56,10 +57,13 @@ func CommentsOnCommits(repo *git.Repository, commits []*git.Commit) result.Resul
 		results[index] = commentsOnCommit(repo, commit)
 	}
 	return result.Combine(func(values ...interface{}) result.Result {
-		comments := make([]interface{}, 0)
+		comments := make(CommentSlice, 0)
 		for _, list := range values {
-			comments = append(comments, list.([]interface{})...)
+			for _, comment := range list.([]interface{}) {
+				comments = append(comments, comment.(*Comment))
+			}
 		}
+		sort.Stable(comments)
 		return result.NewSuccess(comments)
 	}, results...)
 }
