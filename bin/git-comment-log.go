@@ -121,11 +121,45 @@ func showComments(pwd string) {
 		}
 	}
 	for _, file := range diff.(*gitc.Diff).Files {
-		pageContent(formattedFilePath(file))
+		var printedFileHeader = false
+		var afterComment = false
+		beforeBuffer := make([]*gitc.DiffLine, 0)
+		afterBuffer := make([]*gitc.DiffLine, 0)
 		for _, line := range file.Lines {
-			pageContent(formattedLine(line))
-			for _, comment := range line.Comments {
-				pageContent(formattedComment(comment))
+			if len(line.Comments) > 0 {
+				for _, line := range afterBuffer {
+					pageContent(formattedLine(line))
+				}
+				afterBuffer = make([]*gitc.DiffLine, 0)
+				if !printedFileHeader {
+					pageContent(formattedFilePath(file))
+					printedFileHeader = true
+				}
+				for _, line := range beforeBuffer {
+					pageContent(formattedLine(line))
+				}
+				pageContent(formattedLine(line))
+				for _, comment := range line.Comments {
+					pageContent(formattedComment(comment))
+				}
+				beforeBuffer = make([]*gitc.DiffLine, 0)
+				afterComment = true
+			} else {
+				if afterComment {
+					afterBuffer = append(afterBuffer, line)
+					if len(afterBuffer) == 5 {
+						for _, line := range afterBuffer {
+							pageContent(formattedLine(line))
+						}
+						afterBuffer = make([]*gitc.DiffLine, 0)
+						afterComment = false
+					}
+				} else {
+					beforeBuffer = append(beforeBuffer, line)
+					if len(beforeBuffer) > 5 {
+						beforeBuffer = append(beforeBuffer[:0], beforeBuffer[1:]...)
+					}
+				}
 			}
 		}
 	}
