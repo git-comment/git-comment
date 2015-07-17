@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 // Start an arbitrary command with arguments and wait got
@@ -22,8 +23,8 @@ func ExecCommand(program string, args ...string) error {
 // When the process is complete, close the writer and
 // invoke Wait() on the command.
 func ExecPager(pwd string) (*exec.Cmd, io.WriteCloser, error) {
-	pager := gitc.ConfiguredPager(pwd)
-	cmd := exec.Command(pager)
+	pager := strings.Split(gitc.ConfiguredPager(pwd), " ")
+	cmd := exec.Command(pager[0], pager[1:]...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	pipe, err := cmd.StdinPipe()

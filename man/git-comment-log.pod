@@ -111,6 +111,8 @@ Print using the provided custom placeholders:
 
 =item %t:  title line
 
+=item color(...): changes color of enclosed text, where color is black, red, green, yellow, blue, magenta, cyan or white
+
 =back
 
 =back
