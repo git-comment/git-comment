@@ -1,4 +1,5 @@
 PROJECT=git_comment
+PACKAGES=exec log
 VERSION=$(shell cat VERSION)
 SRC_PATH=$(GOPATH)src/$(PROJECT)
 BIN_PATH=/usr/local/bin/
@@ -29,9 +30,9 @@ clean:
 	$(foreach bin,$(BIN_FILE_LIST),rm $(bin);)
 
 copy:
-	install -d $(SRC_PATH)/exec
+	$(foreach pack,$(PACKAGES),install -d $(SRC_PATH)/$(pack);)
 	install src/$(PROJECT)/*.go $(SRC_PATH)
-	install src/$(PROJECT)/exec/*.go $(SRC_PATH)/exec
+	$(foreach pack,$(PACKAGES),install src/$(PROJECT)/$(pack)/*.go $(SRC_PATH)/$(pack);)
 
 doc:
 	$(foreach bin,$(BIN_FILE_LIST), $(MAN_CMD) man/$(bin).pod > man/$(bin).1;)
