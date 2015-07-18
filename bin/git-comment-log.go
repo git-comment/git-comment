@@ -3,9 +3,8 @@ package main
 import (
 	"fmt"
 	gitc "git_comment"
-	ex "git_comment/exec"
+	gite "git_comment/exec"
 	gitl "git_comment/log"
-	"github.com/kylef/result.go/src/result"
 	kp "gopkg.in/alecthomas/kingpin.v2"
 	"io"
 	"os"
@@ -42,13 +41,8 @@ func configureFormatter() {
 			useColor = gitc.ConfiguredBool(wd, "color.pager", false)
 		}
 	}
-	termHeight, termWidth = ex.CalculateDimensions()
+	termHeight, termWidth = gite.CalculateDimensions()
 	formatter = gitl.NewFormatter(*pretty, *lineNumbers, useColor, termWidth)
-}
-
-func fatalIfError(r result.Result, code string) interface{} {
-	app.FatalIfError(r.Failure, code)
-	return r.Success
 }
 
 func showComments(pwd string) {
@@ -57,7 +51,7 @@ func showComments(pwd string) {
 	var writer io.WriteCloser
 	var cmd *exec.Cmd
 	var err error
-	diff := fatalIfError(gitc.DiffCommits(pwd, *revision), "diff")
+	diff := gite.FatalIfError(app, gitc.DiffCommits(pwd, *revision), "diff")
 	pageContent := func(data string) {
 		content = append(content, []byte(data)...)
 		if !usePager {
@@ -66,7 +60,7 @@ func showComments(pwd string) {
 		}
 		if usePager {
 			if writer == nil {
-				cmd, writer, err = ex.ExecPager(pwd)
+				cmd, writer, err = gite.ExecPager(pwd)
 				app.FatalIfError(err, "pager")
 			}
 			if len(content) > 0 {

@@ -2,6 +2,8 @@ package exec
 
 import (
 	gitc "git_comment"
+	"github.com/kylef/result.go/src/result"
+	kp "gopkg.in/alecthomas/kingpin.v2"
 	"io"
 	"os"
 	"os/exec"
@@ -35,4 +37,11 @@ func ExecPager(pwd string) (*exec.Cmd, io.WriteCloser, error) {
 		return nil, nil, err
 	}
 	return cmd, pipe, nil
+}
+
+// Return the success value, otherwise kill the app with
+// the error code specified
+func FatalIfError(app *kp.Application, r result.Result, code string) interface{} {
+	app.FatalIfError(r.Failure, code)
+	return r.Success
 }

@@ -4,8 +4,7 @@ import (
 	"errors"
 	"fmt"
 	gc "git_comment"
-	ex "git_comment/exec"
-	"github.com/kylef/result.go/src/result"
+	gx "git_comment/exec"
 	kp "gopkg.in/alecthomas/kingpin.v2"
 	"io/ioutil"
 	"os"
@@ -46,25 +45,20 @@ func main() {
 }
 
 func editComment(pwd string) {
-	parsedCommit := fatalIfError(gc.ResolvedCommit(pwd, commit), "git")
+	parsedCommit := gx.FatalIfError(app, gc.ResolvedCommit(pwd, commit), "git")
 	if len(*message) == 0 {
 		*message = getMessageFromEditor(pwd)
 	}
 	if len(*amendID) > 0 {
-		id := fatalIfError(gc.UpdateComment(pwd, *amendID, *message), "git")
+		id := gx.FatalIfError(app, gc.UpdateComment(pwd, *amendID, *message), "git")
 		fmt.Printf("[%v] Comment updated\n", (*id.(*string))[:7])
 	} else {
-		id := fatalIfError(gc.CreateComment(pwd,
+		id := gx.FatalIfError(app, gc.CreateComment(pwd,
 			parsedCommit.(*string),
 			gc.CreateFileRef(*fileref), *message), "git")
 		hash := *(id.(*string))
 		fmt.Printf("[%v] Comment created\n", hash[:7])
 	}
-}
-
-func fatalIfError(r result.Result, code string) interface{} {
-	app.FatalIfError(r.Failure, code)
-	return r.Success
 }
 
 func getMessageFromEditor(pwd string) string {
@@ -74,7 +68,7 @@ func getMessageFromEditor(pwd string) string {
 	path := file.Name()
 	file.Write([]byte(gc.DefaultMessageTemplate))
 	file.Close()
-	err = ex.ExecCommand(editor, path)
+	err = gx.ExecCommand(editor, path)
 	app.FatalIfError(err, "io")
 	content, err := ioutil.ReadFile(path)
 	os.Remove(path)
