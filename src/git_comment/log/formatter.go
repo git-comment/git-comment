@@ -19,10 +19,10 @@ const (
 	authorEmail          = "%ae"
 	authorDateISO8601    = "%ad"
 	authorDateUnix       = "%aU"
-	committerName        = "%cn"
-	committerEmail       = "%ce"
-	committerDateISO8601 = "%cd"
-	committerDateUnix    = "%cU"
+	committerName        = "%kn"
+	committerEmail       = "%ke"
+	committerDateISO8601 = "%kd"
+	committerDateUnix    = "%kU"
 	bodyContent          = "%b"
 	titleLine            = "%t"
 	newLine              = "%n"
@@ -61,19 +61,34 @@ type Formatter struct {
 
 func NewFormatter(format string, useLineNumbers, useColor bool, termWidth uint16) *Formatter {
 	var indent = "\n  "
+	var colorMapping map[string]string
 	if useLineNumbers {
 		indent = "\n            "
 	}
-	colorMapping := map[string]string{
-		black:      ex.Black,
-		red:        ex.Red,
-		green:      ex.Green,
-		yellow:     ex.Yellow,
-		blue:       ex.Blue,
-		magenta:    ex.Magenta,
-		cyan:       ex.Cyan,
-		white:      ex.White,
-		resetColor: ex.Clear,
+	if useColor {
+		colorMapping = map[string]string{
+			black:      ex.Black,
+			red:        ex.Red,
+			green:      ex.Green,
+			yellow:     ex.Yellow,
+			blue:       ex.Blue,
+			magenta:    ex.Magenta,
+			cyan:       ex.Cyan,
+			white:      ex.White,
+			resetColor: ex.Clear,
+		}
+	} else {
+		colorMapping = map[string]string{
+			black:      "",
+			red:        "",
+			green:      "",
+			yellow:     "",
+			blue:       "",
+			magenta:    "",
+			cyan:       "",
+			white:      "",
+			resetColor: "",
+		}
 	}
 	return &Formatter{format, useLineNumbers, useColor, termWidth, colorMapping, indent}
 }
@@ -170,9 +185,6 @@ func (f *Formatter) formatLineContent(line *gitc.DiffLine) string {
 }
 
 func (f *Formatter) substituteColors(format string) string {
-	if !f.useColor {
-		return format
-	}
 	return replaceAll(format, f.colorMapping)
 }
 

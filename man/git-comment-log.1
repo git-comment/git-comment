@@ -156,7 +156,7 @@ git-comment-log lists comments attached to a range of commits, optionally with c
 .IX Header "OPTIONS"
 .IP "\-\-full\-diff" 4
 .IX Item "--full-diff"
-Print the full diff surrounding the comments. Overrides \fIlines-before\fR and \fIlines-after\fR.
+Print the full diff of the commits containing the comments
 .IP "\-\-help" 4
 .IX Item "--help"
 Print a usage message
@@ -258,18 +258,18 @@ Print using the provided custom placeholders:
 .ie n .IP "%aD: author date, Unix timestamp" 4
 .el .IP "\f(CW%aD:\fR author date, Unix timestamp" 4
 .IX Item "%aD: author date, Unix timestamp"
-.ie n .IP "%cn: committer name" 4
-.el .IP "\f(CW%cn:\fR committer name" 4
-.IX Item "%cn: committer name"
-.ie n .IP "%ce: committer email" 4
-.el .IP "\f(CW%ce:\fR committer email" 4
-.IX Item "%ce: committer email"
-.ie n .IP "%cd: committer date, \s-1RFC3339\s0 format" 4
-.el .IP "\f(CW%cd:\fR committer date, \s-1RFC3339\s0 format" 4
-.IX Item "%cd: committer date, RFC3339 format"
-.ie n .IP "%cD: committer date, Unix timestamp" 4
-.el .IP "\f(CW%cD:\fR committer date, Unix timestamp" 4
-.IX Item "%cD: committer date, Unix timestamp"
+.ie n .IP "%kn: committer name" 4
+.el .IP "\f(CW%kn:\fR committer name" 4
+.IX Item "%kn: committer name"
+.ie n .IP "%ke: committer email" 4
+.el .IP "\f(CW%ke:\fR committer email" 4
+.IX Item "%ke: committer email"
+.ie n .IP "%kd: committer date, \s-1RFC3339\s0 format" 4
+.el .IP "\f(CW%kd:\fR committer date, \s-1RFC3339\s0 format" 4
+.IX Item "%kd: committer date, RFC3339 format"
+.ie n .IP "%kD: committer date, Unix timestamp" 4
+.el .IP "\f(CW%kD:\fR committer date, Unix timestamp" 4
+.IX Item "%kD: committer date, Unix timestamp"
 .ie n .IP "%b:  body content" 4
 .el .IP "\f(CW%b:\fR  body content" 4
 .IX Item "%b: body content"

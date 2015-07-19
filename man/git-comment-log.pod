@@ -123,13 +123,13 @@ Print using the provided custom placeholders:
 
 =item %aD: author date, Unix timestamp
 
-=item %cn: committer name
+=item %kn: committer name
 
-=item %ce: committer email
+=item %ke: committer email
 
-=item %cd: committer date, RFC3339 format
+=item %kd: committer date, RFC3339 format
 
-=item %cD: committer date, Unix timestamp
+=item %kD: committer date, Unix timestamp
 
 =item %b:  body content
 

@@ -53,3 +53,4 @@ uninstall:
 
 test: copy
 	go test $(PROJECT)
+	$(foreach pkg,$(PACKAGES),go test $(PROJECT)/$(pkg);)
