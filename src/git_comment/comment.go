@@ -2,6 +2,7 @@ package git_comment
 
 import (
 	"errors"
+	"github.com/kylef/result.go/src/result"
 	"time"
 )
 
@@ -19,6 +20,8 @@ type Comment struct {
 
 const timeFormat string = time.RFC822Z
 
+type CommentSlice []*Comment
+
 const (
 	authorKey  = "author"
 	commitKey  = "commit"
@@ -29,17 +32,29 @@ const (
 	deletedKey = "deleted"
 )
 
+func (cs CommentSlice) Len() int {
+	return len(cs)
+}
+
+func (cs CommentSlice) Less(i, j int) bool {
+	return cs[i].CreateTime.Before(cs[j].CreateTime)
+}
+
+func (cs CommentSlice) Swap(i, j int) {
+	cs[i], cs[j] = cs[j], cs[i]
+}
+
 // Creates a new comment using provided content and author
-func NewComment(message string, commit string, fileRef *FileRef, author *Person) (*Comment, error) {
+func NewComment(message string, commit string, fileRef *FileRef, author *Person) result.Result {
 	const missingContentMessage = "No message content provided"
 	const missingCommitMessage = "No commit provided"
 	if len(message) == 0 {
-		return nil, errors.New(missingContentMessage)
+		return result.NewFailure(errors.New(missingContentMessage))
 	} else if len(commit) == 0 {
-		return nil, errors.New(missingCommitMessage)
+		return result.NewFailure(errors.New(missingCommitMessage))
 	}
 	createTime := time.Now()
-	return &Comment{
+	return result.NewSuccess(&Comment{
 		author,
 		createTime,
 		message,
@@ -49,10 +64,10 @@ func NewComment(message string, commit string, fileRef *FileRef, author *Person)
 		nil,
 		false,
 		fileRef,
-	}, nil
+	})
 }
 
-func DeserializeComment(content string) (*Comment, error) {
+func DeserializeComment(content string) result.Result {
 	const serializationErrorMessage = "Could not deserialize object into comment"
 	blob := CreatePropertyBlob(content)
 	comment := &Comment{}
@@ -63,15 +78,15 @@ func DeserializeComment(content string) (*Comment, error) {
 	comment.FileRef = blob.GetFileRef(fileRefKey)
 	cTime := blob.GetTime(createdKey)
 	if cTime == nil {
-		return nil, errors.New(serializationErrorMessage)
+		return result.NewFailure(errors.New(serializationErrorMessage))
 	}
 	comment.CreateTime = *cTime
 	aTime := blob.GetTime(amendedKey)
 	if aTime == nil {
-		return nil, errors.New(serializationErrorMessage)
+		return result.NewFailure(errors.New(serializationErrorMessage))
 	}
 	comment.AmendTime = *aTime
-	return comment, nil
+	return result.NewSuccess(comment)
 }
 
 // Update the message content of the comment

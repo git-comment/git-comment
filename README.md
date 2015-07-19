@@ -1,7 +1,7 @@
 # git-comment
 
-Annotations for git commits. Open and distributed collaboration around
-code and other version-controlled text and resources.
+Comments for git commits and files. Open and distributed collaboration
+around code and other version-controlled text and resources.
 
 ## why?
 
@@ -33,11 +33,11 @@ fetching and pushing comments by default with other refs. Creating a
 comment without a supplied message opens the default git editor.
 
 ```
-git comment [-m <msg>] [--amend <comment>] [<commit>] [<filepath:line>]
+git comment [-m <msg>] [--amend <comment>] [-c <commit>] [<filepath:line>]
 git comment --delete <comment>
 git comment --configure-remote <remote>
 git comment --help
-git comment -v
+git comment --version
 ```
 
 ### `git-comment-log`
@@ -47,7 +47,7 @@ View comments and associated diffs by commit or tree.
 ```
 git comment-log [<revision range>]
 git comment-log --help
-git comment-log -v
+git comment-log --version
 ```
 
 ### `git-comment-grep`
@@ -57,7 +57,7 @@ Print comments matching a pattern.
 ```
 git comment-grep <pattern>
 git comment-grep --help
-git comment-grep -v
+git comment-grep --version
 ```
 
 ### `git-comment-web`
@@ -68,7 +68,7 @@ diffs
 ```
 git comment-web [<revision range>] [--port <port>]
 git comment-web --help
-git comment-web -v
+git comment-web --version
 ```
 
 ### `pre-comment` and `post-comment` git hooks
@@ -104,6 +104,12 @@ amended 1243040974 -0900
 Too many levels of indentation here.
 ```
 
+And a comment reference would be `refs/comments/[commit]/[comment]`, like:
+
+```
+refs/comments/0155/eb4229851634a0f03eb265b69f5a2d56f341/f9da8cdd40bbce4c7bd1aa4e46608107184bd91c
+```
+
 Comment text can be any number of lines, or use any formatting syntax,
 though plain text formats like markdown and textile ensure the best
 readability for command-line and web-based interfaces.
@@ -126,6 +132,8 @@ The manual is written using [pod2man](http://perldoc.perl.org/pod2man.html), whi
 
 * [Git Internals
   Guide](http://www.git-scm.com/book/en/v2/Git-Internals-Plumbing-and-Porcelain)
+* [libgit2 Documentation](https://libgit2.github.com) (and its [Go
+  bindings](http://godoc.org/github.com/libgit2/git2go))
 * gitcore-tutorial(7)
 * gitrepository-layout(5)
 * gitcli(7)

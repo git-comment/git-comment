@@ -1,6 +1,7 @@
 PROJECT=git_comment
+PACKAGES=exec log
 VERSION=$(shell cat VERSION)
-SRC_PATH=$(GOPATH)/src/$(PROJECT)
+SRC_PATH=$(GOPATH)src/$(PROJECT)
 BIN_PATH=/usr/local/bin/
 BIN_FILE_LIST=git-comment git-comment-grep git-comment-log git-comment-web
 BIN_BUILD_CMD=go build -ldflags "-X main.buildVersion $(VERSION)"
@@ -13,10 +14,11 @@ default: build
 
 bootstrap:
 	brew install libgit2
-	go get gopkg.in/libgit2/git2go.v22
+	go get github.com/libgit2/git2go
 	go get github.com/stvp/assert
 	go get github.com/cevaris/ordered_map
 	go get gopkg.in/alecthomas/kingpin.v2
+	go get github.com/kylef/result.go/src/result
 
 build: copy
 	go build $(PROJECT)
@@ -28,8 +30,9 @@ clean:
 	$(foreach bin,$(BIN_FILE_LIST),rm $(bin);)
 
 copy:
-	install -d $(SRC_PATH)
-	install src/$(PROJECT)/* $(SRC_PATH)
+	$(foreach pack,$(PACKAGES),install -d $(SRC_PATH)/$(pack);)
+	install src/$(PROJECT)/*.go $(SRC_PATH)
+	$(foreach pack,$(PACKAGES),install src/$(PROJECT)/$(pack)/*.go $(SRC_PATH)/$(pack);)
 
 doc:
 	$(foreach bin,$(BIN_FILE_LIST), $(MAN_CMD) man/$(bin).pod > man/$(bin).1;)
@@ -50,3 +53,4 @@ uninstall:
 
 test: copy
 	go test $(PROJECT)
+	$(foreach pkg,$(PACKAGES),go test $(PROJECT)/$(pkg);)

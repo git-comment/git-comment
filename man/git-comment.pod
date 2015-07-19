@@ -2,11 +2,11 @@
 
 =head1 NAME
 
-    git-comment - Annotate git commits
+    git-comment - Add comments to git commits
 
 =head1 SYNOPSIS
 
-    git comment [-m <msg>] [--amend <comment>] [<commit>] [<filepath:line>]
+    git comment [-m <msg>] [--amend <comment>] [-c <commit>] [<filepath:line>]
     git comment --delete <comment>
     git comment --configure-remote <remote>
     git comment --help
@@ -44,13 +44,13 @@ Print the current version number
 
 Update the remote configuration to fetch and push comment changes by default
 
-=item <commit>
+=item I<-c> <commit>, --commit <commit>
 
 A commit
 
 =item <filepath:line>
 
-A reference to a file and line number, to make the annotation more specific
+A reference to a file and line number, to make the comment more specific
 
 =item <remote>
 

@@ -8,8 +8,8 @@
 
 ## Things that need to work
 
-- [ ] lookup by commit
-- [ ] lookup by ID
+- [x] lookup by commit
+- [x] lookup by ID
 - [ ] save git-comment version in use
   * per comment?
   * per repo?
