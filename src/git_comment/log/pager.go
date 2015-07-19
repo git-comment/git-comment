@@ -9,7 +9,7 @@ import (
 	"os/exec"
 )
 
-type ContentPager struct {
+type Pager struct {
 	disablePager bool
 	usePager     bool
 	content      []byte
@@ -20,8 +20,8 @@ type ContentPager struct {
 	termHeight   uint16
 }
 
-func NewContentPager(app *kp.Application, wd string, termHeight uint16, disablePager bool) *ContentPager {
-	pager := &ContentPager{}
+func NewPager(app *kp.Application, wd string, termHeight uint16, disablePager bool) *Pager {
+	pager := &Pager{}
 	pager.app = app
 	pager.wd = wd
 	pager.disablePager = disablePager
@@ -30,7 +30,7 @@ func NewContentPager(app *kp.Application, wd string, termHeight uint16, disableP
 	return pager
 }
 
-func (p *ContentPager) AddContent(data string) {
+func (p *Pager) AddContent(data string) {
 	if p.disablePager {
 		fmt.Println(data)
 	} else {
@@ -54,7 +54,7 @@ func (p *ContentPager) AddContent(data string) {
 	}
 }
 
-func (p *ContentPager) Finish() {
+func (p *Pager) Finish() {
 	if !p.disablePager && !p.usePager {
 		fmt.Println(string(p.content))
 	}

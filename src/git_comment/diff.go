@@ -42,18 +42,18 @@ type DiffLine struct {
 // If commitish resolves to a single commit, the diff is performed
 // between the commit and its parent.
 // @return result.Result<*Diff, error>
-func DiffCommits(repoPath string, commitish string) result.Result {
+func DiffCommits(repoPath, commitish string, contextLines uint32) result.Result {
 	return WithRepository(repoPath, func(repo *git.Repository) result.Result {
 		return ResolveCommits(repo, commitish).FlatMap(func(commitRange interface{}) result.Result {
-			return diffCommits(repo, commitRange.(*CommitRange))
+			return diffCommits(repo, commitRange.(*CommitRange), contextLines)
 		})
 	})
 }
 
 // @return result.Result<*Diff, error>
-func diffCommits(repo *git.Repository, commitRange *CommitRange) result.Result {
+func diffCommits(repo *git.Repository, commitRange *CommitRange, contextLines uint32) result.Result {
 	comments := CommentsOnCommits(repo, commitRange.Commits())
-	diff := diffRange(repo, commitRange)
+	diff := diffRange(repo, commitRange, contextLines)
 	return result.Combine(func(values ...interface{}) result.Result {
 		parentID := commitRange.Parent.Id().String()
 		childID := commitRange.Child.Id().String()
@@ -66,14 +66,15 @@ func commitTree(commit *git.Commit) result.Result {
 	return result.NewResult(commit.Tree())
 }
 
-func diffRange(repo *git.Repository, commitRange *CommitRange) result.Result {
+func diffRange(repo *git.Repository, commitRange *CommitRange, contextLines uint32) result.Result {
 	return result.Combine(func(values ...interface{}) result.Result {
 		opts := values[2].(git.DiffOptions)
+		opts.ContextLines = contextLines
 		return result.NewResult(repo.DiffTreeToTree(
 			values[0].(*git.Tree),
 			values[1].(*git.Tree),
 			&opts))
-	}, commitTree(commitRange.Parent), commitTree(commitRange.Child), defaultDiffOptions())
+	}, commitTree(commitRange.Parent), commitTree(commitRange.Child), diffOptions())
 }
 
 func parseDiffForLines(diff *git.Diff, comments CommentSlice) []*DiffFile {
@@ -149,6 +150,6 @@ func diffTypeFromLine(line git.DiffLine) DiffLineType {
 }
 
 // @return result.Result<git.DiffOptions, error>
-func defaultDiffOptions() result.Result {
+func diffOptions() result.Result {
 	return result.NewResult(git.DefaultDiffOptions())
 }
