@@ -8,6 +8,8 @@ import (
 
 type DiffLineType int
 
+const AdditionalCommentsFile = "comments:"
+
 const (
 	DiffAdd DiffLineType = iota
 	DiffAddNewline
@@ -15,6 +17,7 @@ const (
 	DiffRemoveNewline
 	DiffContext
 	DiffOther
+	DiffUnassignedComments
 )
 
 type Diff struct {
@@ -108,21 +111,46 @@ func parseDiffForLines(diff *git.Diff, comments CommentSlice) []*DiffFile {
 		return cbHunk, nil
 	}
 	diff.ForEach(cbFile, git.DiffDetailLines)
+	file = fileForAdditionalComments(commentMapping)
+	if file != nil {
+		files = append(files, file)
+	}
 	return files
+}
+
+func fileForAdditionalComments(mapping map[string][]*Comment) *DiffFile {
+	var comments []*Comment
+	if list, ok := mapping[AdditionalCommentsFile]; ok {
+		comments = list
+	} else {
+		return nil
+	}
+
+	return &DiffFile{AdditionalCommentsFile, "",
+		[]*DiffLine{&DiffLine{
+			DiffUnassignedComments,
+			"",
+			-1,
+			-1,
+			comments,
+		}}}
 }
 
 func commentsByFileRef(comments CommentSlice) map[string][]*Comment {
 	mapping := make(map[string][]*Comment)
 	for _, comment := range comments {
 		ref := comment.FileRef
+		var key string
 		if ref != nil && len(ref.Path) > 0 && ref.Line > 0 {
-			key := fileRefMappingKey(ref.Path, ref.Line)
-			if list, ok := mapping[key]; ok {
-				mapping[key] = append(list, comment)
-			} else {
-				list := make([]*Comment, 0)
-				mapping[key] = append(list, comment)
-			}
+			key = fileRefMappingKey(ref.Path, ref.Line)
+		} else {
+			key = AdditionalCommentsFile
+		}
+		if list, ok := mapping[key]; ok {
+			mapping[key] = append(list, comment)
+		} else {
+			list := make([]*Comment, 0)
+			mapping[key] = append(list, comment)
 		}
 	}
 	return mapping
