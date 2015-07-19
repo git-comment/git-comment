@@ -111,7 +111,7 @@ func (f *Formatter) FormatComment(comment *gitc.Comment) string {
 		return fmt.Sprintf(format, *comment.ID)
 	case strings.HasPrefix(f.format, formatPrefix):
 		format := f.substituteVariables(f.format[len(formatPrefix):], comment)
-		return f.substituteColors(format)
+		return fmt.Sprintf("%v\n", f.substituteColors(format))
 	}
 	return ""
 }
