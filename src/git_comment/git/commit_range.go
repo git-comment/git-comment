@@ -1,4 +1,4 @@
-package git_comment
+package git
 
 import (
 	git "github.com/libgit2/git2go"

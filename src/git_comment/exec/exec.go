@@ -1,7 +1,7 @@
 package exec
 
 import (
-	gitc "git_comment"
+	gitg "git_comment/git"
 	"github.com/kylef/result.go/src/result"
 	kp "gopkg.in/alecthomas/kingpin.v2"
 	"io"
@@ -25,7 +25,7 @@ func ExecCommand(program string, args ...string) error {
 // When the process is complete, close the writer and
 // invoke Wait() on the command.
 func ExecPager(pwd string) (*exec.Cmd, io.WriteCloser, error) {
-	pager := strings.Split(gitc.ConfiguredPager(pwd), " ")
+	pager := strings.Split(gitg.ConfiguredPager(pwd), " ")
 	cmd := exec.Command(pager[0], pager[1:]...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

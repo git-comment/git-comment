@@ -2,6 +2,7 @@ package git_comment
 
 import (
 	"fmt"
+	gitg "git_comment/git"
 	"github.com/kylef/result.go/src/result"
 	git "github.com/libgit2/git2go"
 )
@@ -46,15 +47,15 @@ type DiffLine struct {
 // between the commit and its parent.
 // @return result.Result<*Diff, error>
 func DiffCommits(repoPath, commitish string, contextLines uint32) result.Result {
-	return WithRepository(repoPath, func(repo *git.Repository) result.Result {
-		return ResolveCommits(repo, commitish).FlatMap(func(commitRange interface{}) result.Result {
-			return diffCommits(repo, commitRange.(*CommitRange), contextLines)
+	return gitg.WithRepository(repoPath, func(repo *git.Repository) result.Result {
+		return gitg.ResolveCommits(repo, commitish).FlatMap(func(commitRange interface{}) result.Result {
+			return diffCommits(repo, commitRange.(*gitg.CommitRange), contextLines)
 		})
 	})
 }
 
 // @return result.Result<*Diff, error>
-func diffCommits(repo *git.Repository, commitRange *CommitRange, contextLines uint32) result.Result {
+func diffCommits(repo *git.Repository, commitRange *gitg.CommitRange, contextLines uint32) result.Result {
 	comments := CommentsOnCommits(repo, commitRange.Commits())
 	diff := diffRange(repo, commitRange, contextLines)
 	return result.Combine(func(values ...interface{}) result.Result {
@@ -69,7 +70,7 @@ func commitTree(commit *git.Commit) result.Result {
 	return result.NewResult(commit.Tree())
 }
 
-func diffRange(repo *git.Repository, commitRange *CommitRange, contextLines uint32) result.Result {
+func diffRange(repo *git.Repository, commitRange *gitg.CommitRange, contextLines uint32) result.Result {
 	return result.Combine(func(values ...interface{}) result.Result {
 		opts := values[2].(git.DiffOptions)
 		opts.ContextLines = contextLines

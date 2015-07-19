@@ -3,6 +3,7 @@ package main
 import (
 	gitc "git_comment"
 	gite "git_comment/exec"
+	gitg "git_comment/git"
 	gitl "git_comment/log"
 	kp "gopkg.in/alecthomas/kingpin.v2"
 	"math"
@@ -47,7 +48,7 @@ func showComments(pwd string) {
 func newFormatter(wd string, termWidth uint16) *gitl.Formatter {
 	var useColor bool
 	if !*noColor {
-		useColor = gitc.ConfiguredBool(wd, "color.pager", false)
+		useColor = gitg.ConfiguredBool(wd, "color.pager", false)
 	}
 	return gitl.NewFormatter(*pretty, *lineNumbers, useColor, termWidth)
 }
@@ -60,11 +61,11 @@ func newPrinter(pager *gitl.Pager, formatter *gitl.Formatter) *gitl.DiffPrinter 
 
 func computeContextLines(wd string) {
 	if *linesBefore == 0 {
-		before := int64(gitc.ConfiguredInt32(wd, "comment-log.lines-before", defaultContextLines))
+		before := int64(gitg.ConfiguredInt32(wd, "comment-log.lines-before", defaultContextLines))
 		linesBefore = &before
 	}
 	if *linesAfter == 0 {
-		after := int64(gitc.ConfiguredInt32(wd, "comment-log.lines-after", defaultContextLines))
+		after := int64(gitg.ConfiguredInt32(wd, "comment-log.lines-after", defaultContextLines))
 		linesAfter = &after
 	}
 	contextLines = uint32(math.Max(float64(*linesBefore), float64(*linesAfter)))

@@ -6,22 +6,6 @@ import (
 	"testing"
 )
 
-func TestCreateComment(t *testing.T) {
-
-}
-
-func TestCreateInvalidComment(t *testing.T) {
-
-}
-
-func TestDeleteComment(t *testing.T) {
-
-}
-
-func TestDeleteNonexistentComment(t *testing.T) {
-
-}
-
 func TestRefPath(t *testing.T) {
 	commit := "0155eb4229851634a0f03eb265b69f5a2d56f341"
 	id := "23caf9710a71e3736597415c57bdcf5eebae6bcb"

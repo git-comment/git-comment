@@ -1,6 +1,7 @@
 package git_comment
 
 import (
+	gitg "git_comment/git"
 	"github.com/kylef/result.go/src/result"
 	git "github.com/libgit2/git2go"
 	"path"
@@ -16,7 +17,7 @@ func CommentsWithContent(content string) result.Result {
 // Finds a comment by ID
 // @return result.Result<*Comment, error>
 func CommentByID(repo *git.Repository, identifier string) result.Result {
-	return LookupBlob(repo, identifier).FlatMap(func(blob interface{}) result.Result {
+	return gitg.LookupBlob(repo, identifier, commentNotFoundError).FlatMap(func(blob interface{}) result.Result {
 		return DeserializeComment(string(blob.(*git.Blob).Contents()))
 	}).FlatMap(func(c interface{}) result.Result {
 		comment := c.(*Comment)
@@ -28,10 +29,10 @@ func CommentByID(repo *git.Repository, identifier string) result.Result {
 // Find comments in a commit range or on a single commit
 // @return result.Result<[]*Comment, error>
 func CommentsOnCommittish(repoPath string, committish string) result.Result {
-	return WithRepository(repoPath, func(repo *git.Repository) result.Result {
-		resolution := ResolveCommits(repo, committish)
+	return gitg.WithRepository(repoPath, func(repo *git.Repository) result.Result {
+		resolution := gitg.ResolveCommits(repo, committish)
 		return resolution.FlatMap(func(commitRange interface{}) result.Result {
-			return CommentsOnCommits(repo, commitRange.(*CommitRange).Commits())
+			return CommentsOnCommits(repo, commitRange.(*gitg.CommitRange).Commits())
 		})
 	})
 }
@@ -39,7 +40,7 @@ func CommentsOnCommittish(repoPath string, committish string) result.Result {
 // Count comments on commit
 // @return result.Result<uint16, error>
 func CommentCountOnCommit(repo *git.Repository, commit string) result.Result {
-	return CommentRefIterator(repo, commit).FlatMap(func(iterator interface{}) result.Result {
+	return gitg.CommentRefIterator(repo, commit).FlatMap(func(iterator interface{}) result.Result {
 		refIterator := iterator.(*git.ReferenceIterator)
 		_, err := refIterator.Next()
 		var count uint16 = 0
@@ -59,10 +60,10 @@ func CommentCountOnCommit(repo *git.Repository, commit string) result.Result {
 // Finds all comments on a given commit
 // @return result.Result<[]*Comment, error>
 func CommentsOnCommit(repoPath string, commitHash *string) result.Result {
-	return WithRepository(repoPath, func(repo *git.Repository) result.Result {
-		hash := ResolveSingleCommitHash(repo, commitHash)
+	return gitg.WithRepository(repoPath, func(repo *git.Repository) result.Result {
+		hash := gitg.ResolveSingleCommitHash(repo, commitHash)
 		return hash.FlatMap(func(commit interface{}) result.Result {
-			return LookupCommit(repo, *(commit.(*string)))
+			return gitg.LookupCommit(repo, *(commit.(*string)))
 		}).FlatMap(func(commit interface{}) result.Result {
 			return commentsOnCommit(repo, commit.(*git.Commit))
 		})
@@ -91,7 +92,7 @@ func CommentsOnCommits(repo *git.Repository, commits []*git.Commit) result.Resul
 // Finds all comments on a commit
 // @return result.Result<[]*Comment, error>
 func commentsOnCommit(repo *git.Repository, commit *git.Commit) result.Result {
-	return CommentRefIterator(repo, commit.Id().String()).FlatMap(func(iterator interface{}) result.Result {
+	return gitg.CommentRefIterator(repo, commit.Id().String()).FlatMap(func(iterator interface{}) result.Result {
 		refIterator := iterator.(*git.ReferenceIterator)
 		var comments []interface{}
 		ref, err := refIterator.Next()

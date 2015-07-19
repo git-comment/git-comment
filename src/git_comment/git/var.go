@@ -1,8 +1,6 @@
-package git_comment
+package git
 
 import (
-	"errors"
-	"github.com/kylef/result.go/src/result"
 	"os"
 	"os/exec"
 	"strings"
@@ -28,15 +26,13 @@ func ConfiguredPager(repoPath string) string {
 }
 
 // The author of a piece of code as configured through git-var(1)
-func ConfiguredAuthor(repoPath string) result.Result {
-	defaultError := result.NewFailure(errors.New(authorNotFoundError))
-	return CreatePerson(gitVariable(repoPath, "GIT_AUTHOR_IDENT", "")).RecoverWith(defaultError)
+func ConfiguredAuthor(repoPath string) string {
+	return gitVariable(repoPath, "GIT_AUTHOR_IDENT", "")
 }
 
 // The committer of a piece of code as configured through git-var(1)
-func ConfiguredCommitter(repoPath string) result.Result {
-	defaultError := result.NewFailure(errors.New(committerNotFoundError))
-	return CreatePerson(gitVariable(repoPath, "GIT_COMMITTER_IDENT", "")).RecoverWith(defaultError)
+func ConfiguredCommitter(repoPath string) string {
+	return gitVariable(repoPath, "GIT_COMMITTER_IDENT", "")
 }
 
 func gitVariable(repoPath, name, fallback string) string {

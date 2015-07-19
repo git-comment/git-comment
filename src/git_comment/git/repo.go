@@ -1,10 +1,15 @@
-package git_comment
+package git
 
 import (
 	"errors"
 	"github.com/kylef/result.go/src/result"
 	git "github.com/libgit2/git2go"
 	"path"
+)
+
+const (
+	invalidHashError = "Invalid commit hash for storage"
+	CommentRefBase   = "refs/comments"
 )
 
 // @return result.Result<*git.Repository, error>
@@ -20,10 +25,10 @@ func WithRepository(repoPath string, ifSuccess func(repo *git.Repository) result
 
 // Find blob for an ID
 // @return result.Result<*git.Blob, error>
-func LookupBlob(repo *git.Repository, identifier string) result.Result {
+func LookupBlob(repo *git.Repository, identifier, errorCode string) result.Result {
 	return result.NewResult(git.NewOid(identifier)).FlatMap(func(oid interface{}) result.Result {
 		return result.NewResult(repo.LookupBlob(oid.(*git.Oid)))
-	}).RecoverWith(result.NewFailure(errors.New(commentNotFoundError)))
+	}).RecoverWith(result.NewFailure(errors.New(errorCode)))
 }
 
 // Find commit for an ID
@@ -54,4 +59,14 @@ func CommentRefIterator(repo *git.Repository, commitHash string) result.Result {
 // @return result.Result<*git.Oid, error>
 func CreateBlob(repo *git.Repository, content string) result.Result {
 	return result.NewResult(repo.CreateBlobFromBuffer([]byte(content)))
+}
+
+// Base reference path for a commit
+// @return result.Result<string, error>
+func CommitRefDir(hash string) result.Result {
+	const commentPath = "refs/comments"
+	if len(hash) > 4 {
+		return result.NewSuccess(path.Join(commentPath, hash[:4], hash[4:len(hash)]))
+	}
+	return result.NewFailure(errors.New(invalidHashError))
 }

@@ -1,4 +1,4 @@
-package git_comment
+package git
 
 //package git
 

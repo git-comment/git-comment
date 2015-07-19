@@ -1,4 +1,4 @@
-package git_comment
+package git
 
 import (
 	"github.com/kylef/result.go/src/result"
@@ -17,7 +17,7 @@ func WithRemote(repoPath, remoteName string, ifSuccess func(*git.Remote) result.
 
 // Add a push refspec to a remote. Return true if added.
 // @return result.Result<bool, error>
-func addPush(remote *git.Remote, pushRef string) result.Result {
+func AddPush(remote *git.Remote, pushRef string) result.Result {
 	p := result.NewResult(remote.PushRefspecs())
 	return p.FlatMap(func(pushes interface{}) result.Result {
 		if !contains(pushes.([]string), pushRef) {
@@ -29,7 +29,7 @@ func addPush(remote *git.Remote, pushRef string) result.Result {
 
 // Add a fetch refspec to a remote. Return true if added.
 // @return result.Result<bool, error>
-func addFetch(remote *git.Remote, fetchRef string) result.Result {
+func AddFetch(remote *git.Remote, fetchRef string) result.Result {
 	f := result.NewResult(remote.FetchRefspecs())
 	return f.FlatMap(func(fetches interface{}) result.Result {
 		if !contains(fetches.([]string), fetchRef) {

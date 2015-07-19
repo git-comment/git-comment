@@ -1,5 +1,5 @@
 PROJECT=git_comment
-PACKAGES=exec log
+PACKAGES=exec log git
 VERSION=$(shell cat VERSION)
 SRC_PATH=$(GOPATH)src/$(PROJECT)
 BIN_PATH=/usr/local/bin/

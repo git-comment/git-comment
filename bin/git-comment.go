@@ -5,6 +5,7 @@ import (
 	"fmt"
 	gc "git_comment"
 	gx "git_comment/exec"
+	gg "git_comment/git"
 	kp "gopkg.in/alecthomas/kingpin.v2"
 	"io/ioutil"
 	"os"
@@ -45,7 +46,7 @@ func main() {
 }
 
 func editComment(pwd string) {
-	parsedCommit := gx.FatalIfError(app, gc.ResolvedCommit(pwd, commit), "git")
+	parsedCommit := gx.FatalIfError(app, gg.ResolvedCommit(pwd, commit), "git")
 	if len(*message) == 0 {
 		*message = getMessageFromEditor(pwd)
 	}
@@ -62,7 +63,7 @@ func editComment(pwd string) {
 }
 
 func getMessageFromEditor(pwd string) string {
-	editor := gc.ConfiguredEditor(pwd)
+	editor := gg.ConfiguredEditor(pwd)
 	file, err := ioutil.TempFile("", "gitc")
 	app.FatalIfError(err, "io")
 	path := file.Name()

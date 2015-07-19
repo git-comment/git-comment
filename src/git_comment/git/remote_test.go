@@ -1,4 +1,4 @@
-package git_comment
+package git
 
 import (
 	"github.com/stvp/assert"
