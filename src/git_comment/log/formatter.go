@@ -157,7 +157,7 @@ func (f *Formatter) FormatFilePath(file *gitc.DiffFile) string {
 	} else {
 		path = file.NewPath
 	}
-	return fmt.Sprintf("%v\n", path)
+	return fmt.Sprintf("\n%v\n", path)
 }
 
 func (f *Formatter) formatLinePrefix(line *gitc.DiffLine) string {
