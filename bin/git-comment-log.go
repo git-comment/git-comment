@@ -1,15 +1,11 @@
 package main
 
 import (
-	"fmt"
 	gitc "git_comment"
 	gite "git_comment/exec"
 	gitl "git_comment/log"
 	kp "gopkg.in/alecthomas/kingpin.v2"
-	"io"
 	"os"
-	"os/exec"
-	"strings"
 )
 
 var (
@@ -19,6 +15,8 @@ var (
 	noPager      = app.Flag("nopager", "Disable pager").Bool()
 	noColor      = app.Flag("nocolor", "Disable color").Bool()
 	lineNumbers  = app.Flag("line-numbers", "Show line numbers").Bool()
+	linesBefore  = app.Flag("lines-before", "Number of context lines to show before comments").Short('B').Int()
+	linesAfter   = app.Flag("lines-after", "Number of context lines to show after comments").Short('A').Int()
 	revision     = app.Arg("revision range", "Filter comments to comments on commits from the specified range").String()
 	formatter    *gitl.Formatter
 	termHeight   uint16
@@ -46,30 +44,8 @@ func configureFormatter() {
 }
 
 func showComments(pwd string) {
-	var usePager bool = termHeight == 0 && !*noPager
-	var content []byte
-	var writer io.WriteCloser
-	var cmd *exec.Cmd
-	var err error
+	pager := gitl.NewContentPager(app, pwd, termHeight, *noPager)
 	diff := gite.FatalIfError(app, gitc.DiffCommits(pwd, *revision), "diff")
-	pageContent := func(data string) {
-		content = append(content, []byte(data)...)
-		if !usePager {
-			lines := strings.Split(string(content), "\n")
-			usePager = !*noPager && uint16(len(lines)) > termHeight-1
-		}
-		if usePager {
-			if writer == nil {
-				cmd, writer, err = gite.ExecPager(pwd)
-				app.FatalIfError(err, "pager")
-			}
-			if len(content) > 0 {
-				_, err = writer.Write(content)
-				content = []byte{}
-				app.FatalIfError(err, "writer")
-			}
-		}
-	}
 	for _, file := range diff.(*gitc.Diff).Files {
 		var printedFileHeader = false
 		var afterComment = false
@@ -78,47 +54,40 @@ func showComments(pwd string) {
 		for _, line := range file.Lines {
 			if len(line.Comments) > 0 {
 				for _, line := range afterBuffer {
-					pageContent(formatter.FormatLine(line))
+					pager.AddContent(formatter.FormatLine(line))
 				}
 				afterBuffer = make([]*gitc.DiffLine, 0)
 				if !printedFileHeader {
-					pageContent(formatter.FormatFilePath(file))
+					pager.AddContent(formatter.FormatFilePath(file))
 					printedFileHeader = true
 				}
 				for _, line := range beforeBuffer {
-					pageContent(formatter.FormatLine(line))
+					pager.AddContent(formatter.FormatLine(line))
 				}
-				pageContent(formatter.FormatLine(line))
+				pager.AddContent(formatter.FormatLine(line))
 				for _, comment := range line.Comments {
-					pageContent(formatter.FormatComment(comment))
+					pager.AddContent(formatter.FormatComment(comment))
 				}
 				beforeBuffer = make([]*gitc.DiffLine, 0)
 				afterComment = true
 			} else {
 				if afterComment {
 					afterBuffer = append(afterBuffer, line)
-					if len(afterBuffer) == 5 {
+					if len(afterBuffer) == *linesAfter {
 						for _, line := range afterBuffer {
-							pageContent(formatter.FormatLine(line))
+							pager.AddContent(formatter.FormatLine(line))
 						}
 						afterBuffer = make([]*gitc.DiffLine, 0)
 						afterComment = false
 					}
 				} else {
 					beforeBuffer = append(beforeBuffer, line)
-					if len(beforeBuffer) > 5 {
+					if len(beforeBuffer) > *linesBefore {
 						beforeBuffer = append(beforeBuffer[:0], beforeBuffer[1:]...)
 					}
 				}
 			}
 		}
 	}
-	if !usePager {
-		fmt.Println(string(content))
-	}
-
-	if writer != nil {
-		writer.Close()
-		cmd.Wait()
-	}
+	pager.Finish()
 }
