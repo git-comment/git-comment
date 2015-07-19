@@ -12,6 +12,7 @@ import (
 var (
 	buildVersion string
 	app          = kp.New("git-comment-log", "List git commit comments")
+	fullDiff     = app.Flag("full-diff", "Show the full diff surrounding the comments").Bool()
 	pretty       = app.Flag("pretty", "Pretty-print the comments in a format such as short, full, raw, or custom placeholders.").String()
 	noPager      = app.Flag("nopager", "Disable pager").Bool()
 	noColor      = app.Flag("nocolor", "Disable color").Bool()
@@ -37,6 +38,7 @@ func showComments(pwd string) {
 	app.FatalIfError(diff.Failure, "diff")
 	formatter := newFormatter(termWidth)
 	printer := gitl.NewDiffPrinter(pager, formatter, *linesBefore, *linesAfter)
+	printer.PrintFullDiff = *fullDiff
 	printer.PrintDiff(diff.Success.(*gitc.Diff))
 }
 

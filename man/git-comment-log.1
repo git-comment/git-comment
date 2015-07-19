@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "GIT-COMMENT-LOG 1"
-.TH GIT-COMMENT-LOG 1 "2015-07-16" "1.0.0.0" "Git Comment Manual"
+.TH GIT-COMMENT-LOG 1 "2015-07-18" "1.0.0.0" "Git Comment Manual"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -154,15 +154,33 @@
 git-comment-log lists comments attached to a range of commits, optionally with context.
 .SH "OPTIONS"
 .IX Header "OPTIONS"
+.IP "\-\-full\-diff" 4
+.IX Item "--full-diff"
+Print the full diff surrounding the comments. Overrides \fIlines-before\fR and \fIlines-after\fR.
 .IP "\-\-help" 4
 .IX Item "--help"
 Print a usage message
-.IP "\-\-version" 4
-.IX Item "--version"
-Print the current version number
+.IP "\fI\-B\fR, \-\-lines\-before" 4
+.IX Item "-B, --lines-before"
+Number of lines of context to show before comments
+.IP "\fI\-A\fR, \-\-lines\-after" 4
+.IX Item "-A, --lines-after"
+Number of lines of context to show after comments
+.IP "\-\-line\-numbers" 4
+.IX Item "--line-numbers"
+Print line numbers for diff lines
+.IP "\-\-nocolor" 4
+.IX Item "--nocolor"
+Disable color in comments and diffs
+.IP "\-\-nopager" 4
+.IX Item "--nopager"
+Disable pager for long output
 .IP "\-\-pretty <format>" 4
 .IX Item "--pretty <format>"
 Pretty-print comments in a format specified by \s-1PRETTY FORMATS\s0
+.IP "\-\-version" 4
+.IX Item "--version"
+Print the current version number
 .IP "<revision range>" 4
 .IX Item "<revision range>"
 Show comments only from commits in the specified revision range. When

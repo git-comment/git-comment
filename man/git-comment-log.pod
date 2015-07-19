@@ -18,17 +18,41 @@ git-comment-log lists comments attached to a range of commits, optionally with c
 
 =over 4
 
+=item --full-diff
+
+Print the full diff of the commits containing the comments
+
 =item --help
 
 Print a usage message
 
-=item --version
+=item I<-B>, --lines-before
 
-Print the current version number
+Number of lines of context to show before comments
+
+=item I<-A>, --lines-after
+
+Number of lines of context to show after comments
+
+=item --line-numbers
+
+Print line numbers for diff lines
+
+=item --nocolor
+
+Disable color in comments and diffs
+
+=item --nopager
+
+Disable pager for long output
 
 =item --pretty <format>
 
 Pretty-print comments in a format specified by PRETTY FORMATS
+
+=item --version
+
+Print the current version number
 
 =item <revision range>
 
