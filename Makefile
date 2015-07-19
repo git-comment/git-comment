@@ -21,6 +21,7 @@ bootstrap:
 	go get gopkg.in/alecthomas/kingpin.v2
 	go get github.com/kylef/result.go/src/result
 	go get github.com/blevesearch/bleve
+	go get github.com/blang/semver
 
 build: copy
 	go build $(PROJECT)
