@@ -11,24 +11,36 @@ import (
 
 const (
 	DefaultMessageTemplate = "\n# Enter comment content\n# Lines beginning with '#' will be stripped"
+	maxCommentsOnCommit    = 4096
 	defaultMessageFormat   = "Created a comment ref on [%v] to [%v]"
+	maxCommentError        = "Maximum comments on [%v] reached."
 )
 
 // Create a new comment on a commit, optionally with a file and line
 // @return result.Result<*string, error>
 func CreateComment(repoPath string, commit *string, fileRef *FileRef, message string) result.Result {
-	repo := OpenRepository(repoPath)
-	return ConfiguredAuthor(repoPath).FlatMap(func(author interface{}) result.Result {
-		return repo.FlatMap(func(value interface{}) result.Result {
-			return ResolveSingleCommitHash(value.(*git.Repository), commit)
-		}).FlatMap(func(hash interface{}) result.Result {
-			return NewComment(message, *(hash).(*string), fileRef, author.(*Person))
-		}).FlatMap(func(value interface{}) result.Result {
-			comment := value.(*Comment)
-			success := writeCommentToDisk(repo.Success.(*git.Repository), comment)
-			return success.FlatMap(func(value interface{}) result.Result {
-				return result.NewSuccess(comment.ID)
+	return WithRepository(repoPath, func(repo *git.Repository) result.Result {
+		return validatedCommitForComment(repo, commit).FlatMap(func(hash interface{}) result.Result {
+			return ConfiguredAuthor(repoPath).FlatMap(func(author interface{}) result.Result {
+				return NewComment(message, *(hash).(*string), fileRef, author.(*Person))
+			}).FlatMap(func(value interface{}) result.Result {
+				comment := value.(*Comment)
+				success := writeCommentToDisk(repo, comment)
+				return success.FlatMap(func(value interface{}) result.Result {
+					return result.NewSuccess(comment.ID)
+				})
 			})
+		})
+	})
+}
+
+func validatedCommitForComment(repo *git.Repository, commit *string) result.Result {
+	return ResolveSingleCommitHash(repo, commit).FlatMap(func(hash interface{}) result.Result {
+		return CommentCountOnCommit(repo, *(hash.(*string))).FlatMap(func(count interface{}) result.Result {
+			if count.(uint16) >= maxCommentsOnCommit {
+				return result.NewFailure(errors.New(maxCommentError))
+			}
+			return result.NewSuccess(hash)
 		})
 	})
 }

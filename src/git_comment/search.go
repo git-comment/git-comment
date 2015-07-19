@@ -36,6 +36,26 @@ func CommentsOnCommittish(repoPath string, committish string) result.Result {
 	})
 }
 
+// Count comments on commit
+// @return result.Result<uint16, error>
+func CommentCountOnCommit(repo *git.Repository, commit string) result.Result {
+	return CommentRefIterator(repo, commit).FlatMap(func(iterator interface{}) result.Result {
+		refIterator := iterator.(*git.ReferenceIterator)
+		_, err := refIterator.Next()
+		var count uint16 = 0
+		for {
+			if err != nil && err.(*git.GitError).Code == git.ErrIterOver {
+				break
+			} else if err != nil {
+				return result.NewFailure(err)
+			}
+			count += 1
+			_, err = refIterator.Next()
+		}
+		return result.NewSuccess(count)
+	})
+}
+
 // Finds all comments on a given commit
 // @return result.Result<[]*Comment, error>
 func CommentsOnCommit(repoPath string, commitHash *string) result.Result {
