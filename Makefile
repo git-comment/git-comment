@@ -2,6 +2,7 @@ PROJECT=git_comment
 PACKAGES=exec log git
 VERSION=$(shell cat VERSION)
 SRC_PATH=$(GOPATH)src/$(PROJECT)
+BUILD_DIR=build/bin/
 BIN_PATH=/usr/local/bin/
 BIN_FILE_LIST=git-comment git-comment-grep git-comment-log git-comment-web
 BIN_BUILD_CMD=go build -ldflags "-X main.buildVersion $(VERSION)"
@@ -22,12 +23,12 @@ bootstrap:
 
 build: copy
 	go build $(PROJECT)
-	$(foreach bin,$(BIN_FILE_LIST),$(BIN_BUILD_CMD) bin/$(bin).go;)
+	mkdir -p $(BUILD_DIR)
+	$(foreach bin,$(BIN_FILE_LIST),$(BIN_BUILD_CMD) -o $(BUILD_DIR)/$(bin) bin/$(bin).go;)
 
 clean:
 	go clean -i -x $(PROJECT)
-	rm -rf $(SRC_PATH)
-	$(foreach bin,$(BIN_FILE_LIST),rm $(bin);)
+	rm -rf $(SRC_PATH) $(BUILD_DIR)
 
 copy:
 	$(foreach pack,$(PACKAGES),install -d $(SRC_PATH)/$(pack);)
@@ -43,7 +44,7 @@ install: doc
 		cp man/$(bin).1 $(MAN_TMP_PATH)$(bin).1; \
 		chown root:admin $(MAN_TMP_PATH)$(bin).1; \
 		chmod 444 $(MAN_TMP_PATH)$(bin).1; \
-		install $(bin) $(BIN_PATH)$(bin); \
+		install $(BUILD_DIR)/$(bin) $(BIN_PATH)$(bin); \
 		gzip -f $(MAN_TMP_PATH)$(bin).1; \
 		install -C $(MAN_TMP_PATH)$(bin).1.gz $(MAN_PATH)$(bin).1.gz;)
 	rm -r $(MAN_TMP_PATH)
