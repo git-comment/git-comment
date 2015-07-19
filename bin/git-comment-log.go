@@ -9,6 +9,8 @@ import (
 	"os"
 )
 
+const defaultContextLines = 3
+
 var (
 	buildVersion string
 	app          = kp.New("git-comment-log", "List git commit comments")
@@ -17,9 +19,10 @@ var (
 	noPager      = app.Flag("nopager", "Disable pager").Bool()
 	noColor      = app.Flag("nocolor", "Disable color").Bool()
 	lineNumbers  = app.Flag("line-numbers", "Show line numbers").Bool()
-	linesBefore  = app.Flag("lines-before", "Number of context lines to show before comments").Short('B').Int()
-	linesAfter   = app.Flag("lines-after", "Number of context lines to show after comments").Short('A').Int()
+	linesBefore  = app.Flag("lines-before", "Number of context lines to show before comments").Short('B').Int64()
+	linesAfter   = app.Flag("lines-after", "Number of context lines to show after comments").Short('A').Int64()
 	revision     = app.Arg("revision range", "Filter comments to comments on commits from the specified range").String()
+	contextLines uint32
 )
 
 func main() {
@@ -33,21 +36,36 @@ func main() {
 func showComments(pwd string) {
 	termHeight, termWidth := gite.CalculateDimensions()
 	pager := gitl.NewPager(app, pwd, termHeight, *noPager)
-	contextLines := uint32(math.Max(float64(*linesBefore), float64(*linesAfter)))
+	computeContextLines(pwd)
 	diff := gitc.DiffCommits(pwd, *revision, contextLines)
 	app.FatalIfError(diff.Failure, "diff")
-	formatter := newFormatter(termWidth)
-	printer := gitl.NewDiffPrinter(pager, formatter, *linesBefore, *linesAfter)
-	printer.PrintFullDiff = *fullDiff
+	formatter := newFormatter(pwd, termWidth)
+	printer := newPrinter(pager, formatter)
 	printer.PrintDiff(diff.Success.(*gitc.Diff))
 }
 
-func newFormatter(termWidth uint16) *gitl.Formatter {
+func newFormatter(wd string, termWidth uint16) *gitl.Formatter {
 	var useColor bool
 	if !*noColor {
-		if wd, err := os.Getwd(); err == nil {
-			useColor = gitc.ConfiguredBool(wd, "color.pager", false)
-		}
+		useColor = gitc.ConfiguredBool(wd, "color.pager", false)
 	}
 	return gitl.NewFormatter(*pretty, *lineNumbers, useColor, termWidth)
+}
+
+func newPrinter(pager *gitl.Pager, formatter *gitl.Formatter) *gitl.DiffPrinter {
+	printer := gitl.NewDiffPrinter(pager, formatter, *linesBefore, *linesAfter)
+	printer.PrintFullDiff = *fullDiff
+	return printer
+}
+
+func computeContextLines(wd string) {
+	if *linesBefore == 0 {
+		before := int64(gitc.ConfiguredInt32(wd, "comment-log.lines-before", defaultContextLines))
+		linesBefore = &before
+	}
+	if *linesAfter == 0 {
+		after := int64(gitc.ConfiguredInt32(wd, "comment-log.lines-after", defaultContextLines))
+		linesAfter = &after
+	}
+	contextLines = uint32(math.Max(float64(*linesBefore), float64(*linesAfter)))
 }

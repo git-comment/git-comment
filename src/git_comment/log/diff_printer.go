@@ -12,14 +12,14 @@ type DiffPrinter struct {
 	formatter         *Formatter
 	beforeBuffer      []*gitc.DiffLine
 	afterBuffer       []*gitc.DiffLine
-	beforeBufferSize  int
-	afterBufferSize   int
+	beforeBufferSize  int64
+	afterBufferSize   int64
 	afterComment      bool
 	printedFileHeader bool
 	currentFile       *gitc.DiffFile
 }
 
-func NewDiffPrinter(pager *Pager, formatter *Formatter, linesBefore int, linesAfter int) *DiffPrinter {
+func NewDiffPrinter(pager *Pager, formatter *Formatter, linesBefore int64, linesAfter int64) *DiffPrinter {
 	printer := &DiffPrinter{}
 	printer.pager = pager
 	printer.formatter = formatter
@@ -54,14 +54,14 @@ func (r *DiffPrinter) PrintDiff(diff *gitc.Diff) {
 
 func (r *DiffPrinter) addLineBeforeComments(line *gitc.DiffLine) {
 	r.beforeBuffer = append(r.beforeBuffer, line)
-	if len(r.beforeBuffer) > r.beforeBufferSize {
+	if int64(len(r.beforeBuffer)) > r.beforeBufferSize {
 		r.beforeBuffer = append(r.beforeBuffer[:0], r.beforeBuffer[1:]...)
 	}
 }
 
 func (r *DiffPrinter) addLineAfterComments(line *gitc.DiffLine) {
 	r.afterBuffer = append(r.afterBuffer, line)
-	if len(r.afterBuffer) == r.afterBufferSize {
+	if int64(len(r.afterBuffer)) == r.afterBufferSize {
 		r.printTrailingLines()
 		r.afterComment = false
 	}
