@@ -42,8 +42,10 @@ const (
 	Short         = "short"
 	Full          = "full"
 	Raw           = "raw"
+	Disco         = "disco"
 	ShortFormat   = "[%h] %c %an <%ae>\n%t\n\n"
 	FullFormat    = "commit  %H\ncomment %C\nAuthor: %an <%ae>\n%b\n\n"
+	discoFormat   = "%nmagenta(>) cyan(%an) blue(<%ae>)%n  [%h][%c] blue(%ad)%n%ncyan(%b)%nyellow(-----)"
 	RawFormat     = "comment %C\n%v\n\n"
 	formatPrefix  = "format:"
 	invalidFormat = "Unknown pretty format."
@@ -106,12 +108,13 @@ func (f *Formatter) FormatComment(comment *gitc.Comment) string {
 		return f.substituteVariables(ShortFormat, comment)
 	case f.format == Full:
 		return f.substituteVariables(FullFormat, comment)
+	case f.format == Disco:
+		return f.substituteVariables(discoFormat, comment)
 	case f.format == Raw:
 		format := string(f.substituteVariables(RawFormat, comment))
 		return fmt.Sprintf(format, *comment.ID)
 	case strings.HasPrefix(f.format, formatPrefix):
-		format := f.substituteVariables(f.format[len(formatPrefix):], comment)
-		return fmt.Sprintf("%v\n", f.substituteColors(format))
+		return f.substituteVariables(f.format[len(formatPrefix):], comment)
 	}
 	return ""
 }
@@ -184,12 +187,8 @@ func (f *Formatter) formatLineContent(line *gitc.DiffLine) string {
 	}
 }
 
-func (f *Formatter) substituteColors(format string) string {
-	return replaceAll(format, f.colorMapping)
-}
-
 func (f *Formatter) substituteVariables(format string, comment *gitc.Comment) string {
-	return replaceAll(format, f.commentMapping(comment))
+	return replaceAll(replaceAll(format, f.commentMapping(comment)), f.colorMapping)
 }
 
 func (f *Formatter) commentMapping(comment *gitc.Comment) map[string]string {

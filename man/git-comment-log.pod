@@ -93,6 +93,10 @@ There are a few built-in formats for specifying how a commit can be displayed, o
 
   <content>
 
+=item I<disco>
+
+A format similar to full with comment dividers and coloring
+
 =item I<format:string>
 
 Print using the provided custom placeholders:
