@@ -15,9 +15,9 @@
   * per repo?
   * validate before making changes/reading comments
 - [ ] comment content search
-- [ ] list comments by tree
-  * [ ] sort by date
-  * [ ] show diff lines before/after in log
+- [x] list comments by tree
+  * [x] sort by date
+  * [x] show diff lines before/after in log
 - [ ] pre-comment/post-comment hooks
   * [ ] disallow "invalid" comments
   * [ ] change comments before persisting
@@ -28,7 +28,7 @@
     - [ ] [Github](https://developer.github.com/v3/repos/comments/#list-comments-for-a-single-commit)
     - [ ] [Gitlab / Gitorious](http://doc.gitlab.com/ce/api/notes.html)
 - [ ] documentation for each binary
-- [ ] hard limit for number of comments on a commit (2^12?)
+- [x] hard limit for number of comments on a commit (2^12?)
 - [ ] editor integration
   * [ ] Reference plugin for vim
   * [ ] Reference plugin for xcode ?
