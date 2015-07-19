@@ -31,8 +31,8 @@ clean:
 
 copy:
 	$(foreach pack,$(PACKAGES),install -d $(SRC_PATH)/$(pack);)
-	install src/$(PROJECT)/*.go $(SRC_PATH)
-	$(foreach pack,$(PACKAGES),install src/$(PROJECT)/$(pack)/*.go $(SRC_PATH)/$(pack);)
+	install $(PROJECT)/*.go $(SRC_PATH)
+	$(foreach pack,$(PACKAGES),install $(PROJECT)/$(pack)/*.go $(SRC_PATH)/$(pack);)
 
 doc:
 	$(foreach bin,$(BIN_FILE_LIST), $(MAN_CMD) man/$(bin).pod > man/$(bin).1;)
