@@ -42,16 +42,17 @@ func CommentsWithContent(repoPath, content string) result.Result {
 func IndexComments(repoPath string) result.Result {
 	return openIndex(repoPath, func(repo *git.Repository, index bleve.Index) result.Result {
 		results := make([]result.Result, 0)
+		batch := index.NewBatch()
 		return gitg.CommentRefIterator(repo, func(ref *git.Reference) {
 			CommentFromRef(repo, ref.Name()).FlatMap(func(c interface{}) result.Result {
 				comment := c.(*Comment)
-				err := index.Index(*comment.ID, commentIndex(comment))
+				err := batch.Index(*comment.ID, commentIndex(comment))
 				results = append(results, gitg.BoolResult(true, err))
 				return result.NewSuccess(true)
 			})
 		}).FlatMap(func(value interface{}) result.Result {
 			return result.Combine(func(values ...interface{}) result.Result {
-				return result.NewSuccess(true)
+				return gitg.BoolResult(true, index.Batch(batch))
 			}, results...)
 		})
 	})
