@@ -3,6 +3,7 @@ package git_comment
 import (
 	"errors"
 	"github.com/kylef/result.go/src/result"
+	"strings"
 	"time"
 )
 
@@ -87,6 +88,11 @@ func DeserializeComment(content string) result.Result {
 	}
 	comment.AmendTime = *aTime
 	return result.NewSuccess(comment)
+}
+
+// First line of the comment content
+func (c *Comment) Title() string {
+	return strings.Split(c.Content, "\n")[0]
 }
 
 // Update the message content of the comment
