@@ -1,0 +1,42 @@
+=pod
+
+=head1 NAME
+
+    git-comment-grep - Print comments containing text
+
+=head1 SYNOPSIS
+
+    git comment-grep find <text>
+    git comment-grep index
+    git comment-grep --help
+    git comment-grep --version
+
+=head1 DESCRIPTION
+
+Index comments and match text.
+
+=head1 COMMANDS
+
+=over 4
+
+=item find <text>
+
+Look for text in comment blobs
+
+=item index
+
+Tokenize and cache comments for search
+
+=back
+
+=head1 OPTIONS
+
+=over 4
+
+=item --version
+
+Print the current version number
+
+=back
+
+=cut
