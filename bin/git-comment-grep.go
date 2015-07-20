@@ -2,12 +2,11 @@ package main
 
 import (
 	"fmt"
-	gc "git_comment"
 	gx "git_comment/exec"
-	gl "git_comment/log"
+	gg "git_comment/git"
+	gs "git_comment/search"
 	kp "gopkg.in/alecthomas/kingpin.v2"
 	"os"
-	"strings"
 )
 
 var (
@@ -34,36 +33,17 @@ func main() {
 
 func findText(wd, text string) {
 	termHeight, _ := gx.CalculateDimensions()
-	matches := gx.FatalIfError(app, gc.CommentsWithContent(wd, text), "find")
-	pager := gl.NewPager(app, wd, termHeight, *noPager)
-	for _, index := range matches.([]*gc.Comment) {
-		pager.AddContent(formatComment(index))
+	var useColor bool
+	if !*noColor {
+		useColor = gg.ConfiguredBool(wd, "color.pager", false)
 	}
-	pager.Finish()
+	pager := gx.NewPager(app, wd, termHeight, *noPager)
+	printer := gs.NewPrinter(useColor, pager)
+	gx.FatalIfError(app, printer.PrintCommentsMatching(wd, text), "find")
 }
 
 func indexComments(wd string) {
 	fmt.Printf("Indexing...")
-	gx.FatalIfError(app, gc.IndexComments(wd), "index")
+	gx.FatalIfError(app, gs.IndexComments(wd), "index")
 	fmt.Printf("done\n")
-}
-
-func formatComment(c *gc.Comment) string {
-	var path string
-	if c.FileRef != nil {
-		path = c.FileRef.Path
-	}
-	name := c.Author.Name
-	lines := strings.Split(c.Content, "\n")
-	title := lines[0]
-	if len(lines) > 1 {
-		title = fmt.Sprintf("%v...", title)
-	}
-
-	return fmt.Sprintf("[%v]%v:%v:%v\n  %v\n",
-		(*c.ID)[:7],
-		(*c.Commit)[:7],
-		name,
-		path,
-		title)
 }

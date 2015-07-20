@@ -1,5 +1,5 @@
 PROJECT=git_comment
-PACKAGES=exec log git
+PACKAGES=exec log git search
 VERSION=$(shell cat VERSION)
 SRC_PATH=$(GOPATH)src/$(PROJECT)
 BUILD_DIR=build/bin/
