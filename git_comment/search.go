@@ -2,117 +2,106 @@ package git_comment
 
 import (
 	gitg "git_comment/git"
+	"github.com/blevesearch/bleve"
 	"github.com/kylef/result.go/src/result"
 	git "github.com/libgit2/git2go"
-	"path"
-	"sort"
+	"os"
+	"path/filepath"
 )
 
+const (
+	indexFilePath = "index"
+)
+
+type CommentIndex struct {
+	Author  string
+	Amender string
+	Commit  string
+	Content string
+	FileRef string
+}
+
 // Find all comments matching text
-// @return result.Result<[]*Comment, error>
-func CommentsWithContent(content string) result.Result {
-	return result.NewSuccess(nil)
-}
-
-// Finds a comment by ID
-// @return result.Result<*Comment, error>
-func CommentByID(repo *git.Repository, identifier string) result.Result {
-	return gitg.LookupBlob(repo, identifier, commentNotFoundError).FlatMap(func(blob interface{}) result.Result {
-		return DeserializeComment(string(blob.(*git.Blob).Contents()))
-	}).FlatMap(func(c interface{}) result.Result {
-		comment := c.(*Comment)
-		comment.ID = &identifier
-		return result.NewSuccess(comment)
-	})
-}
-
-// Find comments in a commit range or on a single commit
-// @return result.Result<[]*Comment, error>
-func CommentsOnCommittish(repoPath string, committish string) result.Result {
-	return gitg.WithRepository(repoPath, func(repo *git.Repository) result.Result {
-		resolution := gitg.ResolveCommits(repo, committish)
-		return resolution.FlatMap(func(commitRange interface{}) result.Result {
-			return CommentsOnCommits(repo, commitRange.(*gitg.CommitRange).Commits())
-		})
-	})
-}
-
-// Count comments on commit
-// @return result.Result<uint16, error>
-func CommentCountOnCommit(repo *git.Repository, commit string) result.Result {
-	return gitg.CommentRefIterator(repo, commit).FlatMap(func(iterator interface{}) result.Result {
-		refIterator := iterator.(*git.ReferenceIterator)
-		_, err := refIterator.Next()
-		var count uint16 = 0
-		for {
-			if err != nil && err.(*git.GitError).Code == git.ErrIterOver {
-				break
-			} else if err != nil {
-				return result.NewFailure(err)
-			}
-			count += 1
-			_, err = refIterator.Next()
+// @return result.Result<[]*CommentIndex, error>
+func CommentsWithContent(repoPath, content string) result.Result {
+	return openIndex(repoPath, func(repo *git.Repository, index bleve.Index) result.Result {
+		query := bleve.NewQueryStringQuery(content)
+		request := bleve.NewSearchRequest(query)
+		return result.NewResult(index.Search(request))
+	}).FlatMap(func(match interface{}) result.Result {
+		hits := match.(bleve.SearchResult).Hits
+		indices := make([]*CommentIndex, len(hits))
+		for idx, hit := range hits {
+			indices[idx] = hitIndex(hit.Fields)
 		}
-		return result.NewSuccess(count)
+		return result.NewSuccess(indices)
 	})
 }
 
-// Finds all comments on a given commit
-// @return result.Result<[]*Comment, error>
-func CommentsOnCommit(repoPath string, commitHash *string) result.Result {
-	return gitg.WithRepository(repoPath, func(repo *git.Repository) result.Result {
-		hash := gitg.ResolveSingleCommitHash(repo, commitHash)
-		return hash.FlatMap(func(commit interface{}) result.Result {
-			return gitg.LookupCommit(repo, *(commit.(*string)))
-		}).FlatMap(func(commit interface{}) result.Result {
-			return commentsOnCommit(repo, commit.(*git.Commit))
-		})
-	})
-}
-
-// Finds all comments on an array of commits
-// @return result.Result<[]*Comment, error>
-func CommentsOnCommits(repo *git.Repository, commits []*git.Commit) result.Result {
-	results := make([]result.Result, len(commits))
-	for index, commit := range commits {
-		results[index] = commentsOnCommit(repo, commit)
-	}
-	return result.Combine(func(values ...interface{}) result.Result {
-		comments := make(CommentSlice, 0)
-		for _, list := range values {
-			for _, comment := range list.([]interface{}) {
-				comments = append(comments, comment.(*Comment))
-			}
-		}
-		sort.Stable(comments)
-		return result.NewSuccess(comments)
-	}, results...)
-}
-
-// Finds all comments on a commit
-// @return result.Result<[]*Comment, error>
-func commentsOnCommit(repo *git.Repository, commit *git.Commit) result.Result {
-	return gitg.CommentRefIterator(repo, commit.Id().String()).FlatMap(func(iterator interface{}) result.Result {
-		refIterator := iterator.(*git.ReferenceIterator)
-		var comments []interface{}
-		ref, err := refIterator.Next()
-		for {
-			if err != nil && err.(*git.GitError).Code == git.ErrIterOver {
-				break
-			} else if err != nil {
-				return result.NewFailure(err)
-			}
-			commentFromRef(repo, ref.Name()).FlatMap(func(comment interface{}) result.Result {
-				comments = append(comments, comment)
-				return result.Result{}
+// @return result.Result<bool, error>
+func IndexComments(repoPath string) result.Result {
+	return openIndex(repoPath, func(repo *git.Repository, index bleve.Index) result.Result {
+		results := make([]result.Result, 0)
+		return gitg.CommentRefIterator(repo, func(ref *git.Reference) {
+			CommentFromRef(repo, ref.Name()).FlatMap(func(c interface{}) result.Result {
+				comment := c.(*Comment)
+				err := index.Index(*comment.ID, commentIndex(comment))
+				results = append(results, gitg.BoolResult(true, err))
+				return result.NewSuccess(true)
 			})
-			ref, err = refIterator.Next()
-		}
-		return result.NewSuccess(comments)
+		}).FlatMap(func(value interface{}) result.Result {
+			return result.Combine(func(values ...interface{}) result.Result {
+				return result.NewSuccess(true)
+			}, results...)
+		})
 	})
 }
 
-func commentFromRef(repo *git.Repository, refName string) result.Result {
-	_, identifier := path.Split(refName)
-	return CommentByID(repo, identifier)
+// @return result.Result<bool, error>
+func IndexComment(repoPath string, comment *Comment) result.Result {
+	return openIndex(repoPath, func(repo *git.Repository, index bleve.Index) result.Result {
+		return gitg.BoolResult(true, index.Index(*comment.ID, commentIndex(comment)))
+	})
+}
+
+// Open or create a search index
+// @return result.Result<bleve.Index, error>
+func openIndex(repoPath string, ifSuccess func(*git.Repository, bleve.Index) result.Result) result.Result {
+	storage := filepath.Join(repoPath, CommentStorageDir)
+	indexPath := filepath.Join(storage, indexFilePath)
+	return gitg.WithRepository(repoPath, func(repo *git.Repository) result.Result {
+		os.Mkdir(storage, 0700)
+		success := func(index interface{}) result.Result {
+			return ifSuccess(repo, index.(bleve.Index))
+		}
+		return result.NewResult(bleve.Open(indexPath)).Analysis(success, func(err error) result.Result {
+			mapping := bleve.NewIndexMapping()
+			index := result.NewResult(bleve.New(indexPath, mapping))
+			return index.FlatMap(success)
+		})
+	})
+}
+
+func hitIndex(hit map[string]interface{}) *CommentIndex {
+	return &CommentIndex{
+		hit["Author"].(string),
+		hit["Amender"].(string),
+		hit["Commit"].(string),
+		hit["Content"].(string),
+		hit["FileRef"].(string),
+	}
+}
+
+func commentIndex(comment *Comment) *CommentIndex {
+	var filePath = ""
+	if comment.FileRef != nil {
+		filePath = comment.FileRef.Serialize()
+	}
+	return &CommentIndex{
+		comment.Author.Serialize(),
+		comment.Amender.Serialize(),
+		*comment.Commit,
+		comment.Content,
+		filePath,
+	}
 }
