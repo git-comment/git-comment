@@ -16,7 +16,7 @@ var (
 	indexCmd     = app.Command("index", "Index and cache comment content")
 	noPager      = app.Flag("nopager", "Disable pager").Bool()
 	noColor      = app.Flag("nocolor", "Disable color").Bool()
-	text         = findCmd.Arg("text", "Search text").String()
+	text         = findCmd.Arg("text", "Search text").Required().String()
 )
 
 func main() {
