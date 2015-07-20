@@ -8,12 +8,6 @@ import (
 	"sort"
 )
 
-// Find all comments matching text
-// @return result.Result<[]*Comment, error>
-func CommentsWithContent(content string) result.Result {
-	return result.NewSuccess(nil)
-}
-
 // Finds a comment by ID
 // @return result.Result<*Comment, error>
 func CommentByID(repo *git.Repository, identifier string) result.Result {
@@ -34,26 +28,6 @@ func CommentsOnCommittish(repoPath string, committish string) result.Result {
 		return resolution.FlatMap(func(commitRange interface{}) result.Result {
 			return CommentsOnCommits(repo, commitRange.(*gitg.CommitRange).Commits())
 		})
-	})
-}
-
-// Count comments on commit
-// @return result.Result<uint16, error>
-func CommentCountOnCommit(repo *git.Repository, commit string) result.Result {
-	return gitg.CommentRefIterator(repo, commit).FlatMap(func(iterator interface{}) result.Result {
-		refIterator := iterator.(*git.ReferenceIterator)
-		_, err := refIterator.Next()
-		var count uint16 = 0
-		for {
-			if err != nil && err.(*git.GitError).Code == git.ErrIterOver {
-				break
-			} else if err != nil {
-				return result.NewFailure(err)
-			}
-			count += 1
-			_, err = refIterator.Next()
-		}
-		return result.NewSuccess(count)
 	})
 }
 
@@ -89,30 +63,32 @@ func CommentsOnCommits(repo *git.Repository, commits []*git.Commit) result.Resul
 	}, results...)
 }
 
-// Finds all comments on a commit
-// @return result.Result<[]*Comment, error>
-func commentsOnCommit(repo *git.Repository, commit *git.Commit) result.Result {
-	return gitg.CommentRefIterator(repo, commit.Id().String()).FlatMap(func(iterator interface{}) result.Result {
-		refIterator := iterator.(*git.ReferenceIterator)
-		var comments []interface{}
-		ref, err := refIterator.Next()
-		for {
-			if err != nil && err.(*git.GitError).Code == git.ErrIterOver {
-				break
-			} else if err != nil {
-				return result.NewFailure(err)
-			}
-			commentFromRef(repo, ref.Name()).FlatMap(func(comment interface{}) result.Result {
-				comments = append(comments, comment)
-				return result.Result{}
-			})
-			ref, err = refIterator.Next()
-		}
-		return result.NewSuccess(comments)
+// Count comments on commit
+// @return result.Result<uint16, error>
+func CommentCountOnCommit(repo *git.Repository, commit string) result.Result {
+	var count uint16 = 0
+	return gitg.CommitCommentRefIterator(repo, commit, func(ref *git.Reference) {
+		count += 1
+	}).FlatMap(func(value interface{}) result.Result {
+		return result.NewSuccess(count)
 	})
 }
 
-func commentFromRef(repo *git.Repository, refName string) result.Result {
+func CommentFromRef(repo *git.Repository, refName string) result.Result {
 	_, identifier := path.Split(refName)
 	return CommentByID(repo, identifier)
+}
+
+// Finds all comments on a commit
+// @return result.Result<[]*Comment, error>
+func commentsOnCommit(repo *git.Repository, commit *git.Commit) result.Result {
+	var comments []interface{}
+	return gitg.CommitCommentRefIterator(repo, commit.Id().String(), func(ref *git.Reference) {
+		CommentFromRef(repo, ref.Name()).FlatMap(func(comment interface{}) result.Result {
+			comments = append(comments, comment)
+			return result.Result{}
+		})
+	}).FlatMap(func(value interface{}) result.Result {
+		return result.NewSuccess(comments)
+	})
 }

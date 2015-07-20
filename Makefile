@@ -1,5 +1,5 @@
 PROJECT=git_comment
-PACKAGES=exec log git
+PACKAGES=exec log git search
 VERSION=$(shell cat VERSION)
 SRC_PATH=$(GOPATH)src/$(PROJECT)
 BUILD_DIR=build/bin/
@@ -20,6 +20,7 @@ bootstrap:
 	go get github.com/cevaris/ordered_map
 	go get gopkg.in/alecthomas/kingpin.v2
 	go get github.com/kylef/result.go/src/result
+	go get github.com/blevesearch/bleve
 
 build: copy
 	go build $(PROJECT)

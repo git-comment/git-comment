@@ -2,13 +2,14 @@ package log
 
 import (
 	gitc "git_comment"
+	gitx "git_comment/exec"
 )
 
 const FullDiffContext = -1
 
 type DiffPrinter struct {
 	PrintFullDiff     bool
-	pager             *Pager
+	pager             *gitx.Pager
 	formatter         *Formatter
 	beforeBuffer      []*gitc.DiffLine
 	afterBuffer       []*gitc.DiffLine
@@ -19,7 +20,7 @@ type DiffPrinter struct {
 	currentFile       *gitc.DiffFile
 }
 
-func NewDiffPrinter(pager *Pager, formatter *Formatter, linesBefore int64, linesAfter int64) *DiffPrinter {
+func NewDiffPrinter(pager *gitx.Pager, formatter *Formatter, linesBefore int64, linesAfter int64) *DiffPrinter {
 	printer := &DiffPrinter{}
 	printer.pager = pager
 	printer.formatter = formatter

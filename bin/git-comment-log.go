@@ -36,7 +36,7 @@ func main() {
 
 func showComments(pwd string) {
 	termHeight, termWidth := gite.CalculateDimensions()
-	pager := gitl.NewPager(app, pwd, termHeight, *noPager)
+	pager := gite.NewPager(app, pwd, termHeight, *noPager)
 	computeContextLines(pwd)
 	diff := gitc.DiffCommits(pwd, *revision, contextLines)
 	app.FatalIfError(diff.Failure, "diff")
@@ -53,7 +53,7 @@ func newFormatter(wd string, termWidth uint16) *gitl.Formatter {
 	return gitl.NewFormatter(*pretty, *lineNumbers, useColor, termWidth)
 }
 
-func newPrinter(pager *gitl.Pager, formatter *gitl.Formatter) *gitl.DiffPrinter {
+func newPrinter(pager *gite.Pager, formatter *gitl.Formatter) *gitl.DiffPrinter {
 	printer := gitl.NewDiffPrinter(pager, formatter, *linesBefore, *linesAfter)
 	printer.PrintFullDiff = *fullDiff
 	return printer

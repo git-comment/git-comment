@@ -1,9 +1,8 @@
-package log
+package exec
 
 import (
 	"bytes"
 	"fmt"
-	gite "git_comment/exec"
 	kp "gopkg.in/alecthomas/kingpin.v2"
 	"io"
 	"os/exec"
@@ -42,7 +41,7 @@ func (p *Pager) AddContent(data string) {
 		}
 		if p.usePager {
 			if p.writer == nil {
-				p.cmd, p.writer, err = gite.ExecPager(p.wd)
+				p.cmd, p.writer, err = ExecPager(p.wd)
 				p.app.FatalIfError(err, "pager")
 			}
 			if len(p.content) > 0 {

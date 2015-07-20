@@ -11,6 +11,7 @@ import (
 )
 
 const (
+	CommentStorageDir      = ".git/comments"
 	DefaultMessageTemplate = "\n# Enter comment content\n# Lines beginning with '#' will be stripped"
 	maxCommentsOnCommit    = 4096
 	defaultMessageFormat   = "Created a comment ref on [%v] to [%v]"

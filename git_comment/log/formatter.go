@@ -212,7 +212,7 @@ func (f *Formatter) commentMapping(comment *gitc.Comment) map[string]string {
 		commitFull:           *comment.Commit,
 		commitShort:          (*comment.Commit)[:7],
 		bodyContent:          comment.Content,
-		titleLine:            strings.Split(comment.Content, "\n")[0],
+		titleLine:            comment.Title(),
 		filePath:             path,
 		lineNumber:           line,
 		newLine:              f.indent,
