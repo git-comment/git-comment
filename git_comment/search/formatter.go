@@ -4,6 +4,7 @@ import (
 	"fmt"
 	gitc "git_comment"
 	ex "git_comment/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -24,13 +25,13 @@ func (f *Formatter) FormatComment(c *gitc.Comment, highlight string) string {
 func (f *Formatter) formatHeader(c *gitc.Comment) string {
 	var path string
 	if c.FileRef != nil {
-		path = c.FileRef.Serialize()
+		_, path = filepath.Split(c.FileRef.Serialize())
 	}
 	name := c.Author.Name
-	return fmt.Sprintf("%v:%v:%v:%v\n",
-		(*c.ID)[:7],
-		(*c.Commit)[:7],
+	return fmt.Sprintf("%v %v %v:%v\n",
 		name,
+		c.CreateTime.Format("2006-01-02"),
+		(*c.Commit)[:7],
 		path)
 }
 
