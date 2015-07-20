@@ -22,19 +22,22 @@ type CommentIndex struct {
 }
 
 // Find all comments matching text
-// @return result.Result<[]*CommentIndex, error>
+// @return result.Result<[]*Comment, error>
 func CommentsWithContent(repoPath, content string) result.Result {
 	return openIndex(repoPath, func(repo *git.Repository, index bleve.Index) result.Result {
 		query := bleve.NewQueryStringQuery(content)
 		request := bleve.NewSearchRequest(query)
-		return result.NewResult(index.Search(request))
-	}).FlatMap(func(match interface{}) result.Result {
-		hits := match.(bleve.SearchResult).Hits
-		indices := make([]*CommentIndex, len(hits))
-		for idx, hit := range hits {
-			indices[idx] = hitIndex(hit.Fields)
-		}
-		return result.NewSuccess(indices)
+		return result.NewResult(index.Search(request)).FlatMap(func(match interface{}) result.Result {
+			hits := match.(*bleve.SearchResult).Hits
+			comments := make([]*Comment, len(hits))
+			for idx, hit := range hits {
+				CommentByID(repo, hit.ID).FlatMap(func(comment interface{}) result.Result {
+					comments[idx] = comment.(*Comment)
+					return result.Result{}
+				})
+			}
+			return result.NewSuccess(comments)
+		})
 	})
 }
 
@@ -81,16 +84,6 @@ func openIndex(repoPath string, ifSuccess func(*git.Repository, bleve.Index) res
 			return index.FlatMap(success)
 		})
 	})
-}
-
-func hitIndex(hit map[string]interface{}) *CommentIndex {
-	return &CommentIndex{
-		hit["Author"].(string),
-		hit["Amender"].(string),
-		hit["Commit"].(string),
-		hit["Content"].(string),
-		hit["FileRef"].(string),
-	}
 }
 
 func commentIndex(comment *Comment) *CommentIndex {
