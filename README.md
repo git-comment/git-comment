@@ -45,17 +45,18 @@ git comment --version
 View comments and associated diffs by commit or tree.
 
 ```
-git comment-log [<revision range>]
+git comment-log [--pretty <format>] [--full-diff] [<revision range>]
 git comment-log --help
 git comment-log --version
 ```
 
 ### `git-comment-grep`
 
-Print comments matching a pattern.
+Index and search comments matching text
 
 ```
-git comment-grep <pattern>
+git comment-grep find <text>
+git comment-grep index
 git comment-grep --help
 git comment-grep --version
 ```
@@ -78,7 +79,7 @@ operation when the scripts fail.
 
 ### Import/Export scripts
 
-Retrieve all commits from external services including as GitHub and
+Retrieve all commits from external services including GitHub and
 BitBucket. Check the `scripts` directory.
 
 ### Editor integrations

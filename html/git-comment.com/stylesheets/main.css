@@ -1,0 +1,69 @@
+body {
+  font-family: 'Varela Round', sans-serif;
+  font-weight: 400;
+  font-size: 11pt;
+  color: #2A2A2A;
+  background-color:#FCFCF2;
+  margin: auto;
+  max-width: 800px;
+}
+
+h1, h2, h3 {
+  font-family: 'Source Sans Pro', serif;
+}
+
+h1 {
+  text-align: center;
+  font-weight: 300;
+  letter-spacing: 2pt;
+  margin-bottom: 30pt;
+  margin-top: 40pt;
+}
+
+h2, h3 {
+  color:#38536E;
+  font-weight: 300;
+  margin-top: 18pt;
+}
+
+hr {
+  width: 80%;
+  background-color: #E0E0E6;
+  border: 0 none;
+  height: 1pt;
+  margin-bottom: 28pt;
+}
+
+pre {
+  font-family: 'Source Code Pro';
+  font-size: 10pt;
+}
+
+header, section {
+  margin: 16pt;
+}
+
+.menu {
+  text-align: center;
+  margin: 42pt 8pt 32pt 8pt;
+}
+
+.item, .item:visited, .item:hover, .item:active {
+  color: #2A2A2A;
+  padding: 2pt;
+  margin: 4pt;
+  text-decoration: underline;
+}
+
+.highlight {
+  background-color: #38536E;
+  padding: 7pt 16pt;
+  margin: 4pt;
+  color: #FCFCF2;
+  text-decoration: none;
+  border-radius: 16pt;
+}
+
+.primary {
+  color: #E94E12;
+}
