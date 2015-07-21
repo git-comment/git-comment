@@ -67,3 +67,9 @@ header, section {
 .primary {
   color: #E94E12;
 }
+
+@media only screen and (max-device-width : 650px) {
+  .item, .highlight {
+    display: inline-block;
+  }
+}
