@@ -10,7 +10,11 @@ import (
 	"os"
 )
 
-const defaultContextLines = 3
+const (
+	defaultContextLines = 3
+	linesBeforeConfig   = "comment.logBefore"
+	linesAfterConfig    = "comment.logAfter"
+)
 
 var (
 	buildVersion string
@@ -61,11 +65,11 @@ func newPrinter(pager *gite.Pager, formatter *gitl.Formatter) *gitl.DiffPrinter 
 
 func computeContextLines(wd string) {
 	if *linesBefore == 0 {
-		before := int64(gitg.ConfiguredInt32(wd, "comment-log.lines-before", defaultContextLines))
+		before := int64(gitg.ConfiguredInt32(wd, linesBeforeConfig, defaultContextLines))
 		linesBefore = &before
 	}
 	if *linesAfter == 0 {
-		after := int64(gitg.ConfiguredInt32(wd, "comment-log.lines-after", defaultContextLines))
+		after := int64(gitg.ConfiguredInt32(wd, linesAfterConfig, defaultContextLines))
 		linesAfter = &after
 	}
 	contextLines = uint32(math.Max(float64(*linesBefore), float64(*linesAfter)))

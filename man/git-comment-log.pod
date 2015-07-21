@@ -149,11 +149,11 @@ Print using the provided custom placeholders:
 
 =over 4
 
-=item I<comment.log-before>
+=item I<comment.logBefore>
 
 Number of lines of an attached diff to display before a comment
 
-=item I<comment.log-after>
+=item I<comment.logAfter>
 
 Number of lines of an attached diff to display after a comment
 
