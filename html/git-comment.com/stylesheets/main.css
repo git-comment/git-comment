@@ -35,8 +35,19 @@ hr {
 }
 
 pre {
-  font-family: 'Source Code Pro';
+  font-family: 'Source Code Pro', monospace;
   font-size: 10pt;
+  padding: 12pt;
+  color: #3F3F3F;
+  background-color: #FFFFFF;
+  border-radius: 2pt;
+  letter-spacing: 0.4pt;
+}
+
+code {
+  font-family: 'Source Code Pro', monospace;
+  background-color: #FFFFFF;
+  color: #3F3F3F;
 }
 
 header, section {

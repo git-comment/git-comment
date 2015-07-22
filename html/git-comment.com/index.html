@@ -14,10 +14,10 @@
       <h1 class="primary">git-comment</h1>
       <hr/>
       <p>Distributed, offline, searchable plain text comments stored with git history without altering commits</p>
-      <p><span class="primary">git-comment</span> is a specification, library, and collection of tools enabling decentralized collaboration around git repositories.</p>
+      <p><span class="primary">git-comment</span> is an open source specification, library, and collection of tools enabling decentralized collaboration around git repositories.</p>
       <section class="menu">
         <a href="#getting-started" class="item">Getting Started</a>
-        <a href="#components" class="item">Components</a>
+        <a href="#contributing" class="item">Contributing</a>
         <a href="#downloads" class="highlight">Downloads</a>
       </section>
     </header>
@@ -39,15 +39,14 @@
     <section>
       <h2 id="getting-started">Getting Started</h2>
       <h3>Installation</h3>
-      <h3>Adding Comments</h3>
-      <h3>Viewing Comments</h3>
-      <h3>Fetching/Pushing Comments</h3>
+      <h3>Configuration</h3>
+      <p>A reference plugin for vim can be found <a href="#">here</a>. Submissions for other editor integrations are encouraged!</p>
     </section>
     <section>
-      <h2 id="components">Components</h2>
-      <h3>git-comment</h3>
+      <h2 id="usage">Usage</h2>
+      <h3>Adding Comments</h3>
       <p>
-        The core binary can add comments to commits, optionally with a file and
+      The <code>git-comment</code> binary can add comments to commits, optionally with a file and
         line reference. It includes a helper command (<code>--configure-remote</code>) for
         fetching and pushing comments by default with other refs. Creating a
         comment without a supplied message opens the default git editor.
@@ -57,37 +56,34 @@ git comment [-m &lt;msg&gt;] [-c &lt;commit&gt;] [&lt;filepath:line&gt;]
 git comment --delete &lt;comment&gt;
 git comment --configure-remote &lt;remote&gt;
 git comment --help
-git comment --version
-      </pre>
-      <h3>git-comment-log</h3>
-      <p>View comments and associated diffs by commit or tree.</p>
+git comment --version</pre>
+      <p><code>git-comment-web</code> starts a web server providing a friendly web interface for adding comments on a
+      diff.</p>
       <pre>
-git comment-log [--pretty &lt;format&gt;] [--full-diff] [&lt;revision range&gt;]
+git comment-web [&lt;revision range&gt;] [--port &lt;port&gt;]
+git comment-web --help
+git comment-web --version</pre>
+      <h3>Viewing Comments</h3>
+      <p>View comments and associated diffs by commit or tree using <code>git-comment-log</code>.</p>
+      <pre>
+git comment-log [--pretty &lt;format&gt;] [&lt;revision range&gt;]
 git comment-log --help
-git comment-log --version
-      </pre>
-      <h3>git-comment-grep</h3>
-      <p>Print comments matching text</p>
+git comment-log --version</pre>
+      <p><code>git-comment-web</code> also provides a friendly web interface for viewing comments on a
+      diff.</p>
+      <h3>Searching comments </h3>
+      <p><code>git-comment-grep</code> prints comments matching text</p>
       <pre>
 git comment-grep find &lt;text&gt;
 git comment-grep index
 git comment-grep --help
-git comment-grep --version
-      </pre>
-      <h3>git-comment-web</h3>
-      <p>Starts a web server hosting a friendly interface for editing comments on diffs</p>
-      <pre>
-git comment-web [&lt;revision range&gt;] [--port &lt;port&gt;]
-git comment-web --help
-git comment-web --version
-      </pre>
-      <h3>Editor integration</h3>
-      <p>A reference plugin for vim can be found <a href="#">here</a>. Submissions for other editor integrations are encouraged!</p>
-      <h3>Import/Export Scripts</h3>
+git comment-grep --version</pre>
+      <h3>Exporting Comments from Web Services</h3>
       <p>Retrieve all commits from external services including GitHub and Bitbucket</p>
     </section>
     <section>
-      <h2>Architecture</h2>
+      <h2 id="contributing">Contributing</h2>
+      <h3>Architecture</h3>
       <p>
         Comments are regular git objects, stored in a format similar to tags,
         with the addition of file and line references and a flag for deletion. A
@@ -102,12 +98,22 @@ created 1243040974 -0900
 amender Delisa Mason &lt;name@example.com&gt;
 amended 1243040974 -0900
 
-Too many levels of indentation here.
-      </pre>
+Too many levels of indentation here.</pre>
+      <h3>Style Guide</h3>
     </section>
     <section>
       <h2 id="downloads">Downloads</h2>
-
+      <h3>Binaries</h3>
+      <ul>
+        <li><a href="#">64-bit Linux</a></li>
+        <li><a href="#">OS X 10.9+</a></li>
+        <li><a href="#">Windows 7+</a></li>
+      </ul>
+      <h3>Source</h3>
+      <ul>
+        <li><a href="#">Release 1.0.0.0</a></li>
+        <li><a href="#">master</a></li>
+      </ul>
     </section>
     <footer>
       <section>
