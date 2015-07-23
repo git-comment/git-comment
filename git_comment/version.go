@@ -22,7 +22,7 @@ const (
 const (
 	versionRef       = "version"
 	toolInvalidError = "git-comment version corrupted. Please file a bug report.\ntool: %v\nrepo: %v"
-	upgradeMessage   = "updating git-comment version in use"
+	upgradeMessage   = "Updating git-comment version in use"
 	upgradeToolError = "The version of git-comment used in this repository is newer than the version installed. Please upgrade."
 	upgradeRepoError = "The version of git-comment used in this repository is out of date. Please upgrade by running `git-comment --update`"
 )
@@ -45,7 +45,7 @@ func VersionCheck(repoPath, toolVersion string) result.Result {
 
 // Migrate the repo version to the installed version of
 // the tool
-func VersionUpgrade(repoPath, toolVersion string) error {
+func VersionUpdate(repoPath, toolVersion string) error {
 	return nil
 }
 

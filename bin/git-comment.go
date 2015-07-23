@@ -26,6 +26,7 @@ var (
 	deleteID       = app.Flag("delete", "ID of a comment to delete").String()
 	remoteToConfig = app.Flag("configure-remote", "remote to configure for fetch and pushing comments").String()
 	commit         = app.Flag("commit", "ID of a commit to annotate").Short('c').String()
+	update         = app.Flag("update", "Upgrade repository to use current version of git-comment").Bool()
 	fileref        = app.Arg("file:line", "File and line number to annotate").String()
 )
 
@@ -34,6 +35,10 @@ func main() {
 	kp.MustParse(app.Parse(os.Args[1:]))
 	pwd, err := os.Getwd()
 	app.FatalIfError(err, "pwd")
+	if *update {
+		gc.VersionUpdate(pwd, buildVersion)
+		return
+	}
 	gx.FatalIfError(app, gc.VersionCheck(pwd, buildVersion), "version")
 	if len(*remoteToConfig) > 0 {
 		app.FatalIfError(gc.ConfigureRemoteForComments(pwd, *remoteToConfig).Failure, "git")
