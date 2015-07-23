@@ -45,7 +45,7 @@ const (
 	Disco         = "disco"
 	ShortFormat   = "[%h] %c %an <%ae>\n%t\n\n"
 	FullFormat    = "commit  %H\ncomment %C\nAuthor: %an <%ae>\n%b\n\n"
-	discoFormat   = "%nmagenta(>) cyan(%an) blue(<%ae>)%n  [%h][%c] blue(%ad)%n%ncyan(%b)%nyellow(-----)"
+	discoFormat   = "%nmagenta(>) cyan(%an) blue(<%ae>)%n  [%h][%c] blue(%ad)%n%ncyan(%b)%nyellow(-----)\n"
 	RawFormat     = "comment %C\n%v\n\n"
 	formatPrefix  = "format:"
 	invalidFormat = "Unknown pretty format."
