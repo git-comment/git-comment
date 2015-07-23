@@ -42,6 +42,7 @@ pre {
   background-color: #FFFFFF;
   border-radius: 2pt;
   letter-spacing: 0.4pt;
+  line-height: 15pt;
 }
 
 code {
@@ -52,6 +53,14 @@ code {
 
 header, section {
   margin: 16pt;
+}
+
+a:visited, a:hover, a:link {
+  color: #4E7399;
+}
+
+a:active {
+  color: #E94E12;
 }
 
 .menu {
@@ -66,7 +75,7 @@ header, section {
   text-decoration: underline;
 }
 
-.highlight {
+.highlight, .highlight:link, .highlight:hover, .highlight:visited {
   background-color: #38536E;
   padding: 7pt 16pt;
   margin: 4pt;
