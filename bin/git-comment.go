@@ -34,6 +34,7 @@ func main() {
 	kp.MustParse(app.Parse(os.Args[1:]))
 	pwd, err := os.Getwd()
 	app.FatalIfError(err, "pwd")
+	gx.FatalIfError(app, gc.VersionCheck(pwd, buildVersion), "version")
 	if len(*remoteToConfig) > 0 {
 		app.FatalIfError(gc.ConfigureRemoteForComments(pwd, *remoteToConfig).Failure, "git")
 		fmt.Printf("Remote '%v' updated\n", *remoteToConfig)
