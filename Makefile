@@ -55,5 +55,4 @@ uninstall:
 	$(foreach bin,$(BIN_FILE_LIST), rm $(MAN_PATH)$(bin).1 $(BIN_PATH)$(bin);)
 
 test: copy
-	go test $(PROJECT)
-	$(foreach pkg,$(PACKAGES),go test $(PROJECT)/$(pkg);)
+	go test $(PROJECT) $(foreach pkg,$(PACKAGES),$(PROJECT)/$(pkg));
