@@ -23,6 +23,8 @@ const (
 	versionRef       = "version"
 	toolInvalidError = "git-comment version corrupted. Please file a bug report.\ntool: %v\nrepo: %v"
 	upgradeMessage   = "updating git-comment version in use"
+	upgradeToolError = "The version of git-comment used in this repository is newer than the version installed. Please upgrade."
+	upgradeRepoError = "The version of git-comment used in this repository is out of date. Please upgrade by running `git-comment --update`"
 )
 
 // Check the version of git-comment in use against
@@ -49,23 +51,24 @@ func VersionUpgrade(repoPath, toolVersion string) error {
 
 // @return result.Result<VersionStatus, error>
 func compareVersion(toolVersion, repoVersion string) result.Result {
-	vt := result.NewResult(semver.Make(toolVersion))
-	vr := result.NewResult(semver.Make(repoVersion))
 	errorMsg := fmt.Sprintf(toolInvalidError, toolVersion, repoVersion)
+	invalidErr := result.NewFailure(errors.New(errorMsg))
+	vt := result.NewResult(semver.Make(toolVersion)).RecoverWith(invalidErr)
+	vr := result.NewResult(semver.Make(repoVersion)).RecoverWith(invalidErr)
 	return result.Combine(func(values ...interface{}) result.Result {
 		vt, vr := values[0].(semver.Version), values[1].(semver.Version)
-		return result.NewSuccess(comparisonStatus(vt.Compare(vr)))
-	}, vt, vr).RecoverWith(result.NewFailure(errors.New(errorMsg)))
+		return comparisonStatus(vt.Compare(vr))
+	}, vt, vr)
 }
 
-func comparisonStatus(code int) VersionStatus {
+func comparisonStatus(code int) result.Result {
 	switch code {
 	case -1:
-		return VersionStatusUpgradeTool
+		return result.NewFailure(errors.New(upgradeToolError))
 	case 1:
-		return VersionStatusUpgradeRepo
+		return result.NewFailure(errors.New(upgradeRepoError))
 	default:
-		return VersionStatusEqual
+		return result.NewSuccess(VersionStatusEqual)
 	}
 }
 
