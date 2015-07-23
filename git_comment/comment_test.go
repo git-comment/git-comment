@@ -21,7 +21,7 @@ func TestSortComments(t *testing.T) {
 }
 
 func TestNewCommentAuthor(t *testing.T) {
-	author := &Person{"Sam Wafers", "<sam@example.com>"}
+	author := &Person{"Sam Wafers", "<sam@example.com>", time.Now(), "-0600"}
 	c, err := NewComment("Curious decision here.", "123", nil, author).Dematerialize()
 	comment := c.(*Comment)
 	assert.Nil(t, err)
@@ -31,7 +31,7 @@ func TestNewCommentAuthor(t *testing.T) {
 }
 
 func TestNewCommentAmender(t *testing.T) {
-	author := &Person{"Sam Wafers", "<sam@example.com>"}
+	author := &Person{"Sam Wafers", "<sam@example.com>", time.Now(), "-0600"}
 	c, err := NewComment("Doesn't this violate the laws of physics?", "123", nil, author).Dematerialize()
 	comment := c.(*Comment)
 	assert.Nil(t, err)
@@ -96,21 +96,21 @@ func TestCreateWithoutContent(t *testing.T) {
 
 func TestSerializeComment(t *testing.T) {
 	ref := &FileRef{"src/example.c", 12}
-	author := &Person{"Selina Kyle", "cat@example.com"}
+	author := &Person{"Selina Kyle", "cat@example.com", time.Unix(1437498360, 0), "+1100"}
 	c, _ := NewComment("This line is too long", "acdacdacd", ref, author).Dematerialize()
 	comment := c.(*Comment)
 	lines := strings.Split(comment.Serialize(), "\n")
 	assert.Equal(t, len(lines), 8)
 	assert.Equal(t, lines[0], "commit acdacdacd")
 	assert.Equal(t, lines[1], "file src/example.c:12")
-	assert.Equal(t, lines[2], "author Selina Kyle <cat@example.com>")
-	assert.Equal(t, lines[4], "amender Selina Kyle <cat@example.com>")
+	assert.Equal(t, lines[2], "author Selina Kyle <cat@example.com> 1437498360 +1100")
+	assert.Equal(t, lines[4], "amender Selina Kyle <cat@example.com> 1437498360 +1100")
 	assert.Equal(t, lines[6], "")
 	assert.Equal(t, lines[7], "This line is too long")
 }
 
 func TestSerializeDeletedComment(t *testing.T) {
-	author := &Person{"Morpheus", "redpill@example.com"}
+	author := &Person{"Morpheus", "redpill@example.com", time.Unix(1437498360, 0), "-0600"}
 	c, _ := NewComment("Pick one", "afdafdafd", new(FileRef), author).Dematerialize()
 	comment := c.(*Comment)
 	comment.Deleted = true
@@ -118,14 +118,14 @@ func TestSerializeDeletedComment(t *testing.T) {
 	assert.Equal(t, len(lines), 8)
 	assert.Equal(t, lines[0], "commit afdafdafd")
 	assert.Equal(t, lines[1], "file ")
-	assert.Equal(t, lines[2], "author Morpheus <redpill@example.com>")
-	assert.Equal(t, lines[4], "amender Morpheus <redpill@example.com>")
+	assert.Equal(t, lines[2], "author Morpheus <redpill@example.com> 1437498360 -0600")
+	assert.Equal(t, lines[4], "amender Morpheus <redpill@example.com> 1437498360 -0600")
 	assert.Equal(t, lines[6], "deleted true")
 	assert.Equal(t, lines[7], "")
 }
 
 func TestDeserializeComment(t *testing.T) {
-	author := &Person{"Morpheus", "redpill@example.com"}
+	author := &Person{"Morpheus", "redpill@example.com", time.Unix(1437498360, 0), "-0600"}
 	c, _ := NewComment("Pick one", "afdafdafd", CreateFileRef("bin/exec:15"), author).Dematerialize()
 	comment := c.(*Comment)
 	newC, err := DeserializeComment(comment.Serialize()).Dematerialize()

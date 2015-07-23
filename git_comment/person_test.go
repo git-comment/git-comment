@@ -2,11 +2,12 @@ package git_comment
 
 import (
 	"github.com/stvp/assert"
+	"strings"
 	"testing"
 )
 
-func TestCreatePersonFromNameEmail(t *testing.T) {
-	p, err := CreatePerson("Carrie <carrie@example.com>").Dematerialize()
+func TestCreatePersonFromNameEmailTime(t *testing.T) {
+	p, err := CreatePerson("Carrie <carrie@example.com> 1437612685 -0700").Dematerialize()
 	assert.Nil(t, err)
 	person := p.(*Person)
 	assert.NotNil(t, person)
@@ -14,7 +15,7 @@ func TestCreatePersonFromNameEmail(t *testing.T) {
 	assert.Equal(t, person.Name, "Carrie")
 }
 
-func TestCreatePersonFromSpacedNameEmail(t *testing.T) {
+func TestCreatePersonFromSpacedNameEmailTime(t *testing.T) {
 	p, err := CreatePerson("Carrie Ann McBean <carrie.mcbean@example.com>").Dematerialize()
 	assert.Nil(t, err)
 	person := p.(*Person)
@@ -24,12 +25,8 @@ func TestCreatePersonFromSpacedNameEmail(t *testing.T) {
 }
 
 func TestCreatePersonFromInvalidEmail(t *testing.T) {
-	p, err := CreatePerson("Carrie Ann McBean <carrie.mcbean>").Dematerialize()
-	assert.Nil(t, err)
-	person := p.(*Person)
-	assert.NotNil(t, person)
-	assert.Equal(t, person.Name, "Carrie Ann McBean <carrie.mcbean>")
-	assert.Equal(t, person.Email, "")
+	_, err := CreatePerson("Carrie Ann McBean <carrie.mcbean>").Dematerialize()
+	assert.NotNil(t, err)
 }
 
 func TestCreatePersonWithoutName(t *testing.T) {
@@ -47,22 +44,25 @@ func TestCreateEmptyPerson(t *testing.T) {
 }
 
 func TestSerializePersonFull(t *testing.T) {
-	data := "Katie Em <katie@example.com>"
-	p, _ := CreatePerson(data).Dematerialize()
+	data := "Katie Em <katie@example.com> 1437498360 +0400"
+	p, err := CreatePerson(data).Dematerialize()
+	assert.Nil(t, err)
+	assert.NotNil(t, p)
 	person := p.(*Person)
 	assert.Equal(t, person.Serialize(), data)
 }
 
 func TestSerializePersonNameOnly(t *testing.T) {
 	data := "Katie Em"
-	p, _ := CreatePerson(data).Dematerialize()
-	person := p.(*Person)
-	assert.Equal(t, person.Serialize(), data)
+	_, err := CreatePerson(data).Dematerialize()
+	assert.NotNil(t, err)
 }
 
 func TestSerializePersonEmailOnly(t *testing.T) {
 	data := "<katie@example.com>"
-	p, _ := CreatePerson(data).Dematerialize()
+	p, err := CreatePerson(data).Dematerialize()
+	assert.Nil(t, err)
+	assert.NotNil(t, p)
 	person := p.(*Person)
-	assert.Equal(t, person.Serialize(), data)
+	assert.True(t, strings.Contains(person.Serialize(), data))
 }
