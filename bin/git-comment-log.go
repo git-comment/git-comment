@@ -35,6 +35,7 @@ func main() {
 	kp.MustParse(app.Parse(os.Args[1:]))
 	pwd, err := os.Getwd()
 	app.FatalIfError(err, "pwd")
+	gite.FatalIfError(app, gitc.VersionCheck(pwd, buildVersion), "version")
 	showComments(pwd)
 }
 

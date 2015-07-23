@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	gc "git_comment"
 	gx "git_comment/exec"
 	gg "git_comment/git"
 	gs "git_comment/search"
@@ -23,6 +24,7 @@ func main() {
 	app.Version(buildVersion)
 	pwd, err := os.Getwd()
 	app.FatalIfError(err, "pwd")
+	gx.FatalIfError(app, gc.VersionCheck(pwd, buildVersion), "version")
 	switch kp.MustParse(app.Parse(os.Args[1:])) {
 	case "find":
 		findText(pwd, *text)
