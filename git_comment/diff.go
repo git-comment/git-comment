@@ -48,7 +48,8 @@ type DiffLine struct {
 // @return result.Result<*Diff, error>
 func DiffCommits(repoPath, commitish string, contextLines uint32) result.Result {
 	return gitg.WithRepository(repoPath, func(repo *git.Repository) result.Result {
-		return gitg.ResolveCommits(repo, commitish).FlatMap(func(commitRange interface{}) result.Result {
+		commits := gitg.ResolveCommits(repo, gitg.ExpandCommitish(&commitish))
+		return commits.FlatMap(func(commitRange interface{}) result.Result {
 			return diffCommits(repo, commitRange.(*gitg.CommitRange), contextLines)
 		})
 	})

@@ -29,7 +29,7 @@ func ResolvedCommit(repoPath string, commitish *string) result.Result {
 //
 // return result.Result<*string, error>
 func ResolveSingleCommitHash(repo *git.Repository, commitish *string) result.Result {
-	return result.NewResult(repo.RevparseSingle(expandCommitish(commitish))).FlatMap(getObjectId)
+	return result.NewResult(repo.RevparseSingle(ExpandCommitish(commitish))).FlatMap(getObjectId)
 }
 
 // Parse commits from commitish string, populating a CommitRange. If a
@@ -54,16 +54,17 @@ func ResolveCommits(repo *git.Repository, commitish string) result.Result {
 	})
 }
 
-func getObjectId(value interface{}) result.Result {
-	id := value.(git.Object).Id().String()
-	return result.NewSuccess(&id)
-}
-
-func expandCommitish(commitish *string) string {
+// Resolve empty or nil strings to HEAD
+func ExpandCommitish(commitish *string) string {
 	if commitish == nil || len(*commitish) == 0 {
 		return headCommit
 	}
 	return *commitish
+}
+
+func getObjectId(value interface{}) result.Result {
+	id := value.(git.Object).Id().String()
+	return result.NewSuccess(&id)
 }
 
 func resolveCommit(repo *git.Repository, object git.Object) result.Result {
