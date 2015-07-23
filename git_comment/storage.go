@@ -36,17 +36,6 @@ func CreateComment(repoPath string, commit *string, fileRef *FileRef, message st
 	})
 }
 
-func validatedCommitForComment(repo *git.Repository, commit *string) result.Result {
-	return gitg.ResolveSingleCommitHash(repo, commit).FlatMap(func(hash interface{}) result.Result {
-		return CommentCountOnCommit(repo, *(hash.(*string))).FlatMap(func(count interface{}) result.Result {
-			if count.(uint16) >= maxCommentsOnCommit {
-				return result.NewFailure(errors.New(maxCommentError))
-			}
-			return result.NewSuccess(hash)
-		})
-	})
-}
-
 // Update an existing comment with a new message
 // @return result.Result<*Comment, error>
 func UpdateComment(repoPath string, identifier string, message string) result.Result {
@@ -109,6 +98,17 @@ func writeCommentToDisk(repo *git.Repository, comment *Comment) result.Result {
 		}).FlatMap(func(value interface{}) result.Result {
 			comment.ID = &id
 			return result.NewSuccess(comment)
+		})
+	})
+}
+
+func validatedCommitForComment(repo *git.Repository, commit *string) result.Result {
+	return gitg.ResolveSingleCommitHash(repo, commit).FlatMap(func(hash interface{}) result.Result {
+		return CommentCountOnCommit(repo, *(hash.(*string))).FlatMap(func(count interface{}) result.Result {
+			if count.(uint16) >= maxCommentsOnCommit {
+				return result.NewFailure(errors.New(maxCommentError))
+			}
+			return result.NewSuccess(hash)
 		})
 	})
 }
