@@ -2,12 +2,13 @@ PROJECT=git_comment
 PACKAGES=exec log git search
 VERSION=$(shell cat VERSION)
 SRC_PATH=$(GOPATH)src/$(PROJECT)
-BUILD_DIR=build/bin/
+BUILD_DIR=build
+BUILD_BIN_DIR=$(BUILD_DIR)/bin/
 BIN_PATH=/usr/local/bin/
 BIN_FILE_LIST=git-comment git-comment-grep git-comment-log git-comment-web
 BIN_BUILD_CMD=go build -ldflags "-X main.buildVersion $(VERSION)"
 MAN_PATH=/usr/local/man/man1/
-MAN_TMP_PATH=build/doc/
+MAN_BUILD_DIR=$(BUILD_DIR)/doc/
 MAN_TITLE=Git Comment Manual
 MAN_CMD=pod2man --center="$(MAN_TITLE)" --release="$(VERSION)"
 
@@ -25,11 +26,11 @@ bootstrap:
 
 build: copy
 	go build $(PROJECT)
-	mkdir -p $(BUILD_DIR)
-	$(foreach bin,$(BIN_FILE_LIST),$(BIN_BUILD_CMD) -o $(BUILD_DIR)/$(bin) bin/$(bin).go;)
+	mkdir -p $(BUILD_BIN_DIR)
+	$(foreach bin,$(BIN_FILE_LIST),$(BIN_BUILD_CMD) -o $(BUILD_BIN_DIR)/$(bin) bin/$(bin).go;)
 
 clean:
-	go clean -i -x $(PROJECT)
+	go clean -i -x $(PROJECT) || true
 	rm -rf $(SRC_PATH) $(BUILD_DIR)
 
 copy:
@@ -38,18 +39,17 @@ copy:
 	$(foreach pack,$(PACKAGES),install $(PROJECT)/$(pack)/*.go $(SRC_PATH)/$(pack);)
 
 doc:
-	$(foreach bin,$(BIN_FILE_LIST), $(MAN_CMD) man/$(bin).pod > man/$(bin).1;)
+	mkdir -p $(MAN_BUILD_DIR)
+	$(foreach bin,$(BIN_FILE_LIST), $(MAN_CMD) man/$(bin).pod > $(MAN_BUILD_DIR)$(bin).1;)
 
 install: doc
-	mkdir -p $(MAN_TMP_PATH)
 	$(foreach bin,$(BIN_FILE_LIST), \
-		cp man/$(bin).1 $(MAN_TMP_PATH)$(bin).1; \
-		chown root:admin $(MAN_TMP_PATH)$(bin).1; \
-		chmod 444 $(MAN_TMP_PATH)$(bin).1; \
-		install $(BUILD_DIR)/$(bin) $(BIN_PATH)$(bin); \
-		gzip -f $(MAN_TMP_PATH)$(bin).1; \
-		install -C $(MAN_TMP_PATH)$(bin).1.gz $(MAN_PATH)$(bin).1.gz;)
-	rm -r $(MAN_TMP_PATH)
+		chown root:admin $(MAN_BUILD_DIR)$(bin).1; \
+		chmod 444 $(MAN_BUILD_DIR)$(bin).1; \
+		install $(BUILD_BIN_DIR)/$(bin) $(BIN_PATH)$(bin); \
+		gzip -f $(MAN_BUILD_DIR)$(bin).1; \
+		install -C $(MAN_BUILD_DIR)$(bin).1.gz $(MAN_PATH)$(bin).1.gz;)
+	rm -r $(MAN_BUILD_DIR)
 
 uninstall:
 	$(foreach bin,$(BIN_FILE_LIST), rm $(MAN_PATH)$(bin).1 $(BIN_PATH)$(bin);)
