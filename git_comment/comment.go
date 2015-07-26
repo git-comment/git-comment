@@ -8,15 +8,13 @@ import (
 )
 
 type Comment struct {
-	Author     *Person
-	CreateTime time.Time
-	Content    string
-	Amender    *Person
-	AmendTime  time.Time
-	Commit     *string
-	ID         *string
-	Deleted    bool
-	FileRef    *FileRef
+	Author  *Person
+	Content string
+	Amender *Person
+	Commit  *string
+	ID      *string
+	Deleted bool
+	FileRef *FileRef
 }
 
 const timeFormat string = time.RFC822Z
@@ -26,9 +24,7 @@ type CommentSlice []*Comment
 const (
 	authorKey  = "author"
 	commitKey  = "commit"
-	createdKey = "created"
 	amenderKey = "amender"
-	amendedKey = "amended"
 	fileRefKey = "file"
 	deletedKey = "deleted"
 )
@@ -38,7 +34,7 @@ func (cs CommentSlice) Len() int {
 }
 
 func (cs CommentSlice) Less(i, j int) bool {
-	return cs[i].CreateTime.Before(cs[j].CreateTime)
+	return cs[i].Author.Date.Before(cs[j].Author.Date)
 }
 
 func (cs CommentSlice) Swap(i, j int) {
@@ -54,13 +50,10 @@ func NewComment(message string, commit string, fileRef *FileRef, author *Person)
 	} else if len(commit) == 0 {
 		return result.NewFailure(errors.New(missingCommitMessage))
 	}
-	createTime := time.Now()
 	return result.NewSuccess(&Comment{
 		author,
-		createTime,
 		message,
 		author,
-		createTime,
 		&commit,
 		nil,
 		false,
@@ -77,16 +70,6 @@ func DeserializeComment(content string) result.Result {
 	comment.Author = blob.GetPerson(authorKey)
 	comment.Amender = blob.GetPerson(amenderKey)
 	comment.FileRef = blob.GetFileRef(fileRefKey)
-	cTime := blob.GetTime(createdKey)
-	if cTime == nil {
-		return result.NewFailure(errors.New(serializationErrorMessage))
-	}
-	comment.CreateTime = *cTime
-	aTime := blob.GetTime(amendedKey)
-	if aTime == nil {
-		return result.NewFailure(errors.New(serializationErrorMessage))
-	}
-	comment.AmendTime = *aTime
 	return result.NewSuccess(comment)
 }
 
@@ -99,7 +82,6 @@ func (c *Comment) Title() string {
 func (c *Comment) Amend(message string, amender *Person) {
 	c.Content = message
 	c.Amender = amender
-	c.AmendTime = time.Now()
 }
 
 // Generate content of git object for comment
@@ -121,9 +103,7 @@ func (c *Comment) Serialize() string {
 	blob.Set(commitKey, *c.Commit)
 	blob.Set(fileRefKey, c.FileRef.Serialize())
 	blob.Set(authorKey, c.Author.Serialize())
-	blob.Set(createdKey, c.CreateTime.Format(timeFormat))
 	blob.Set(amenderKey, c.Amender.Serialize())
-	blob.Set(amendedKey, c.CreateTime.Format(timeFormat))
 	if c.Deleted {
 		blob.Set(deletedKey, "true")
 	} else {

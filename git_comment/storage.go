@@ -7,7 +7,6 @@ import (
 	"github.com/kylef/result.go/src/result"
 	git "github.com/libgit2/git2go"
 	"path"
-	"time"
 )
 
 const (
@@ -91,7 +90,7 @@ func writeCommentToDisk(repo *git.Repository, comment *Comment) result.Result {
 		id := fmt.Sprintf("%v", oid)
 		return RefPath(comment, id).FlatMap(func(file interface{}) result.Result {
 			committer := comment.Amender
-			sig := &git.Signature{committer.Name, committer.Email, time.Now()}
+			sig := &git.Signature{committer.Name, committer.Email, committer.Date}
 			commit := *comment.Commit
 			message := fmt.Sprintf(defaultMessageFormat, commit[:7], id[:7])
 			return result.NewResult(repo.CreateReference(file.(string), oid.(*git.Oid), false, sig, message))

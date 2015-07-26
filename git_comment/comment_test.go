@@ -10,9 +10,9 @@ import (
 
 func TestSortComments(t *testing.T) {
 	var comments = make(CommentSlice, 3)
-	comments[0] = &Comment{CreateTime: time.Now().Add(12 * time.Hour)}
-	comments[1] = &Comment{CreateTime: time.Now()}
-	comments[2] = &Comment{CreateTime: time.Now().Add(24 * time.Hour)}
+	comments[0] = &Comment{Author: &Person{Date: time.Now().Add(12 * time.Hour)}}
+	comments[1] = &Comment{Author: &Person{Date: time.Now()}}
+	comments[2] = &Comment{Author: &Person{Date: time.Now().Add(24 * time.Hour)}}
 	sortedComments := []*Comment{comments[1], comments[0], comments[2]}
 	sort.Stable(comments)
 	for idx, comment := range comments {
@@ -40,12 +40,14 @@ func TestNewCommentAmender(t *testing.T) {
 }
 
 func TestNewCommentTime(t *testing.T) {
-	c, err := NewComment("ELI5?", "123", nil, nil).Dematerialize()
+	var unix int64 = 1433220431
+	c, err := NewComment("ELI5?", "123", nil, &Person{Date: time.Unix(unix, 0)}).Dematerialize()
 	comment := c.(*Comment)
 	assert.Nil(t, err)
-	assert.NotNil(t, comment)
-	assert.NotNil(t, comment.CreateTime)
-	assert.Equal(t, comment.AmendTime, comment.CreateTime)
+	assert.NotNil(t, comment.Author)
+	assert.Equal(t, comment.Author.Date.Unix(), unix)
+	assert.NotNil(t, comment.Amender)
+	assert.Equal(t, comment.Amender.Date, comment.Author.Date)
 }
 
 func TestNewCommentCommit(t *testing.T) {
@@ -100,13 +102,13 @@ func TestSerializeComment(t *testing.T) {
 	c, _ := NewComment("This line is too long", "acdacdacd", ref, author).Dematerialize()
 	comment := c.(*Comment)
 	lines := strings.Split(comment.Serialize(), "\n")
-	assert.Equal(t, len(lines), 8)
+	assert.Equal(t, len(lines), 6)
 	assert.Equal(t, lines[0], "commit acdacdacd")
 	assert.Equal(t, lines[1], "file src/example.c:12")
 	assert.Equal(t, lines[2], "author Selina Kyle <cat@example.com> 1437498360 +1100")
-	assert.Equal(t, lines[4], "amender Selina Kyle <cat@example.com> 1437498360 +1100")
-	assert.Equal(t, lines[6], "")
-	assert.Equal(t, lines[7], "This line is too long")
+	assert.Equal(t, lines[3], "amender Selina Kyle <cat@example.com> 1437498360 +1100")
+	assert.Equal(t, lines[4], "")
+	assert.Equal(t, lines[5], "This line is too long")
 }
 
 func TestSerializeDeletedComment(t *testing.T) {
@@ -115,13 +117,13 @@ func TestSerializeDeletedComment(t *testing.T) {
 	comment := c.(*Comment)
 	comment.Deleted = true
 	lines := strings.Split(comment.Serialize(), "\n")
-	assert.Equal(t, len(lines), 8)
+	assert.Equal(t, len(lines), 6)
 	assert.Equal(t, lines[0], "commit afdafdafd")
 	assert.Equal(t, lines[1], "file ")
 	assert.Equal(t, lines[2], "author Morpheus <redpill@example.com> 1437498360 -0600")
-	assert.Equal(t, lines[4], "amender Morpheus <redpill@example.com> 1437498360 -0600")
-	assert.Equal(t, lines[6], "deleted true")
-	assert.Equal(t, lines[7], "")
+	assert.Equal(t, lines[3], "amender Morpheus <redpill@example.com> 1437498360 -0600")
+	assert.Equal(t, lines[4], "deleted true")
+	assert.Equal(t, lines[5], "")
 }
 
 func TestDeserializeComment(t *testing.T) {
@@ -136,6 +138,4 @@ func TestDeserializeComment(t *testing.T) {
 	assert.Equal(t, *comment.Author, *newComment.Author)
 	assert.Equal(t, *comment.Amender, *newComment.Amender)
 	assert.Equal(t, comment.Content, newComment.Content)
-	assert.Equal(t, comment.CreateTime.Format(time.RFC822Z), newComment.CreateTime.Format(time.RFC822Z))
-	assert.Equal(t, comment.AmendTime.Format(time.RFC822Z), newComment.AmendTime.Format(time.RFC822Z))
 }
