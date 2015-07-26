@@ -5,6 +5,7 @@ import (
 	"github.com/stvp/assert"
 	"regexp"
 	"testing"
+	"time"
 )
 
 func TestPrettyFormatFilePath(t *testing.T) {
@@ -183,7 +184,7 @@ func TestPrettyFormatWhiteNoColor(t *testing.T) {
 func comment() *gitc.Comment {
 	id := "abcabcabcabc"
 	ref := &gitc.FileRef{"src/file.c", 12}
-	author := &gitc.Person{"Simon", "iceking@example.com"}
+	author := &gitc.Person{"Simon", "iceking@example.com", time.Now(), "+0200"}
 	comment := gitc.NewComment("new comment\nmore context", "123444abcabc", ref, author).Success.(*gitc.Comment)
 	comment.ID = &id
 	return comment

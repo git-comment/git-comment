@@ -30,7 +30,7 @@ func (f *Formatter) formatHeader(c *gitc.Comment) string {
 	name := c.Author.Name
 	return fmt.Sprintf("%v %v %v:%v\n",
 		name,
-		c.CreateTime.Format("2006-01-02"),
+		c.Author.Date.Format("2006-01-02"),
 		(*c.Commit)[:7],
 		path)
 }

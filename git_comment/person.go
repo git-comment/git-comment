@@ -5,14 +5,20 @@ import (
 	"fmt"
 	"github.com/kylef/result.go/src/result"
 	"regexp"
+	"strconv"
+	"time"
 )
 
 type Person struct {
-	Name  string
-	Email string
+	Name       string
+	Email      string
+	Date       time.Time
+	TimeOffset string
 }
 
-const invalidPersonError = "Person could not be created from empty input"
+const (
+	invalidPersonError = "Person could not be created from input"
+)
 
 // Parse a property string and create a person. The expected format is:
 // ```
@@ -21,34 +27,24 @@ const invalidPersonError = "Person could not be created from empty input"
 // If a valid person cannot be created, an error is returned instead
 // @return result.Result<*Person, error>
 func CreatePerson(properties string) result.Result {
-	if len(properties) == 0 {
-		return result.NewFailure(errors.New(invalidPersonError))
+	fullRe := regexp.MustCompile(`(?:(.*)\s)?<(.*@.*)>(?:\s([0-9]+)\s([\-+][0-9]{4}))?`)
+	match := fullRe.FindStringSubmatch(properties)
+	invalidErr := result.NewFailure(errors.New(invalidPersonError))
+	if len(match) == 0 {
+		return invalidErr
 	}
-	return result.NewSuccess(newPerson(properties))
+	name, email := match[1], match[2]
+	timestamp := result.NewResult(strconv.ParseInt(match[3], 10, 64))
+	return timestamp.Analysis(func(value interface{}) result.Result {
+		stamp := time.Unix(value.(int64), 0)
+		person := &Person{match[1], match[2], stamp, match[4]}
+		return result.NewSuccess(person)
+	}, func(err error) result.Result {
+		timestamp := time.Now()
+		return result.NewSuccess(&Person{name, email, timestamp, timestamp.Format("-0700")})
+	})
 }
 
 func (p *Person) Serialize() string {
-	if len(p.Name) > 0 {
-		if len(p.Email) > 0 {
-			return fmt.Sprintf("%v <%v>", p.Name, p.Email)
-		}
-		return p.Name
-	} else if len(p.Email) > 0 {
-		return fmt.Sprintf("<%v>", p.Email)
-	}
-	return ""
-}
-
-func newPerson(properties string) *Person {
-	fullRe := regexp.MustCompile(`(.*)\s<(.*@.*)>`)
-	match := fullRe.FindStringSubmatch(properties)
-	if len(match) == 3 {
-		return &Person{match[1], match[2]}
-	}
-	emailRe := regexp.MustCompile(`\s?<(.*@.*)>`)
-	match = emailRe.FindStringSubmatch(properties)
-	if len(match) == 2 {
-		return &Person{"", match[1]}
-	}
-	return &Person{properties, ""}
+	return fmt.Sprintf("%v <%v> %d %v", p.Name, p.Email, p.Date.Unix(), p.TimeOffset)
 }

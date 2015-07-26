@@ -8,7 +8,6 @@ import (
 	"github.com/kylef/result.go/src/result"
 	git "github.com/libgit2/git2go"
 	"path/filepath"
-	"time"
 )
 
 type VersionStatus int
@@ -80,7 +79,7 @@ func writeVersion(repo *git.Repository, version string) result.Result {
 		committer := CreatePerson(gitg.ConfiguredCommitter(repo.Path()))
 		return committer.FlatMap(func(p interface{}) result.Result {
 			person := p.(*Person)
-			sig := &git.Signature{person.Name, person.Email, time.Now()}
+			sig := &git.Signature{person.Name, person.Email, person.Date}
 			return result.NewResult(repo.CreateReference(path,
 				oid.(*git.Oid), false, sig, upgradeMessage))
 		})
