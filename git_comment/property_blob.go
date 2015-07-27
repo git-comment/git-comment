@@ -94,7 +94,7 @@ func (p *PropertyBlob) GetFileRef(property string) *FileRef {
 	if prop == nil {
 		return nil
 	}
-	return CreateFileRef(*prop)
+	return CreateFileRef(*prop, false)
 }
 
 func (p *PropertyBlob) Serialize() string {

@@ -83,7 +83,7 @@ func TestNewCommentDeleted(t *testing.T) {
 }
 
 func TestNewCommentFileRef(t *testing.T) {
-	ref := &FileRef{"src/example.c", 12}
+	ref := &FileRef{"src/example.c", 12, RefLineTypeNew}
 	c, err := NewComment("This should be more modular", "abcdefg", ref, nil).Dematerialize()
 	comment := c.(*Comment)
 	assert.Nil(t, err)
@@ -97,7 +97,7 @@ func TestCreateWithoutContent(t *testing.T) {
 }
 
 func TestSerializeComment(t *testing.T) {
-	ref := &FileRef{"src/example.c", 12}
+	ref := &FileRef{"src/example.c", 12, RefLineTypeNew}
 	author := &Person{"Selina Kyle", "cat@example.com", time.Unix(1437498360, 0), "+1100"}
 	c, _ := NewComment("This line is too long", "acdacdacd", ref, author).Dematerialize()
 	comment := c.(*Comment)
@@ -128,7 +128,7 @@ func TestSerializeDeletedComment(t *testing.T) {
 
 func TestDeserializeComment(t *testing.T) {
 	author := &Person{"Morpheus", "redpill@example.com", time.Unix(1437498360, 0), "-0600"}
-	c, _ := NewComment("Pick one", "afdafdafd", CreateFileRef("bin/exec:15"), author).Dematerialize()
+	c, _ := NewComment("Pick one", "afdafdafd", DeserializeFileRef("bin/exec:15"), author).Dematerialize()
 	comment := c.(*Comment)
 	newC, err := DeserializeComment(comment.Serialize()).Dematerialize()
 	newComment := newC.(*Comment)

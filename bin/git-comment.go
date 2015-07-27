@@ -28,6 +28,7 @@ var (
 	commit         = app.Flag("commit", "ID of a commit to annotate").Short('c').String()
 	update         = app.Flag("update", "Upgrade repository to use current version of git-comment").Bool()
 	fileref        = app.Arg("file:line", "File and line number to annotate").String()
+	markDeleted    = app.Flag("mark-deleted-line", "Add comment to the deleted version of the file and line number").Bool()
 )
 
 func main() {
@@ -60,9 +61,8 @@ func editComment(pwd string) {
 		id := gx.FatalIfError(app, gc.UpdateComment(pwd, *amendID, *message), "git")
 		fmt.Printf("[%v] Comment updated\n", (*id.(*string))[:7])
 	} else {
-		id := gx.FatalIfError(app, gc.CreateComment(pwd,
-			parsedCommit.(*string),
-			gc.CreateFileRef(*fileref), *message), "git")
+		ref := gc.CreateFileRef(*fileref, *markDeleted)
+		id := gx.FatalIfError(app, gc.CreateComment(pwd, parsedCommit.(*string), ref, *message), "git")
 		hash := *(id.(*string))
 		fmt.Printf("[%v] Comment created\n", hash[:7])
 	}

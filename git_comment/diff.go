@@ -88,17 +88,12 @@ func parseDiffForLines(diff *git.Diff, comments CommentSlice) []*DiffFile {
 	var file *DiffFile
 	var delta git.DiffDelta
 	cbLine := func(line git.DiffLine) error {
-		var comments []*Comment = nil
-		commentKey := fileRefMappingKey(delta.NewFile.Path, line.NewLineno)
-		if list, ok := commentMapping[commentKey]; ok {
-			comments = list
-		}
 		file.Lines = append(file.Lines, &DiffLine{
 			diffTypeFromLine(line),
 			line.Content,
 			line.OldLineno,
 			line.NewLineno,
-			comments,
+			commentsForLine(delta, line, commentMapping),
 		})
 		return nil
 	}
@@ -136,6 +131,30 @@ func fileForAdditionalComments(mapping map[string][]*Comment) *DiffFile {
 			-1,
 			comments,
 		}}}
+}
+
+func commentsForLine(delta git.DiffDelta, line git.DiffLine, mapping map[string][]*Comment) []*Comment {
+	var comments []*Comment = nil
+	if line.Origin == git.DiffLineDeletion {
+		oldCommentKey := fileRefMappingKey(delta.OldFile.Path, line.OldLineno)
+		if list, ok := mapping[oldCommentKey]; ok {
+			for _, comment := range list {
+				if comment.FileRef.LineType == RefLineTypeOld {
+					comments = append(comments, comment)
+				}
+			}
+		}
+	} else {
+		newCommentKey := fileRefMappingKey(delta.NewFile.Path, line.NewLineno)
+		if list, ok := mapping[newCommentKey]; ok {
+			for _, comment := range list {
+				if comment.FileRef.LineType == RefLineTypeNew {
+					comments = append(comments, comment)
+				}
+			}
+		}
+	}
+	return comments
 }
 
 func commentsByFileRef(comments CommentSlice) map[string][]*Comment {
