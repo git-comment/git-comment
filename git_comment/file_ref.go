@@ -41,7 +41,7 @@ func CreateFileRef(content string, markDeleted bool) *FileRef {
 }
 
 func DeserializeFileRef(content string) *FileRef {
-	lineRe := regexp.MustCompile(`(?U)^(.*)(?::(\d+)(:(?:old|new))?)?$`)
+	lineRe := regexp.MustCompile(`(?U)^(.*)(?::(\d+)(:old)?)?$`)
 	match := lineRe.FindStringSubmatch(content)
 	var lineType RefLineType = RefLineTypeNew
 	var line = 0
