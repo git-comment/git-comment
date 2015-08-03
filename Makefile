@@ -8,7 +8,7 @@ BIN_PATH=/usr/local/bin/
 BIN_FILE_LIST=git-comment git-comment-grep git-comment-log git-comment-web
 BIN_BUILD_CMD=go build -ldflags "-X main.buildVersion $(VERSION)"
 MAN_PATH=/usr/local/man/man1/
-MAN_BUILD_DIR=$(BUILD_DIR)/doc/
+MAN_BUILD_DIR=$(BUILD_DIR)/man/
 MAN_TITLE=Git Comment Manual
 MAN_CMD=pod2man --center="$(MAN_TITLE)" --release="$(VERSION)"
 
@@ -42,7 +42,7 @@ copy:
 
 doc:
 	mkdir -p $(MAN_BUILD_DIR)
-	$(foreach bin,$(BIN_FILE_LIST), $(MAN_CMD) man/$(bin).pod > $(MAN_BUILD_DIR)$(bin).1;)
+	$(foreach bin,$(BIN_FILE_LIST), $(MAN_CMD) docs/man/$(bin).pod > $(MAN_BUILD_DIR)$(bin).1;)
 
 install: doc
 	$(foreach bin,$(BIN_FILE_LIST), \
