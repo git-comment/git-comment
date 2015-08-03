@@ -40,6 +40,11 @@ copy:
 	install $(PROJECT)/*.go $(SRC_PATH)
 	$(foreach pack,$(PACKAGES),install $(PROJECT)/$(pack)/*.go $(SRC_PATH)/$(pack);)
 
+deploy_website:
+	git checkout -B gh-pages
+	git filter-branch -f --subdirectory-filter docs/git-comment.com
+	# git push -f origin gh-pages
+
 doc:
 	mkdir -p $(MAN_BUILD_DIR)
 	$(foreach bin,$(BIN_FILE_LIST), $(MAN_CMD) docs/man/$(bin).pod > $(MAN_BUILD_DIR)$(bin).1;)
