@@ -38,7 +38,7 @@ More information and usage is available in the manual or the User Guide.
 
 ### Import/Export scripts
 
-Retrieve all commits from external services including as GitHub and
+Retrieve all commits from external services including GitHub and
 BitBucket. Check the `scripts` directory.
 
 ### Editor integrations

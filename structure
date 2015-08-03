@@ -1,0 +1,63 @@
+why: distributed, open source, free, collaborative, offline, built on git
+
+uses/features:
+- sharing
+- reviewing
+- search
+- backups
+- filtering
+- making more reliable tools
+
+getting started:
+- installation
+  * from download
+  * from source
+- configuration
+  * fetching comments by default on pull
+  * editor plugins
+  * hooks
+
+usage:
+- commenting
+  * git-comment
+  * git-comment-web
+  * editor plugins
+- viewing comments
+  * git-comment-log
+  * git-comment-web
+  * editor plugins
+- searching
+  * git-comment-grep
+    + indexing comments
+    + fetch configuration
+    + searching by author, commit, comment content
+- exporting comments from web services
+  * github
+  * bitbucket
+  * gitlab
+
+downloads:
+- binaries / checksums
+  * linux
+  * windows
+  * os x
+- source:
+   * 1.0.0.0
+   * master
+
+contributing:
+- architecture:
+  * specification:
+    + comment format
+    + reference structure
+  * components:
+    + binaries
+    + libraries
+    + editor plugins
+    + import / export scripts
+- style guide
+
+license: BSD
+copyright: author
+source code
+issue tracking
