@@ -31,7 +31,8 @@ The valid fields are (in this order):
 * `file` : path (relative to repository root) and line number of the
   comment or an empty string
 * `author` : the writer of the comment's name, email, and time of
-  authorship
+  authorship. Time is formatted as a unix timestamp followed by a single
+space and the timezone in the format `+HHMM` or `-HHMM`
 * `amender` : person who checked the comment into git
 
 After these fields, there is a single empty line, then the content of
