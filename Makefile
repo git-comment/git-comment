@@ -15,7 +15,6 @@ MAN_CMD=pod2man --center="$(MAN_TITLE)" --release="$(VERSION)"
 default: build
 
 bootstrap:
-	brew install libgit2
 	go get github.com/libgit2/git2go
 	go get github.com/stvp/assert
 	go get github.com/cevaris/ordered_map
@@ -23,6 +22,9 @@ bootstrap:
 	go get github.com/kylef/result.go/src/result
 	go get github.com/blevesearch/bleve
 	go get github.com/blang/semver
+
+bootstrap_osx:
+	brew install libgit2
 
 build: copy
 	go build $(PROJECT)
