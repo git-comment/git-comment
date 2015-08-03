@@ -18,4 +18,6 @@ The manual is written using [pod2man](http://perldoc.perl.org/pod2man.html), whi
 
 4. Ensure all tests pass by running `make test`
 
-5. Push to your fork and [submit a pull request](https://github.com/kattrali/git-comment/compare/)
+5. Commit your changes, writing a [good commit message](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)
+
+6. Push to your fork and [submit a pull request](https://github.com/kattrali/git-comment/compare/)
