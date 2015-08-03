@@ -8,7 +8,7 @@
 
     git comment-web [<revision range>] [--port <port>]
     git comment-log --help
-    git comment-log -v
+    git comment-log --version
 
 =head1 DESCRIPTION
 
