@@ -1,4 +1,5 @@
 PROJECT=git_comment
+GOPATH=$(shell pwd)/_workspace/
 PACKAGES=exec log git search
 VERSION=$(shell cat VERSION)
 SRC_PATH=$(GOPATH)src/$(PROJECT)
@@ -14,7 +15,7 @@ MAN_CMD=pod2man --center="$(MAN_TITLE)" --release="$(VERSION)"
 
 default: build
 
-bootstrap:
+bootstrap: env
 	go get github.com/libgit2/git2go
 	go get github.com/stvp/assert
 	go get github.com/cevaris/ordered_map
@@ -35,10 +36,14 @@ clean:
 	go clean -i -x $(PROJECT) || true
 	rm -rf $(SRC_PATH) $(BUILD_DIR)
 
-copy:
+copy: env
 	$(foreach pack,$(PACKAGES),install -d $(SRC_PATH)/$(pack);)
 	install $(PROJECT)/*.go $(SRC_PATH)
 	$(foreach pack,$(PACKAGES),install $(PROJECT)/$(pack)/*.go $(SRC_PATH)/$(pack);)
+
+dep: env
+	rm -r $(GOPATH)*/*/*/.git || true
+	git add $(GOPATH)
 
 deploy_website:
 	git checkout -B gh-pages
@@ -48,6 +53,10 @@ deploy_website:
 doc:
 	mkdir -p $(MAN_BUILD_DIR)
 	$(foreach bin,$(BIN_FILE_LIST), $(MAN_CMD) docs/man/$(bin).pod > $(MAN_BUILD_DIR)$(bin).1;)
+
+env:
+	install -d $(GOPATH)
+	export GOPATH=$(GOPATH)
 
 install: doc
 	$(foreach bin,$(BIN_FILE_LIST), \
