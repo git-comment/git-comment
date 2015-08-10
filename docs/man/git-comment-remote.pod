@@ -1,0 +1,56 @@
+=pod
+
+=head1 NAME
+
+    git-comment-remote - Helper commands for the merge workflow
+
+=head1 SYNOPSIS
+
+    git comment-remote config <remote>
+    git comment-remote delete <remote> <comment>
+    git comment-remote --help
+    git comment-remote --version
+
+=head1 DESCRIPTION
+
+The merge workflow can require additional commands for dealing with
+remotes which are not essential to the basic usage of git-comment.
+git-comment-remote simplifies the usage flow by adding remote
+configuation and comment pruning.
+
+=head1 COMMANDS
+
+=over 4
+
+=item config <remote>
+
+Update the remote configuration to fetch and push comment changes by default
+
+=item delete <remote> <comment>
+
+Delete the remote reference of a comment
+
+=item <remote>
+
+A remote name
+
+=item <comment>
+
+A comment identifier
+
+=back
+
+=head1 AUTHOR
+
+git-comment was written and is maintained by Delisa Mason <delisam@acm.org>
+
+=head1 SEE ALSO
+
+I<git-push>(1), I<git-remote>(1)
+
+=head1 COPYRIGHT
+
+Copyright (c) 2015 Delisa Mason <delisam@acm.org>
+All rights reserved.
+
+=cut
