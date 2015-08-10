@@ -32,14 +32,12 @@
 ### Command-line interface
 
 The core binary can add comments to commits, optionally with a file and
-line reference. It includes a helper command (`--configure-remote`) for
-fetching and pushing comments by default with other refs. Creating a
-comment without a supplied message opens the default git editor.
+line reference. Creating a comment without a supplied message opens the
+default git editor.
 
 ```
 git comment [-m <msg>] [--amend <comment>] [-c <commit>] [<filepath:line>]
 git comment --delete <comment>
-git comment --configure-remote <remote>
 git comment --help
 git comment --version
 ```
@@ -78,8 +76,36 @@ git comment-log --version
 
 ## Sharing Comments
 
-### Central Remote Workflow
-* Push/pull comments by default
+### Merge (Central Remote) Workflow
+
+Comments can be pushed to a central server using
+
+    git push <remote> 'refs/comments/*'
+
+Or fetched via
+
+    git fetch origin '+refs/comments/*:refs/remotes/<remote>/comments/*'
+
+Alternately, a remote can be configured to push and fetch comments by
+default. The `git-comment` suite includes commands for remote
+configuration and comment pruning.
+
+```
+git comment-remote config <remote>
+git comment-remote delete <remote> <comment>
+git comment-remote --help
+git comment-remote --version
+```
+
+Using `git comment-remote config` adds fetch and push refspecs to a
+remote for comments. After use, using `git fetch` or `git push` will
+fetch or push new comments to the remote by default.
+
+Deleting the reference to a remote comment renders it inaccessible by
+other users who have not yet fetched it. `git comment-remote delete`
+deletes the remote reference. Note that other users who have already
+fetched the comment could repush it unless blocked by a push hook on the
+remote side.
 
 ### No Server Workflow
 

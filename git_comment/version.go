@@ -79,9 +79,8 @@ func writeVersion(repo *git.Repository, version string) result.Result {
 		committer := CreatePerson(gitg.ConfiguredCommitter(repo.Path()))
 		return committer.FlatMap(func(p interface{}) result.Result {
 			person := p.(*Person)
-			sig := &git.Signature{person.Name, person.Email, person.Date}
 			return result.NewResult(repo.CreateReference(path,
-				oid.(*git.Oid), false, sig, upgradeMessage))
+				oid.(*git.Oid), false, person.Signature(), upgradeMessage))
 		})
 	}).FlatMap(func(ref interface{}) result.Result {
 		return result.NewSuccess(VersionStatusEqual)
