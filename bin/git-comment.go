@@ -1,21 +1,12 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	gc "git_comment"
 	gx "git_comment/exec"
 	gg "git_comment/git"
 	kp "gopkg.in/alecthomas/kingpin.v2"
-	"io/ioutil"
 	"os"
-	"regexp"
-	"strings"
-)
-
-const (
-	editorFailed      = "Failed to launch preferred editor"
-	noMessageProvided = "Aborting comment, no message provided"
 )
 
 var (
@@ -51,7 +42,7 @@ func main() {
 func editComment(pwd string) {
 	parsedCommit := gx.FatalIfError(app, gg.ResolvedCommit(pwd, commit), "git")
 	if len(*message) == 0 {
-		*message = getMessageFromEditor(pwd)
+		*message = gx.GetMessageFromEditor(app, pwd)
 	}
 	if len(*amendID) > 0 {
 		id := gx.FatalIfError(app, gc.UpdateComment(pwd, *amendID, *message), "git")
@@ -62,30 +53,4 @@ func editComment(pwd string) {
 		hash := *(id.(*string))
 		fmt.Printf("[%v] Comment created\n", hash[:7])
 	}
-}
-
-func getMessageFromEditor(pwd string) string {
-	editor := gg.ConfiguredEditor(pwd)
-	file, err := ioutil.TempFile("", "gitc")
-	app.FatalIfError(err, "io")
-	path := file.Name()
-	file.Write([]byte(gc.DefaultMessageTemplate))
-	file.Close()
-	err = gx.ExecCommand(editor, path)
-	app.FatalIfError(err, "io")
-	content, err := ioutil.ReadFile(path)
-	os.Remove(path)
-	app.FatalIfError(err, "io")
-	return sanitizeMessage(string(content))
-}
-
-func sanitizeMessage(message string) string {
-	reg, err := regexp.Compile("(?m)^#.*$")
-	app.FatalIfError(err, "regex")
-	stripped := reg.ReplaceAllString(message, "")
-	content := strings.TrimSpace(stripped)
-	if len(content) == 0 {
-		app.FatalIfError(errors.New(noMessageProvided), "git-comment")
-	}
-	return content
 }
