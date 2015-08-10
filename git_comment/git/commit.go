@@ -18,7 +18,7 @@ const (
 // Resolve a single commit from a given commitish string
 //
 // return result.Result<*string, error>
-func ResolvedCommit(repoPath string, commitish *string) result.Result {
+func ResolvedCommit(repoPath, commitish string) result.Result {
 	return WithRepository(repoPath, func(repo *git.Repository) result.Result {
 		return ResolveSingleCommitHash(repo, commitish)
 	})
@@ -28,7 +28,7 @@ func ResolvedCommit(repoPath string, commitish *string) result.Result {
 // where needed
 //
 // return result.Result<*string, error>
-func ResolveSingleCommitHash(repo *git.Repository, commitish *string) result.Result {
+func ResolveSingleCommitHash(repo *git.Repository, commitish string) result.Result {
 	return result.NewResult(repo.RevparseSingle(ExpandCommitish(commitish))).FlatMap(getObjectId)
 }
 
@@ -55,11 +55,11 @@ func ResolveCommits(repo *git.Repository, commitish string) result.Result {
 }
 
 // Resolve empty or nil strings to HEAD
-func ExpandCommitish(commitish *string) string {
-	if commitish == nil || len(*commitish) == 0 {
+func ExpandCommitish(commitish string) string {
+	if len(commitish) == 0 {
 		return headCommit
 	}
-	return *commitish
+	return commitish
 }
 
 func getObjectId(value interface{}) result.Result {

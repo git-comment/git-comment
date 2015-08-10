@@ -33,7 +33,7 @@ func CommentsOnCommittish(repoPath string, committish string) result.Result {
 
 // Finds all comments on a given commit
 // @return result.Result<[]*Comment, error>
-func CommentsOnCommit(repoPath string, commitHash *string) result.Result {
+func CommentsOnCommit(repoPath string, commitHash string) result.Result {
 	return gitg.WithRepository(repoPath, func(repo *git.Repository) result.Result {
 		hash := gitg.ResolveSingleCommitHash(repo, commitHash)
 		return hash.FlatMap(func(commit interface{}) result.Result {

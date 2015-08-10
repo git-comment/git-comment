@@ -6,14 +6,16 @@
 
 =head1 SYNOPSIS
 
-    git comment [-m <msg>] [--amend <comment>] [-c <commit>] [<filepath:line>]
+    git comment [-m <msg>] [--amend <comment>] [-c <commit>]
+                [--author=<author>] [<filepath:line>]
     git comment --delete <comment>
     git comment --help
     git comment --version
 
 =head1 DESCRIPTION
 
-git-comment adds, removes, or amends comments attached to git commits, without changing the commits themselves.
+git-comment adds, removes, or amends comments attached to git commits,
+without changing the commits themselves.
 
 =head1 OPTIONS
 
@@ -21,13 +23,19 @@ git-comment adds, removes, or amends comments attached to git commits, without c
 
 =item --amend <comment>
 
-Edit an existing comment. No modifications are made if a commit is specified but no comment with a given ID attached to the given commit.
+Edit an existing comment. No modifications are made if a commit is
+specified but no comment with a given ID attached to the given commit.
 
-=item I<-d> <comment>
+=item --author <author>
+
+Specify a custom author for a comment using the standard format
+"Some Name <name@example.com>".
+
+=item --delete <comment>
 
 Remove a comment
 
-=item I<-h>
+=item --help
 
 Gives a pretty-printed usage of the command
 
@@ -47,10 +55,6 @@ A commit
 
 A reference to a file and line number, to make the comment more specific
 
-=item <remote>
-
-A remote name
-
 =back
 
 =head1 ENVIRONMENT AND CONFIGURATION
@@ -58,13 +62,18 @@ A remote name
 git-comment uses the same editor, author, and pager settings as git. See
 I<git-var>(1) for more details.
 
+Default comment content is loaded from a file path specified by
+configuration option I<comment.template> or I<$HOME/.gitcommenttemplate>
+in that order.
+
 =head1 HOOKS
 
 This command can run pre-comment and post-comment hooks.
 
 =head1 DISCUSSION
 
-Comment objects are blobs containing extra information about a commit and optionally a changed line within a the commit.
+Comment objects are blobs containing extra information about a commit
+and optionally a changed line within a the commit.
 
 =head1 AUTHOR
 

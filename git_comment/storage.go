@@ -10,19 +10,18 @@ import (
 )
 
 const (
-	CommentStorageDir      = ".git/comments"
-	DefaultMessageTemplate = "\n# Enter comment content\n# Lines beginning with '#' will be stripped"
-	maxCommentsOnCommit    = 4096
-	defaultMessageFormat   = "Created a comment ref on [%v] to [%v]"
-	maxCommentError        = "Maximum comments on [%v] reached."
+	CommentStorageDir    = ".git/comments"
+	maxCommentsOnCommit  = 4096
+	defaultMessageFormat = "Created a comment ref on [%v] to [%v]"
+	maxCommentError      = "Maximum comments on [%v] reached."
 )
 
 // Create a new comment on a commit, optionally with a file and line
 // @return result.Result<*string, error>
-func CreateComment(repoPath string, commit *string, fileRef *FileRef, message string) result.Result {
+func CreateComment(repoPath, commit, author, message string, fileRef *FileRef) result.Result {
 	return gitg.WithRepository(repoPath, func(repo *git.Repository) result.Result {
 		return validatedCommitForComment(repo, commit).FlatMap(func(hash interface{}) result.Result {
-			return CreatePerson(gitg.ConfiguredAuthor(repoPath)).FlatMap(func(author interface{}) result.Result {
+			return commentAuthor(repoPath, author).FlatMap(func(author interface{}) result.Result {
 				return NewComment(message, *(hash).(*string), fileRef, author.(*Person))
 			}).FlatMap(func(value interface{}) result.Result {
 				comment := value.(*Comment)
@@ -37,11 +36,11 @@ func CreateComment(repoPath string, commit *string, fileRef *FileRef, message st
 
 // Update an existing comment with a new message
 // @return result.Result<*Comment, error>
-func UpdateComment(repoPath string, identifier string, message string) result.Result {
+func UpdateComment(repoPath, identifier, committer, message string) result.Result {
 	return gitg.WithRepository(repoPath, func(repo *git.Repository) result.Result {
 		return CommentByID(repo, identifier).FlatMap(func(c interface{}) result.Result {
 			comment := c.(*Comment)
-			return CreatePerson(gitg.ConfiguredCommitter(repoPath)).FlatMap(func(committer interface{}) result.Result {
+			return commentCommitter(repoPath, committer).FlatMap(func(committer interface{}) result.Result {
 				comment.Amend(message, committer.(*Person))
 				return writeCommentToDisk(repo, comment)
 			})
@@ -77,6 +76,26 @@ func RefPath(comment *Comment, identifier string) result.Result {
 	})
 }
 
+// Determine author for comment preferring the author string if
+// available.
+// @return result.Result<*Person, error>
+func commentAuthor(repoPath, author string) result.Result {
+	if len(author) > 0 {
+		return CreatePerson(author)
+	}
+	return CreatePerson(gitg.ConfiguredAuthor(repoPath))
+}
+
+// Determine committer for comment preferring the committer string if
+// available.
+// @return result.Result<*Person, error>
+func commentCommitter(repoPath, committer string) result.Result {
+	if len(committer) > 0 {
+		return CreatePerson(committer)
+	}
+	return CreatePerson(gitg.ConfiguredCommitter(repoPath))
+}
+
 // Write git object for a given comment and update the
 // comment refs
 // @return result.Result<*Comment, error>
@@ -100,7 +119,7 @@ func writeCommentToDisk(repo *git.Repository, comment *Comment) result.Result {
 	})
 }
 
-func validatedCommitForComment(repo *git.Repository, commit *string) result.Result {
+func validatedCommitForComment(repo *git.Repository, commit string) result.Result {
 	return gitg.ResolveSingleCommitHash(repo, commit).FlatMap(func(hash interface{}) result.Result {
 		return CommentCountOnCommit(repo, *(hash.(*string))).FlatMap(func(count interface{}) result.Result {
 			if count.(uint16) >= maxCommentsOnCommit {
