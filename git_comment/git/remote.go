@@ -5,6 +5,8 @@ import (
 	git "github.com/libgit2/git2go"
 )
 
+const defaultPushMessage = ""
+
 // Lookup a remote by name, performing a block if found
 // @return result.Result<*git.Remote, error>
 func WithRemote(repoPath, remoteName string, ifSuccess func(*git.Remote) result.Result) result.Result {
@@ -12,6 +14,14 @@ func WithRemote(repoPath, remoteName string, ifSuccess func(*git.Remote) result.
 		return result.NewResult(repo.LookupRemote(remoteName))
 	}).FlatMap(func(remote interface{}) result.Result {
 		return ifSuccess(remote.(*git.Remote))
+	})
+}
+
+// Push given refspecs to the remote
+// @return result.Result<bool, error>
+func Push(repoPath, remoteName string, refspecs []string, sig *git.Signature) result.Result {
+	return WithRemote(repoPath, remoteName, func(remote *git.Remote) result.Result {
+		return BoolResult(true, remote.Push(refspecs, &git.PushOptions{1}, sig, defaultPushMessage))
 	})
 }
 

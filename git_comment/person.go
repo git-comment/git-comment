@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/kylef/result.go/src/result"
+	git "github.com/libgit2/git2go"
 	"regexp"
 	"strconv"
 	"time"
@@ -47,4 +48,8 @@ func CreatePerson(properties string) result.Result {
 
 func (p *Person) Serialize() string {
 	return fmt.Sprintf("%v <%v> %d %v", p.Name, p.Email, p.Date.Unix(), p.TimeOffset)
+}
+
+func (p *Person) Signature() *git.Signature {
+	return &git.Signature{p.Name, p.Email, p.Date}
 }
