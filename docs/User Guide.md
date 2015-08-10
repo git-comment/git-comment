@@ -15,13 +15,8 @@
 * Pre-built binaries
 * Source
 
-### Configuration
-
 #### Identity
 * Name, email, signature
-
-#### Formatting
-* Comment template
 
 ### Migrating from Hosted Services
 * Import from GitHub
@@ -35,6 +30,10 @@ The core binary can add comments to commits, optionally with a file and
 line reference. Creating a comment without a supplied message opens the
 default git editor.
 
+The name and email used as the comment author and committer identities are
+shared from git environment variables `GIT_AUTHOR_IDENT` and
+`GIT_COMMITTER_IDENT` respectively. See `git help var` to learn more.
+
 ```
 git comment [-m <msg>] [--amend <comment>] [-c <commit>] [<filepath:line>]
 git comment --delete <comment>
@@ -45,6 +44,10 @@ git comment --version
 Comment text can be any number of lines, or use any formatting syntax,
 though plain text formats like markdown and textile ensure the best
 readability for command-line and web-based interfaces.
+
+`git-comment` supports prepopulating comment content from a file based
+on configuration option `comment.template` or
+`$HOME/.gitcommenttemplate` if available in that order.
 
 ### Editor integration
 ### Web interface

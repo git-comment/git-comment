@@ -13,7 +13,8 @@
 
 =head1 DESCRIPTION
 
-git-comment adds, removes, or amends comments attached to git commits, without changing the commits themselves.
+git-comment adds, removes, or amends comments attached to git commits,
+without changing the commits themselves.
 
 =head1 OPTIONS
 
@@ -21,7 +22,8 @@ git-comment adds, removes, or amends comments attached to git commits, without c
 
 =item --amend <comment>
 
-Edit an existing comment. No modifications are made if a commit is specified but no comment with a given ID attached to the given commit.
+Edit an existing comment. No modifications are made if a commit is
+specified but no comment with a given ID attached to the given commit.
 
 =item I<-d> <comment>
 
@@ -47,10 +49,6 @@ A commit
 
 A reference to a file and line number, to make the comment more specific
 
-=item <remote>
-
-A remote name
-
 =back
 
 =head1 ENVIRONMENT AND CONFIGURATION
@@ -58,13 +56,18 @@ A remote name
 git-comment uses the same editor, author, and pager settings as git. See
 I<git-var>(1) for more details.
 
+Default comment content is loaded from a file path specified by
+configuration option I<comment.template> or I<$HOME/.gitcommenttemplate>
+in that order.
+
 =head1 HOOKS
 
 This command can run pre-comment and post-comment hooks.
 
 =head1 DISCUSSION
 
-Comment objects are blobs containing extra information about a commit and optionally a changed line within a the commit.
+Comment objects are blobs containing extra information about a commit
+and optionally a changed line within a the commit.
 
 =head1 AUTHOR
 
