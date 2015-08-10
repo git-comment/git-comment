@@ -32,10 +32,12 @@ default git editor.
 
 The name and email used as the comment author and committer identities are
 shared from git environment variables `GIT_AUTHOR_IDENT` and
-`GIT_COMMITTER_IDENT` respectively. See `git help var` to learn more.
+`GIT_COMMITTER_IDENT` respectively. See `git help var` to learn more. To
+override the author identity, use the `--author` flag.
 
 ```
-git comment [-m <msg>] [--amend <comment>] [-c <commit>] [<filepath:line>]
+git comment [-m <msg>] [--amend <comment>] [-c <commit>]
+            [--author=<author>] [<filepath:line>]
 git comment --delete <comment>
 git comment --help
 git comment --version
