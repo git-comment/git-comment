@@ -89,8 +89,7 @@ func writeCommentToDisk(repo *git.Repository, comment *Comment) result.Result {
 	return gitg.CreateBlob(repo, comment.Serialize()).FlatMap(func(oid interface{}) result.Result {
 		id := fmt.Sprintf("%v", oid)
 		return RefPath(comment, id).FlatMap(func(file interface{}) result.Result {
-			committer := comment.Amender
-			sig := &git.Signature{committer.Name, committer.Email, committer.Date}
+			sig := comment.Amender.Signature()
 			commit := *comment.Commit
 			message := fmt.Sprintf(defaultMessageFormat, commit[:7], id[:7])
 			return result.NewResult(repo.CreateReference(file.(string), oid.(*git.Oid), false, sig, message))
