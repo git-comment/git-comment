@@ -21,3 +21,11 @@ The manual is written using [pod2man](http://perldoc.perl.org/pod2man.html), whi
 5. Commit your changes, writing a [good commit message](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)
 
 6. Push to your fork and [submit a pull request](https://github.com/kattrali/git-comment/compare/)
+
+## Useful References
+
+* [Git Internals Guide](http://www.git-scm.com/book/en/v2/Git-Internals-Plumbing-and-Porcelain)
+* [libgit2 Documentation](https://libgit2.github.com) (and it's [Go bindings](http://godoc.org/github.com/libgit2/git2go))
+* [gitcore-tutorial(7)](https://www.kernel.org/pub/software/scm/git/docs/gitcore-tutorial.html)
+* [gitrepository-layout(5)](https://www.kernel.org/pub/software/scm/git/docs/gitrepository-layout.html)
+* [gitcli(7)](https://www.kernel.org/pub/software/scm/git/docs/gitcli.html)
