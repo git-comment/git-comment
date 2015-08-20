@@ -9,7 +9,7 @@ Comments on git commits are siloed into various web services or backed
 up externally, when all repo history can be stored together and
 accessible offline.
 
-## Use Cases
+## Uses
 
 * Storing git comment history in every local copy
 * Unified and open format for web services to store comments
@@ -31,47 +31,33 @@ components:
   with git comment, like configuring remotes to push and pull comments
   by default, indexing comments for search after push, and deleting remote
   comments
-* `git-comment-patch`: formats and applies comment patch files, for
-  working with a fully decentralized flow
 
 More information and usage is available in the manual or the User Guide.
 
-### Import/Export scripts
-
-Retrieve all commits from external services including GitHub and
-BitBucket. Check the `scripts` directory.
-
-### Editor integrations
-
-A reference plugin for vim can be found [here](). Submissions for other
-editor integrations are encouraged!
-
 ## Installation
-
-### Binaries
-
-Binaries for several platforms are available on the [downloads
-page](https://github.com/kattrali/git-comment/releases)
 
 ### Source
 
 Instructions for source installation are provided in the `INSTALL` file.
 
-## Help
+## Support
 
-* User Guide
-* `#git-comment` on freenode
-* Search open and closed issues for similar problems
-* Open an issue
+* [User Guide](https://github.com/kattrali/git-comment/blob/master/LICENSE)
+* [Manual](https://github.com/kattrali/git-comment/tree/master/docs/man)
+* `#git-comment` on freenode IRC
+* [Search open and closed
+  issues](https://github.com/kattrali/git-comment/issues?utf8=✓&q=is%3Aissue) for similar problems
+* [Open an issue](https://github.com/kattrali/git-comment/issues/new)
+
+## Contributing
+
+The `CONTRIBUTING.md` file details the setup process for building
+`git-comment` from source and submitting a change. There are many tasks
+in the roadmap (`docs/Roadmap.md`) to make git-comment a more robust
+collaboration tool. Contributions welcome!
 
 ## License
 
 Copyright (c) 2015, Delisa Mason <delisam@acm.org>. All rights reserved.
 
 `git-comment` uses the BSD license as detailed in the `LICENSE` file.
-
-## Contributing
-
-The `CONTRIBUTING.md` file details the setup process for building
-`git-comment` from source and submitting a change.
-
