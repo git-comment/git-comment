@@ -73,7 +73,7 @@ func TestPrettyFormatCommitterDateISO(t *testing.T) {
 
 func TestPrettyFormatBody(t *testing.T) {
 	formatter := NewFormatter("format:%b", false, false, 0)
-	assert.Equal(t, formatter.FormatComment(comment()), "new comment\nmore context")
+	assert.Equal(t, formatter.FormatComment(comment()), "\n  | new comment\n  | more context")
 }
 
 func TestPrettyFormatTitle(t *testing.T) {

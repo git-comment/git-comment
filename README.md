@@ -3,20 +3,17 @@
 Comments for git commits and files. Open and distributed collaboration
 around code and other version-controlled text and resources.
 
-## why?
+## Why?
 
 Comments on git commits are siloed into various web services or backed
 up externally, when all repo history can be stored together and
 accessible offline.
 
-
-## use cases
+## Uses
 
 * Storing git comment history in every local copy
 * Unified and open format for web services to store comments
 * Reviewing and annotating code while offline
-* Attaching release notes and other longform metadata to branches or
-  tags
 * Viewing comments and associated context diffs offline
 * Pre- and post-comment hooks for validation with web services
 * Searching for comments by commit or text while offline
@@ -25,115 +22,43 @@ accessible offline.
 To meet these requirements, `git-comment` ships with a few helpful
 components:
 
-### `git-comment`
+* `git-comment`: adds comments
+* `git-comment-log`: prints comments inline with diffs
+* `git-comment-grep`: searches comment content for text
+* `git-comment-web`: launches a web server hosting a friendly web UI for
+  comment editing
+* `git-comment-remote`: helpful tools for working with a remote server
+  with git comment, like configuring remotes to push and pull comments
+  by default, indexing comments for search after push, and deleting remote
+  comments
 
-The core binary can add comments to commits, optionally with a file and
-line reference. It includes a helper command (`--configure-remote`) for
-fetching and pushing comments by default with other refs. Creating a
-comment without a supplied message opens the default git editor.
+More information and usage is available in the manual or the User Guide.
 
-```
-git comment [-m <msg>] [--amend <comment>] [-c <commit>] [<filepath:line>]
-git comment --delete <comment>
-git comment --configure-remote <remote>
-git comment --help
-git comment --version
-```
+## Installation
 
-### `git-comment-log`
+### Source
 
-View comments and associated diffs by commit or tree.
+Instructions for source installation are provided in the `INSTALL` file.
 
-```
-git comment-log [<revision range>]
-git comment-log --help
-git comment-log --version
-```
+## Support
 
-### `git-comment-grep`
+* [User
+  Guide](https://github.com/kattrali/git-comment/blob/master/docs/User%20Guide.md)
+* [Manual](https://github.com/kattrali/git-comment/tree/master/docs/man)
+* `#git-comment` on freenode IRC
+* [Search open and closed
+  issues](https://github.com/kattrali/git-comment/issues?utf8=✓&q=is%3Aissue) for similar problems
+* [Open an issue](https://github.com/kattrali/git-comment/issues/new)
 
-Print comments matching a pattern.
+## Contributing
 
-```
-git comment-grep <pattern>
-git comment-grep --help
-git comment-grep --version
-```
+The `CONTRIBUTING.md` file details the setup process for building
+`git-comment` from source and submitting a change. There are many tasks
+in the roadmap (`docs/Roadmap.md`) to make git-comment a more robust
+collaboration tool. Contributions welcome!
 
-### `git-comment-web`
-
-Starts a web server hosting a friendly interface for editing comments on
-diffs
-
-```
-git comment-web [<revision range>] [--port <port>]
-git comment-web --help
-git comment-web --version
-```
-
-### `pre-comment` and `post-comment` git hooks
-
-Execute commands before or after creating comments, aborting the
-operation when the scripts fail.
-
-### Import/Export scripts
-
-Retrieve all commits from external services including as GitHub and
-BitBucket. Check the `scripts` directory.
-
-### Editor integrations
-
-A reference plugin for vim can be found [here](). Submissions for other
-editor integrations are encouraged!
-
-## how?
-
-Comments are regular git objects, stored in a format similar to tags,
-with the addition of file and line references and a flag for deletion. A
-reference for the comment is added in refs/comments for lookup by
-commit. An example comment object would look something like:
-
-```
-commit 0155eb4229851634a0f03eb265b69f5a2d56f341
-file src/example.txt:12
-author Delisa Mason <name@example.com>
-created 1243040974 -0900
-amender Delisa Mason <name@example.com>
-amended 1243040974 -0900
-
-Too many levels of indentation here.
-```
-
-And a comment reference would be `refs/comments/[commit]/[comment]`, like:
-
-```
-refs/comments/0155/eb4229851634a0f03eb265b69f5a2d56f341/f9da8cdd40bbce4c7bd1aa4e46608107184bd91c
-```
-
-Comment text can be any number of lines, or use any formatting syntax,
-though plain text formats like markdown and textile ensure the best
-readability for command-line and web-based interfaces.
-
-## license
+## License
 
 Copyright (c) 2015, Delisa Mason <delisam@acm.org>. All rights reserved.
 
-`git-comment` is licensed under the BSD 2-clause license, and detailed in the `LICENSE` file.
-
-## contributing
-
-`git-comment` is written in [Go](http://golang.org) and tested using [assert](https://github.com/stvp/assert).
-
-Dependencies are listed in the `Makefile` and can be installed by running `make bootstrap`. The default command installs `libgit2` via [Homebrew](http://brew.sh), but it can be substituted for any other suitable package manager or installation method.
-
-The manual is written using [pod2man](http://perldoc.perl.org/pod2man.html), which should be available on most GNU/Linux and OS X distributions by default. Changes should be documented with friendliness in mind.
-
-### reference
-
-* [Git Internals
-  Guide](http://www.git-scm.com/book/en/v2/Git-Internals-Plumbing-and-Porcelain)
-* [libgit2 Documentation](https://libgit2.github.com) (and its [Go
-  bindings](http://godoc.org/github.com/libgit2/git2go))
-* gitcore-tutorial(7)
-* gitrepository-layout(5)
-* gitcli(7)
+`git-comment` uses the BSD license as detailed in the `LICENSE` file.

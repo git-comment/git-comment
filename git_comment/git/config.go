@@ -5,10 +5,10 @@ import (
 	git "github.com/libgit2/git2go"
 )
 
-func ConfiguredString(repoPath, name string) result.Result {
+func ConfiguredString(repoPath, name, fallback string) string {
 	return WithConfig(repoPath, func(config *git.Config) result.Result {
 		return result.NewResult(config.LookupString(name))
-	})
+	}).Recover(fallback).(string)
 }
 
 func ConfiguredInt32(repoPath, name string, fallback int32) int32 {

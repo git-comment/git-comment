@@ -45,7 +45,7 @@ const (
 	Disco         = "disco"
 	ShortFormat   = "[%h] %c %an <%ae>\n%t\n\n"
 	FullFormat    = "commit  %H\ncomment %C\nAuthor: %an <%ae>\n%b\n\n"
-	discoFormat   = "%nmagenta(>) cyan(%an) blue(<%ae>)%n  [%h][%c] blue(%ad)%n%ncyan(%b)%nyellow(-----)\n"
+	discoFormat   = "%n|magenta(>) cyan(%an) blue(<%ae>)%n| [%h][%c] blue(%ad)%n|%n|cyan(%b)%n|\n"
 	RawFormat     = "comment %C\n%v\n\n"
 	formatPrefix  = "format:"
 	invalidFormat = "Unknown pretty format."
@@ -198,6 +198,10 @@ func (f *Formatter) commentMapping(comment *gitc.Comment) map[string]string {
 		path = comment.FileRef.Path
 		line = fmt.Sprintf("%v", comment.FileRef.Line)
 	}
+	var content []byte
+	for _, lineContent := range strings.Split(comment.Content, "\n") {
+		content = append(content, []byte(fmt.Sprintf("%s| %s", f.indent, lineContent))...)
+	}
 	return map[string]string{
 		authorName:           comment.Author.Name,
 		authorEmail:          comment.Author.Email,
@@ -211,7 +215,7 @@ func (f *Formatter) commentMapping(comment *gitc.Comment) map[string]string {
 		commentShort:         (*comment.ID)[:7],
 		commitFull:           *comment.Commit,
 		commitShort:          (*comment.Commit)[:7],
-		bodyContent:          comment.Content,
+		bodyContent:          string(content),
 		titleLine:            comment.Title(),
 		filePath:             path,
 		lineNumber:           line,

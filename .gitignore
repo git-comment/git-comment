@@ -1,5 +1,6 @@
-git-comment
-git-comment-log
-git-comment-grep
-git-comment-web
+# Build artifacts
 build
+
+# Project temp location
+_workspace/pkg
+_workspace/src/git_comment
