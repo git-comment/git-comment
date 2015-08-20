@@ -42,7 +42,8 @@ Instructions for source installation are provided in the `INSTALL` file.
 
 ## Support
 
-* [User Guide](https://github.com/kattrali/git-comment/blob/master/LICENSE)
+* [User
+  Guide](https://github.com/kattrali/git-comment/blob/master/docs/User%20Guide.md)
 * [Manual](https://github.com/kattrali/git-comment/tree/master/docs/man)
 * `#git-comment` on freenode IRC
 * [Search open and closed
