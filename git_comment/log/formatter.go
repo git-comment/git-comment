@@ -43,10 +43,10 @@ const (
 	Full          = "full"
 	Raw           = "raw"
 	Disco         = "disco"
-	ShortFormat   = "[%h] %c %an <%ae>\n%t\n\n"
-	FullFormat    = "commit  %H\ncomment %C\nAuthor: %an <%ae>\n%b\n\n"
-	discoFormat   = "%n|magenta(>) cyan(%an) blue(<%ae>)%n| [%h][%c] blue(%ad)%n|%n|cyan(%b)%n|\n"
-	RawFormat     = "comment %C\n%v\n\n"
+	ShortFormat   = "blue([%h] %c %an <%ae>)%nyellow(%t)"
+	FullFormat    = "commit  %H%ncomment %C%nAuthor: %an <%ae>%n%b"
+	discoFormat   = "cyan(%an) blue(<%ae>)%n[%h][%c] blue(%ad)%n%nyellow(%b)"
+	RawFormat     = "yellow(comment %C)%n%v"
 	formatPrefix  = "format:"
 	invalidFormat = "Unknown pretty format."
 	lineNumberMax = 5
@@ -103,20 +103,27 @@ func (f *Formatter) FormatLine(line *gitc.DiffLine) string {
 }
 
 func (f *Formatter) FormatComment(comment *gitc.Comment) string {
+	var content string
 	switch {
 	case f.format == Short || len(f.format) == 0:
-		return f.substituteVariables(ShortFormat, comment)
+		content = f.substituteVariables(ShortFormat, comment)
 	case f.format == Full:
-		return f.substituteVariables(FullFormat, comment)
+		content = f.substituteVariables(FullFormat, comment)
 	case f.format == Disco:
-		return f.substituteVariables(discoFormat, comment)
+		content = f.substituteVariables(discoFormat, comment)
 	case f.format == Raw:
 		format := string(f.substituteVariables(RawFormat, comment))
-		return fmt.Sprintf(format, *comment.ID)
+		content = fmt.Sprintf(format, comment.Serialize())
 	case strings.HasPrefix(f.format, formatPrefix):
-		return f.substituteVariables(f.format[len(formatPrefix):], comment)
+		content = f.substituteVariables(f.format[len(formatPrefix):], comment)
 	}
-	return ""
+
+	var components []byte
+	for _, lineContent := range strings.Split(content, "\n") {
+		components = append(components, []byte(fmt.Sprintf("%s%s│%s%s", f.indent, ex.Magenta, ex.Clear, lineContent))...)
+	}
+	components = append(components, []byte("\n\n")...)
+	return string(components)
 }
 
 func (f *Formatter) formatLineNumber(number int) string {
@@ -198,10 +205,6 @@ func (f *Formatter) commentMapping(comment *gitc.Comment) map[string]string {
 		path = comment.FileRef.Path
 		line = fmt.Sprintf("%v", comment.FileRef.Line)
 	}
-	var content []byte
-	for _, lineContent := range strings.Split(comment.Content, "\n") {
-		content = append(content, []byte(fmt.Sprintf("%s| %s", f.indent, lineContent))...)
-	}
 	return map[string]string{
 		authorName:           comment.Author.Name,
 		authorEmail:          comment.Author.Email,
@@ -215,11 +218,11 @@ func (f *Formatter) commentMapping(comment *gitc.Comment) map[string]string {
 		commentShort:         (*comment.ID)[:7],
 		commitFull:           *comment.Commit,
 		commitShort:          (*comment.Commit)[:7],
-		bodyContent:          string(content),
+		bodyContent:          comment.Content,
 		titleLine:            comment.Title(),
 		filePath:             path,
 		lineNumber:           line,
-		newLine:              f.indent,
+		newLine:              "\n",
 		dividerLine:          strings.Repeat("-", int(f.termWidth)),
 	}
 }
