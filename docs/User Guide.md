@@ -2,29 +2,25 @@
 
 ## Contents
 
-* Getting Started
-* Adding Comments
-* Viewing Comments
-* Sharing Comments
-* Searching for Comments
-* Hooks
+* Command-line Interface
+  - Adding Comments
+  - Viewing Comments
+  - Sharing Comments
+  - Searching for Comments
+* Web Interface
+  - Adding Comments
+  - Viewing Comments
+  - Searching for Comments
+* Editor Interface
+  - Adding Comments
+  - Viewing Comments
+* Configuration
+  - Identity
+  - Hooks
 
-## Getting Started
+## Command-line interface
 
-### Installation
-* Pre-built binaries
-* Source
-
-#### Identity
-* Name, email, signature
-
-### Migrating from Hosted Services
-* Import from GitHub
-* Import from Bitbucket
-
-## Adding Comments
-
-### Command-line interface
+### Adding Comments
 
 The core binary can add comments to commits, optionally with a file and
 line reference. Creating a comment without a supplied message opens the
@@ -47,25 +43,11 @@ Comment text can be any number of lines, or use any formatting syntax,
 though plain text formats like markdown and textile ensure the best
 readability for command-line and web-based interfaces.
 
-`git-comment` supports prepopulating comment content from a file based
-on configuration option `comment.template` or
+`git-comment` supports prepopulating a comment's content from a file based
+on the configuration option `comment.template` or
 `$HOME/.gitcommenttemplate` if available in that order.
 
-### Editor integration
-### Web interface
-
-`git-comment-web` starts a web server hosting a friendly interface for
-editing comments on diffs
-
-```
-git comment-web [<revision range>] [--port <port>]
-git comment-web --help
-git comment-web --version
-```
-
-## Viewing Comments
-
-### Command-line interface
+### Viewing Comments
 
 `git-comment-log` prints comments and associated diffs by commit or tree.
 
@@ -76,12 +58,9 @@ git comment-log --version
 
 ```
 
-### Editor integration
-### Web interface
+### Sharing Comments
 
-## Sharing Comments
-
-### Merge (Central Remote) Workflow
+#### Merge (Central Remote) Workflow
 
 Comments can be pushed to a central server using
 
@@ -112,13 +91,16 @@ deletes the remote reference. Note that other users who have already
 fetched the comment could repush it unless blocked by a push hook on the
 remote side.
 
-### No Server Workflow
+#### Patch (No Remote) Workflow
 
-### Creating a patch
-### Applying a patch
-### Viewing comments from a patch
+##### Creating a patch
 
-## Searching for Comments
+TODO
+
+##### Applying a patch
+TODO
+
+### Searching for Comments
 
 `git-comment-grep` prints comments containing text.
 
@@ -129,9 +111,36 @@ git comment-grep --help
 git comment-grep --version
 ```
 
-## Hooks
+
+## Web Interface
+
+`git-comment-web` starts a web server hosting a friendly interface for
+editing comments on diffs
+
+```
+git comment-web [--port <port>]
+git comment-web --help
+git comment-web --version
+```
+
+### Adding Comments
+
+### Viewing Comments
+
+### Searching for Comments
+
+
+
+## Configuration
+
+### Identity
+
+The comment author name and email is shared from the user's git 
+configuration properties `user.name` and `user.email`.
+
+### Hooks
 
 `git-comment` supports running git hooks before and after creating a
 comment, named `pre-comment` and `post-comment` respectively. These
-files are shell scripts which can be configured to cancel comment
-creation by exiting with a non-zero status code.
+executable files can be configured to cancel comment creation by exiting
+with a non-zero status code.

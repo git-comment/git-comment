@@ -1,15 +1,14 @@
 # The Big TODO List
 
-## Integration
+## Integrations
 
 ### Import/export from web services
 
-Create git comments from external service comments or vice versa, even better
-would be appending metadata to enable real sync
+Synchronize comments with external services.
 
-* Fetch comments from service
-* Push comments to service
-* Push/fetch only as needed, avoiding duplication automatically
+* Fetch comments from the service
+* Push comments to the service
+* Push and fetch only as needed, avoiding duplication automatically
 
 Services:
 
@@ -19,25 +18,26 @@ Services:
 
 ### Editor plugins
 
-Plugin to comment while viewing a diff and view existing comments
+An editor plugin to comment while viewing a diff and view existing comments.
 
 * Add comments
 * View comments
 * Fold comments
-* View gutter icon indicating comment at line
-* Update user guide
+* View gutter icon indicating a comment exists at a line
+* Update the git-comment user guide
 
 Editors:
 
 * [ ] Vim
+* [ ] Sublime Text
 * [ ] Notepad++
 * [ ] TextMate
 * [ ] Xcode
 
-### Continous Integration and Deployment
+### Continuous Integration and Deployment
 
-Configure running the test suite on various platforms, generating binary
-distributions
+Configure running the test suite on various platforms, along with generating binary
+distributions.
 
 * [ ] [Windows](http://www.appveyor.com)
 * [ ] Debian
@@ -58,7 +58,7 @@ distributions
 
 Optionally run an executable file before and after creating a comment, to
 optimize actions such as search indexing and synchronization with external
-services
+services.
 
 ### Create and apply comments from patches
 
@@ -74,14 +74,14 @@ services
 ### Automatically index comments for search
 
 * [ ] Index after comment creation
-* [ ] Index after pulling
+* [ ] Index after fetching comments from a remote
 * [ ] Index after applying patch
 
 ## Major
 
 ### Support signed comments
 
-Use format similar to `git tag`:
+Use a format similar to `git tag`:
 
     -s, --sign
       Make a GPG-signed comment, using the default e-mail address's key.
@@ -99,5 +99,5 @@ trees. The current implementation requires one reference per comment, making
 
 ### Comment grouping unit
 
-Build a specification for comment grouping as a part of a unified
+Write a specification for comment grouping as a part of a unified
 merge request/issue tracking system.
