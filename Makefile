@@ -4,10 +4,12 @@ PACKAGES=exec log git search
 VERSION=$(shell cat VERSION)
 SRC_PATH=$(GOPATH)src/$(PROJECT)
 BUILD_DIR=build
-BUILD_BIN_DIR=$(BUILD_DIR)/bin/
+BUILD_BIN_DIR=$(BUILD_DIR)/bin
+GOBUILD=GOPATH=$(GOPATH) go build
+GOCLEAN=GOPATH=$(GOPATH) go clean
 BIN_PATH=/usr/local/bin/
 BIN_FILE_LIST=git-comment git-comment-grep git-comment-log git-comment-remote git-comment-web
-BIN_BUILD_CMD=go build -ldflags "-X main.buildVersion $(VERSION)"
+BIN_BUILD_CMD=$(GOBUILD) -ldflags "-X main.buildVersion $(VERSION)"
 MAN_PATH=/usr/local/man/man1/
 MAN_BUILD_DIR=$(BUILD_DIR)/man/
 MAN_TITLE=Git Comment Manual
@@ -16,24 +18,25 @@ MAN_CMD=pod2man --center="$(MAN_TITLE)" --release="$(VERSION)"
 default: build
 
 bootstrap: env
-	go get github.com/libgit2/git2go
-	go get github.com/stvp/assert
-	go get github.com/cevaris/ordered_map
-	go get gopkg.in/alecthomas/kingpin.v2
-	go get github.com/kylef/result.go/src/result
-	go get github.com/blevesearch/bleve
-	go get github.com/blang/semver
+	GOPATH=$(GOPATH) go get \
+				 github.com/libgit2/git2go \
+				 github.com/stvp/assert \
+	       github.com/cevaris/ordered_map \
+	       gopkg.in/alecthomas/kingpin.v2 \
+	       github.com/kylef/result.go/src/result \
+	       github.com/blevesearch/bleve \
+	       github.com/blang/semver
 
 bootstrap_osx:
 	brew install libgit2
 
 build: copy
-	go build $(PROJECT)
+	$(GOBUILD) $(PROJECT)
 	mkdir -p $(BUILD_BIN_DIR)
 	$(foreach bin,$(BIN_FILE_LIST),$(BIN_BUILD_CMD) -o $(BUILD_BIN_DIR)/$(bin) bin/$(bin).go;)
 
-clean:
-	go clean -i -x $(PROJECT) || true
+clean: env
+	$(GOCLEAN) -i -x $(PROJECT) || true
 	rm -rf $(SRC_PATH) $(BUILD_DIR)
 
 copy: env
@@ -56,7 +59,6 @@ doc:
 
 env:
 	install -d $(GOPATH)
-	export GOPATH=$(GOPATH)
 
 install: doc
 	$(foreach bin,$(BIN_FILE_LIST), \
