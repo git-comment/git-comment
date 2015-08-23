@@ -1,4 +1,4 @@
-# git-comment
+# ![git-comment](docs/header.png)
 
 Comments for git commits and files. Open and distributed collaboration
 around code and other version-controlled text and resources.
