@@ -9,7 +9,7 @@ GOBUILD=GOPATH=$(GOPATH) go build
 GOCLEAN=GOPATH=$(GOPATH) go clean
 BIN_PATH=/usr/local/bin/
 BIN_FILE_LIST=git-comment git-comment-grep git-comment-log git-comment-remote git-comment-web
-BIN_BUILD_CMD=$(GOBUILD) -ldflags "-X main.buildVersion $(VERSION)"
+BIN_BUILD_CMD=$(GOBUILD) -ldflags "-X main.buildVersion=$(VERSION)"
 MAN_PATH=/usr/local/man/man1/
 MAN_BUILD_DIR=$(BUILD_DIR)/man/
 MAN_TITLE=Git Comment Manual
@@ -19,7 +19,7 @@ default: build
 
 bootstrap: env
 	GOPATH=$(GOPATH) go get \
-				 github.com/libgit2/git2go \
+				 gopkg.in/libgit2/git2go.v23 \
 				 github.com/stvp/assert \
 	       github.com/cevaris/ordered_map \
 	       gopkg.in/alecthomas/kingpin.v2 \

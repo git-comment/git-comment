@@ -37,6 +37,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -319,6 +320,32 @@ func writeStruct(w *textWriter, sv reflect.Value) error {
 			// proto3 non-repeated scalar field; skip if zero value
 			if isProto3Zero(fv) {
 				continue
+			}
+		}
+
+		if fv.Kind() == reflect.Interface {
+			// Check if it is a oneof.
+			if st.Field(i).Tag.Get("protobuf_oneof") != "" {
+				// fv is nil, or holds a pointer to generated struct.
+				// That generated struct has exactly one field,
+				// which has a protobuf struct tag.
+				if fv.IsNil() {
+					continue
+				}
+				inner := fv.Elem().Elem() // interface -> *T -> T
+				tag := inner.Type().Field(0).Tag.Get("protobuf")
+				props.Parse(tag) // Overwrite the outer props.
+				// Write the value in the oneof, not the oneof itself.
+				fv = inner.Field(0)
+
+				// Special case to cope with malformed messages gracefully:
+				// If the value in the oneof is a nil pointer, don't panic
+				// in writeAny.
+				if fv.Kind() == reflect.Ptr && fv.IsNil() {
+					// Use errors.New so writeAny won't render quotes.
+					msg := errors.New("/* nil */")
+					fv = reflect.ValueOf(&msg).Elem()
+				}
 			}
 		}
 

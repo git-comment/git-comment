@@ -1,14 +1,11 @@
-// Substantially copied from:
-// go/src/pkg/bufio/scan.go
-//
-// Original Copyright:
-//
-// Copyright 2013 The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
-//go:generate go run maketables.go -output tables.go
-//go:generate go run maketesttables.go -output tables_test.go
+//  Copyright (c) 2015 Couchbase, Inc.
+//  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+//  except in compliance with the License. You may obtain a copy of the License at
+//    http://www.apache.org/licenses/LICENSE-2.0
+//  Unless required by applicable law or agreed to in writing, software distributed under the
+//  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+//  either express or implied. See the License for the specific language governing permissions
+//  and limitations under the License.
 
 package segment
 
@@ -16,6 +13,52 @@ import (
 	"errors"
 	"io"
 )
+
+// Autogenerate the following:
+// 1. Ragel rules from subset of Unicode script properties
+// 2. Ragel rules from Unicode word segmentation properties
+// 3. Ragel machine for word segmentation
+// 4. Test tables from Unicode
+//
+// Requires:
+// 1. Ruby (to generate ragel rules from unicode spec)
+// 2. Ragel (only v6.9 tested)
+//
+//go:generate ragel/unicode2ragel.rb -u http://www.unicode.org/Public/8.0.0/ucd/Scripts.txt -m SCRIPTS -p Hangul,Han,Hiragana -o ragel/uscript.rl
+//go:generate ragel/unicode2ragel.rb -u http://www.unicode.org/Public/8.0.0/ucd/auxiliary/WordBreakProperty.txt -m WB -p Double_Quote,Single_Quote,Hebrew_Letter,CR,LF,Newline,Extend,Format,Katakana,ALetter,MidLetter,MidNum,MidNumLet,Numeric,ExtendNumLet,Regional_Indicator -o ragel/uwb.rl
+//go:generate ragel -G2 -Z segment_words.rl
+//go:generate go run maketesttables.go -output tables_test.go
+
+// NewWordSegmenter returns a new Segmenter to read from r.
+func NewWordSegmenter(r io.Reader) *Segmenter {
+	return NewSegmenter(r)
+}
+
+// NewWordSegmenterDirect returns a new Segmenter to work directly with buf.
+func NewWordSegmenterDirect(buf []byte) *Segmenter {
+	return NewSegmenterDirect(buf)
+}
+
+func SplitWords(data []byte, atEOF bool) (int, []byte, error) {
+	advance, token, _, err := SegmentWords(data, atEOF)
+	return advance, token, err
+}
+
+func SegmentWords(data []byte, atEOF bool) (int, []byte, int, error) {
+	vals := make([][]byte, 0, 1)
+	types := make([]int, 0, 1)
+	tokens, types, advance, err := segmentWords(data, 1, atEOF, vals, types)
+	if len(tokens) > 0 {
+		return advance, tokens[0], types[0], err
+	}
+	return advance, nil, 0, err
+}
+
+func SegmentWordsDirect(data []byte, val [][]byte, types []int) ([][]byte, []int, int, error) {
+	return segmentWords(data, -1, true, val, types)
+}
+
+// *** Core Segmenter
 
 const maxConsecutiveEmptyReads = 100
 
@@ -232,13 +275,4 @@ func (s *Segmenter) setErr(err error) {
 // called before Segment.
 func (s *Segmenter) SetSegmenter(segmenter SegmentFunc) {
 	s.segment = segmenter
-}
-
-func in(actualTokenType int, possibleTokenTypes ...int) bool {
-	for _, pt := range possibleTokenTypes {
-		if pt == actualTokenType {
-			return true
-		}
-	}
-	return false
 }

@@ -14,8 +14,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"hash"
-	"hash/fnv"
 	"io"
 	"io/ioutil"
 	"log"
@@ -28,6 +26,7 @@ import (
 
 	"golang.org/x/text/cldr"
 	"golang.org/x/text/internal/gen"
+	"golang.org/x/text/internal/tag"
 )
 
 var (
@@ -142,7 +141,7 @@ regionInclusionNext marks, for each entry in regionInclusionBits, the set of
 all groups that are reachable from the groups set in the respective entry.`,
 }
 
-// TODO: consider changing some of these strutures to tries. This can reduce
+// TODO: consider changing some of these structures to tries. This can reduce
 // memory, but may increase the need for memory allocations. This could be
 // mitigated if we can piggyback on language tags for common cases.
 
@@ -313,12 +312,10 @@ type ianaEntry struct {
 }
 
 type builder struct {
-	w      io.Writer   // multi writer
-	out    io.Writer   // set to output file.
-	hash32 hash.Hash32 // for checking whether tables have changed.
-	size   int
-	data   *cldr.CLDR
-	supp   *cldr.SupplementalData
+	w    *gen.CodeWriter
+	hw   io.Writer // MultiWriter for w and w.Hash
+	data *cldr.CLDR
+	supp *cldr.SupplementalData
 
 	// indices
 	locale      stringSet // common locales
@@ -338,7 +335,7 @@ type builder struct {
 
 type index uint
 
-func newBuilder(w io.Writer) *builder {
+func newBuilder(w *gen.CodeWriter) *builder {
 	r := gen.OpenCLDRCoreZip()
 	defer r.Close()
 	d := &cldr.Decoder{}
@@ -346,12 +343,11 @@ func newBuilder(w io.Writer) *builder {
 	data, err := d.DecodeZip(r)
 	failOnError(err)
 	b := builder{
-		out:    w,
-		data:   data,
-		supp:   data.Supplemental(),
-		hash32: fnv.New32(),
+		w:    w,
+		hw:   io.MultiWriter(w, w.Hash),
+		data: data,
+		supp: data.Supplemental(),
 	}
-	b.w = io.MultiWriter(b.out, b.hash32)
 	b.parseRegistry()
 	return &b
 }
@@ -430,36 +426,35 @@ var commentIndex = make(map[string]string)
 func init() {
 	for _, s := range comment {
 		key := strings.TrimSpace(strings.SplitN(s, " ", 2)[0])
-		commentIndex[key] = strings.Replace(s, "\n", "\n// ", -1)
+		commentIndex[key] = s
 	}
 }
 
 func (b *builder) comment(name string) {
-	fmt.Fprintln(b.out, commentIndex[name])
+	if s := commentIndex[name]; len(s) > 0 {
+		b.w.WriteComment(s)
+	} else {
+		fmt.Fprintln(b.w)
+	}
 }
 
 func (b *builder) pf(f string, x ...interface{}) {
-	fmt.Fprintf(b.w, f, x...)
-	fmt.Fprint(b.w, "\n")
+	fmt.Fprintf(b.hw, f, x...)
+	fmt.Fprint(b.hw, "\n")
 }
 
 func (b *builder) p(x ...interface{}) {
-	fmt.Fprintln(b.w, x...)
+	fmt.Fprintln(b.hw, x...)
 }
 
 func (b *builder) addSize(s int) {
-	b.size += s
+	b.w.Size += s
 	b.pf("// Size: %d bytes", s)
-}
-
-func (b *builder) addArraySize(s, n int) {
-	b.size += s
-	b.pf("// Size: %d bytes, %d elements", s, n)
 }
 
 func (b *builder) writeConst(name string, x interface{}) {
 	b.comment(name)
-	b.pf("const %s = %v", name, x)
+	b.w.WriteConst(name, x)
 }
 
 // writeConsts computes f(v) for all v in values and writes the results
@@ -474,13 +469,8 @@ func (b *builder) writeConsts(f func(string) int, values ...string) {
 
 // writeType writes the type of the given value, which must be a struct.
 func (b *builder) writeType(value interface{}) {
-	t := reflect.TypeOf(value)
-	b.comment(t.Name())
-	b.pf("type %s struct {", t.Name())
-	for i := 0; i < t.NumField(); i++ {
-		b.pf("\t%s %s", t.Field(i).Name, t.Field(i).Type)
-	}
-	b.pf("}")
+	b.comment(reflect.TypeOf(value).Name())
+	b.w.WriteType(value)
 }
 
 func (b *builder) writeSlice(name string, ss interface{}) {
@@ -489,42 +479,14 @@ func (b *builder) writeSlice(name string, ss interface{}) {
 
 func (b *builder) writeSliceAddSize(name string, extraSize int, ss interface{}) {
 	b.comment(name)
+	b.w.Size += extraSize
 	v := reflect.ValueOf(ss)
 	t := v.Type().Elem()
-	tn := strings.Replace(fmt.Sprintf("%s", t), "main.", "", 1)
-	b.addArraySize(v.Len()*int(t.Size())+extraSize, v.Len())
-	fmt.Fprintf(b.w, `var %s = [%d]%s{`, name, v.Len(), tn)
-	for i := 0; i < v.Len(); i++ {
-		if t.Kind() == reflect.Struct {
-			line := fmt.Sprintf("%#v, ", v.Index(i).Interface())
-			line = line[strings.IndexByte(line, '{'):]
-			fmt.Fprintf(b.w, "\n\t%s", line)
-		} else {
-			if i%12 == 0 {
-				fmt.Fprintf(b.w, "\n\t")
-			}
-			fmt.Fprintf(b.w, "%d, ", v.Index(i).Interface())
-		}
-	}
-	b.p("\n}")
-}
+	b.pf("// Size: %d bytes, %d elements", v.Len()*int(t.Size())+extraSize, v.Len())
 
-// writeStringSlice writes a slice of strings. This produces a lot
-// of overhead. It should typically only be used for debugging.
-// TODO: remove
-func (b *builder) writeStringSlice(name string, ss []string) {
-	b.comment(name)
-	t := reflect.TypeOf(ss).Elem()
-	sz := len(ss) * int(t.Size())
-	for _, s := range ss {
-		sz += len(s)
-	}
-	b.addArraySize(sz, len(ss))
-	b.pf(`var %s = [%d]%s{`, name, len(ss), t)
-	for i := 0; i < len(ss); i++ {
-		b.pf("\t%q,", ss[i])
-	}
-	b.p("}")
+	fmt.Fprintf(b.w, "var %s = ", name)
+	b.w.WriteArray(ss)
+	b.p()
 }
 
 type fromTo struct {
@@ -540,38 +502,6 @@ func (b *builder) writeSortedMap(name string, ss *stringSet, index func(s string
 		m = append(m, fromTo{index(s), index(ss.update[s])})
 	}
 	b.writeSlice(name, m)
-}
-
-func (b *builder) writeString(name, s string) {
-	b.comment(name)
-	b.addSize(len(s) + int(reflect.TypeOf(s).Size()))
-	if len(s) < 40 {
-		b.pf(`var %s string = %q`, name, s)
-		return
-	}
-	const cpl = 60
-	b.pf(`var %s string = "" +`, name)
-	for {
-		n := cpl
-		if n > len(s) {
-			n = len(s)
-		}
-		var q string
-		for {
-			q = strconv.Quote(s[:n])
-			if len(q) <= cpl+2 {
-				break
-			}
-			n--
-		}
-		if n < len(s) {
-			b.pf(`	%s +`, q)
-			s = s[n:]
-		} else {
-			b.pf(`	%s`, q)
-			break
-		}
-	}
 }
 
 const base = 'z' - 'a' + 1
@@ -871,7 +801,7 @@ func (b *builder) writeLanguage() {
 		}
 		lang.s[i] += add
 	}
-	b.writeString("lang", lang.join())
+	b.writeConst("lang", tag.Index(lang.join()))
 
 	b.writeConst("langNoIndexOffset", len(b.lang.s))
 
@@ -886,7 +816,7 @@ func (b *builder) writeLanguage() {
 			altLangIndex = append(altLangIndex, uint16(idx))
 		}
 	}
-	b.writeString("altLangISO3", altLangISO3.join())
+	b.writeConst("altLangISO3", tag.Index(altLangISO3.join()))
 	b.writeSlice("altLangIndex", altLangIndex)
 
 	b.writeSortedMap("langAliasMap", &langAliasMap, b.langIndex)
@@ -904,7 +834,7 @@ var scriptConsts = []string{
 
 func (b *builder) writeScript() {
 	b.writeConsts(b.script.index, scriptConsts...)
-	b.writeString("script", b.script.join())
+	b.writeConst("script", tag.Index(b.script.join()))
 
 	supp := make([]uint8, len(b.lang.slice()))
 	for i, v := range b.lang.slice()[1:] {
@@ -923,13 +853,13 @@ func (b *builder) writeScript() {
 	}
 }
 
-func parseM49(s string) uint16 {
+func parseM49(s string) int16 {
 	if len(s) == 0 {
 		return 0
 	}
 	v, err := strconv.ParseUint(s, 10, 10)
 	failOnError(err)
-	return uint16(v)
+	return int16(v)
 }
 
 var regionConsts = []string{
@@ -941,8 +871,8 @@ func (b *builder) writeRegion() {
 	b.writeConsts(b.region.index, regionConsts...)
 
 	isoOffset := b.region.index("AA")
-	m49map := make([]uint16, len(b.region.slice()))
-	fromM49map := make(map[uint16]int)
+	m49map := make([]int16, len(b.region.slice()))
+	fromM49map := make(map[int16]int)
 	altRegionISO3 := ""
 	altRegionIDs := []uint16{}
 
@@ -1054,8 +984,8 @@ func (b *builder) writeRegion() {
 			regionISO.s[i] = s + "  "
 		}
 	}
-	b.writeString("regionISO", regionISO.join())
-	b.writeString("altRegionISO3", altRegionISO3)
+	b.writeConst("regionISO", tag.Index(regionISO.join()))
+	b.writeConst("altRegionISO3", altRegionISO3)
 	b.writeSlice("altRegionIDs", altRegionIDs)
 
 	// Create list of deprecated regions.
@@ -1092,7 +1022,7 @@ func (b *builder) writeRegion() {
 	if len(m49map) >= 1<<regionBits {
 		log.Fatalf("Maximum number of regions exceeded: %d > %d", len(m49map), 1<<regionBits)
 	}
-	m49Index := [9]uint16{}
+	m49Index := [9]int16{}
 	fromM49 := []uint16{}
 	m49 := []int{}
 	for k, _ := range fromM49map {
@@ -1101,8 +1031,8 @@ func (b *builder) writeRegion() {
 	sort.Ints(m49)
 	for _, k := range m49[1:] {
 		val := (k & (1<<searchBits - 1)) << regionBits
-		fromM49 = append(fromM49, uint16(val|fromM49map[uint16(k)]))
-		m49Index[1:][k>>searchBits] = uint16(len(fromM49))
+		fromM49 = append(fromM49, uint16(val|fromM49map[int16(k)]))
+		m49Index[1:][k>>searchBits] = int16(len(fromM49))
 	}
 	b.writeSlice("m49Index", m49Index)
 	b.writeSlice("fromM49", fromM49)
@@ -1164,11 +1094,15 @@ func (b *builder) writeVariant() {
 			continue
 		}
 		c := strings.Split(e.prefix[0], "-")
-		hasScript := false
+		hasScriptOrRegion := false
 		if len(c) > 1 {
-			_, hasScript = b.script.find(c[1])
+			_, hasScriptOrRegion = b.script.find(c[1])
+			if !hasScriptOrRegion {
+				_, hasScriptOrRegion = b.region.find(c[1])
+
+			}
 		}
-		if len(c) == 1 || len(c) == 2 && hasScript {
+		if len(c) == 1 || len(c) == 2 && hasScriptOrRegion {
 			// Variant is preceded by a language.
 			specialized.add(v)
 			continue
@@ -1176,12 +1110,12 @@ func (b *builder) writeVariant() {
 		// Variant is preceded by another variant.
 		specializedExtend.add(v)
 		prefix := c[0] + "-"
-		if hasScript {
+		if hasScriptOrRegion {
 			prefix += c[1]
 		}
 		for _, p := range e.prefix {
 			// Verify that the prefix minus the last element is a prefix of the
-			// predecesor element.
+			// predecessor element.
 			i := strings.LastIndex(p, "-")
 			pred := b.registry[p[i+1:]]
 			if find(pred.prefix, p[:i]) < 0 {
@@ -1193,7 +1127,7 @@ func (b *builder) writeVariant() {
 			count := strings.Count(p[:i], "-")
 			for _, q := range pred.prefix {
 				if c := strings.Count(q, "-"); c != count {
-					log.Fatalf("variant %q precedeeding %q has a prefix %q of size %d; want %d", p[i+1:], v, q, c, count)
+					log.Fatalf("variant %q preceding %q has a prefix %q of size %d; want %d", p[i+1:], v, q, c, count)
 				}
 			}
 			if !strings.HasPrefix(p, prefix) {
@@ -1241,10 +1175,6 @@ func (b *builder) writeVariant() {
 	b.writeConst("variantNumSpecialized", numSpecialized)
 }
 
-func (b *builder) writeLocale() {
-	b.writeStringSlice("locale", b.locale.slice())
-}
-
 func (b *builder) writeLanguageInfo() {
 }
 
@@ -1271,7 +1201,7 @@ func (b *builder) writeCurrencies() {
 		}
 		b.currency.s[i] += mkCurrencyInfo(int(r), int(d))
 	}
-	b.writeString("currency", b.currency.join())
+	b.writeConst("currency", tag.Index(b.currency.join()))
 	// Hack alert: gofmt indents a trailing comment after an indented string.
 	// Ensure that the next thing written is not a comment.
 	// writeLikelyData serves this purpose as it starts with an uncommented type.
@@ -1714,7 +1644,10 @@ func main() {
 
 	rewriteCommon()
 
-	w := &bytes.Buffer{}
+	w := gen.NewCodeWriter()
+	defer w.WriteGoFile("tables.go", "language")
+
+	fmt.Fprintln(w, `import "golang.org/x/text/internal/tag"`)
 
 	b := newBuilder(w)
 	fmt.Fprintf(w, version, cldr.Version)
@@ -1732,7 +1665,4 @@ func main() {
 	b.writeMatchData()
 	b.writeRegionInclusionData()
 	b.writeParents()
-
-	fmt.Fprintf(w, "\n// Size: %.1fK (%d bytes); Check: %X\n", float32(b.size)/1024, b.size, b.hash32.Sum32())
-	gen.WriteGoFile("tables.go", "language", w.Bytes())
 }

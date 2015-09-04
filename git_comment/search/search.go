@@ -5,7 +5,7 @@ import (
 	gitg "git_comment/git"
 	"github.com/blevesearch/bleve"
 	"github.com/kylef/result.go/src/result"
-	git "github.com/libgit2/git2go"
+	git "gopkg.in/libgit2/git2go.v23"
 	"os"
 	"path/filepath"
 )

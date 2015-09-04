@@ -13,14 +13,18 @@ import (
 	"os"
 	"reflect"
 	"regexp"
+	"strconv"
 	"testing"
 	"time"
 
 	"github.com/blevesearch/bleve/analysis"
+	"github.com/blevesearch/bleve/analysis/analyzers/standard_analyzer"
 	"github.com/blevesearch/bleve/analysis/tokenizers/regexp_tokenizer"
 	"github.com/blevesearch/bleve/document"
 	"github.com/blevesearch/bleve/index"
 	"github.com/blevesearch/bleve/index/store/boltdb"
+	"github.com/blevesearch/bleve/index/store/null"
+	"github.com/blevesearch/bleve/registry"
 )
 
 var testAnalyzer = &analysis.Analyzer{
@@ -37,7 +41,7 @@ func TestIndexOpenReopen(t *testing.T) {
 
 	store := boltdb.New("test", "bleve")
 	store.SetMergeOperator(&mergeOperator)
-	analysisQueue := NewAnalysisQueue(1)
+	analysisQueue := index.NewAnalysisQueue(1)
 	idx := NewUpsideDownCouch(store, analysisQueue)
 	err := idx.Open()
 	if err != nil {
@@ -94,7 +98,7 @@ func TestIndexInsert(t *testing.T) {
 
 	store := boltdb.New("test", "bleve")
 	store.SetMergeOperator(&mergeOperator)
-	analysisQueue := NewAnalysisQueue(1)
+	analysisQueue := index.NewAnalysisQueue(1)
 	idx := NewUpsideDownCouch(store, analysisQueue)
 	err := idx.Open()
 	if err != nil {
@@ -153,7 +157,7 @@ func TestIndexInsertThenDelete(t *testing.T) {
 
 	store := boltdb.New("test", "bleve")
 	store.SetMergeOperator(&mergeOperator)
-	analysisQueue := NewAnalysisQueue(1)
+	analysisQueue := index.NewAnalysisQueue(1)
 	idx := NewUpsideDownCouch(store, analysisQueue)
 	err := idx.Open()
 	if err != nil {
@@ -248,7 +252,7 @@ func TestIndexInsertThenUpdate(t *testing.T) {
 
 	store := boltdb.New("test", "bleve")
 	store.SetMergeOperator(&mergeOperator)
-	analysisQueue := NewAnalysisQueue(1)
+	analysisQueue := index.NewAnalysisQueue(1)
 	idx := NewUpsideDownCouch(store, analysisQueue)
 	err := idx.Open()
 	if err != nil {
@@ -315,7 +319,7 @@ func TestIndexInsertMultiple(t *testing.T) {
 
 	store := boltdb.New("test", "bleve")
 	store.SetMergeOperator(&mergeOperator)
-	analysisQueue := NewAnalysisQueue(1)
+	analysisQueue := index.NewAnalysisQueue(1)
 	idx := NewUpsideDownCouch(store, analysisQueue)
 	err := idx.Open()
 	if err != nil {
@@ -397,7 +401,7 @@ func TestIndexInsertWithStore(t *testing.T) {
 
 	store := boltdb.New("test", "bleve")
 	store.SetMergeOperator(&mergeOperator)
-	analysisQueue := NewAnalysisQueue(1)
+	analysisQueue := index.NewAnalysisQueue(1)
 	idx := NewUpsideDownCouch(store, analysisQueue)
 	err := idx.Open()
 	if err != nil {
@@ -483,7 +487,7 @@ func TestIndexInternalCRUD(t *testing.T) {
 
 	store := boltdb.New("test", "bleve")
 	store.SetMergeOperator(&mergeOperator)
-	analysisQueue := NewAnalysisQueue(1)
+	analysisQueue := index.NewAnalysisQueue(1)
 	idx := NewUpsideDownCouch(store, analysisQueue)
 	err := idx.Open()
 	if err != nil {
@@ -576,7 +580,7 @@ func TestIndexBatch(t *testing.T) {
 
 	store := boltdb.New("test", "bleve")
 	store.SetMergeOperator(&mergeOperator)
-	analysisQueue := NewAnalysisQueue(1)
+	analysisQueue := index.NewAnalysisQueue(1)
 	idx := NewUpsideDownCouch(store, analysisQueue)
 	err := idx.Open()
 	if err != nil {
@@ -673,7 +677,7 @@ func TestIndexInsertUpdateDeleteWithMultipleTypesStored(t *testing.T) {
 
 	store := boltdb.New("test", "bleve")
 	store.SetMergeOperator(&mergeOperator)
-	analysisQueue := NewAnalysisQueue(1)
+	analysisQueue := index.NewAnalysisQueue(1)
 	idx := NewUpsideDownCouch(store, analysisQueue)
 	err := idx.Open()
 	if err != nil {
@@ -865,7 +869,7 @@ func TestIndexInsertFields(t *testing.T) {
 
 	store := boltdb.New("test", "bleve")
 	store.SetMergeOperator(&mergeOperator)
-	analysisQueue := NewAnalysisQueue(1)
+	analysisQueue := index.NewAnalysisQueue(1)
 	idx := NewUpsideDownCouch(store, analysisQueue)
 	err := idx.Open()
 	if err != nil {
@@ -924,7 +928,7 @@ func TestIndexUpdateComposites(t *testing.T) {
 
 	store := boltdb.New("test", "bleve")
 	store.SetMergeOperator(&mergeOperator)
-	analysisQueue := NewAnalysisQueue(1)
+	analysisQueue := index.NewAnalysisQueue(1)
 	idx := NewUpsideDownCouch(store, analysisQueue)
 	err := idx.Open()
 	if err != nil {
@@ -1020,7 +1024,7 @@ func TestIndexFieldsMisc(t *testing.T) {
 
 	store := boltdb.New("test", "bleve")
 	store.SetMergeOperator(&mergeOperator)
-	analysisQueue := NewAnalysisQueue(1)
+	analysisQueue := index.NewAnalysisQueue(1)
 	idx := NewUpsideDownCouch(store, analysisQueue)
 	err := idx.Open()
 	if err != nil {
@@ -1041,15 +1045,15 @@ func TestIndexFieldsMisc(t *testing.T) {
 		t.Errorf("Error updating index: %v", err)
 	}
 
-	fieldName1 := idx.fieldIndexCache.FieldName(1)
+	fieldName1 := idx.fieldCache.FieldIndexed(0)
 	if fieldName1 != "name" {
 		t.Errorf("expected field named 'name', got '%s'", fieldName1)
 	}
-	fieldName2 := idx.fieldIndexCache.FieldName(2)
+	fieldName2 := idx.fieldCache.FieldIndexed(1)
 	if fieldName2 != "title" {
 		t.Errorf("expected field named 'title', got '%s'", fieldName2)
 	}
-	fieldName3 := idx.fieldIndexCache.FieldName(3)
+	fieldName3 := idx.fieldCache.FieldIndexed(2)
 	if fieldName3 != "" {
 		t.Errorf("expected field named '', got '%s'", fieldName3)
 	}
@@ -1066,7 +1070,7 @@ func TestIndexTermReaderCompositeFields(t *testing.T) {
 
 	store := boltdb.New("test", "bleve")
 	store.SetMergeOperator(&mergeOperator)
-	analysisQueue := NewAnalysisQueue(1)
+	analysisQueue := index.NewAnalysisQueue(1)
 	idx := NewUpsideDownCouch(store, analysisQueue)
 	err := idx.Open()
 	if err != nil {
@@ -1126,7 +1130,7 @@ func TestIndexDocumentFieldTerms(t *testing.T) {
 
 	store := boltdb.New("test", "bleve")
 	store.SetMergeOperator(&mergeOperator)
-	analysisQueue := NewAnalysisQueue(1)
+	analysisQueue := index.NewAnalysisQueue(1)
 	idx := NewUpsideDownCouch(store, analysisQueue)
 	err := idx.Open()
 	if err != nil {
@@ -1168,5 +1172,42 @@ func TestIndexDocumentFieldTerms(t *testing.T) {
 	}
 	if !reflect.DeepEqual(fieldTerms, expectedFieldTerms) {
 		t.Errorf("expected field terms: %#v, got: %#v", expectedFieldTerms, fieldTerms)
+	}
+}
+
+func BenchmarkBatch(b *testing.B) {
+
+	cache := registry.NewCache()
+	analyzer, err := cache.AnalyzerNamed(standard_analyzer.Name)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	s, err := null.New()
+	if err != nil {
+		b.Fatal(err)
+	}
+	analysisQueue := index.NewAnalysisQueue(1)
+	idx := NewUpsideDownCouch(s, analysisQueue)
+	err = idx.Open()
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	batch := index.NewBatch()
+	for i := 0; i < 100; i++ {
+		d := document.NewDocument(strconv.Itoa(i))
+		f := document.NewTextFieldWithAnalyzer("desc", nil, bleveWikiArticle1K, analyzer)
+		d.AddField(f)
+		batch.Update(d)
+	}
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		err = idx.Batch(batch)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 }

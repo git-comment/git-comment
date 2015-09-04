@@ -26,9 +26,10 @@ func TestAdhocSegmentsWithType(t *testing.T) {
 		outputTypes   []int
 	}{
 		{
-			input: []byte("Now is the.\n End."),
+			input: []byte("Now  is the.\n End."),
 			output: [][]byte{
 				[]byte("Now"),
+				[]byte(" "),
 				[]byte(" "),
 				[]byte("is"),
 				[]byte(" "),
@@ -42,6 +43,7 @@ func TestAdhocSegmentsWithType(t *testing.T) {
 			outputStrings: []string{
 				"Now",
 				" ",
+				" ",
 				"is",
 				" ",
 				"the",
@@ -53,6 +55,7 @@ func TestAdhocSegmentsWithType(t *testing.T) {
 			},
 			outputTypes: []int{
 				Letter,
+				None,
 				None,
 				Letter,
 				None,
@@ -203,6 +206,32 @@ func TestAdhocSegmentsWithType(t *testing.T) {
 		}
 	}
 
+	// run same tests again with direct
+	for _, test := range tests {
+		rv := make([][]byte, 0)
+		rvstrings := make([]string, 0)
+		rvtypes := make([]int, 0)
+		segmenter := NewWordSegmenterDirect(test.input)
+		// Set the split function for the scanning operation.
+		for segmenter.Segment() {
+			rv = append(rv, segmenter.Bytes())
+			rvstrings = append(rvstrings, segmenter.Text())
+			rvtypes = append(rvtypes, segmenter.Type())
+		}
+		if err := segmenter.Err(); err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(rv, test.output) {
+			t.Fatalf("expected:\n%#v\ngot:\n%#v\nfor: '%s'", test.output, rv, test.input)
+		}
+		if !reflect.DeepEqual(rvstrings, test.outputStrings) {
+			t.Fatalf("expected:\n%#v\ngot:\n%#v\nfor: '%s'", test.outputStrings, rvstrings, test.input)
+		}
+		if !reflect.DeepEqual(rvtypes, test.outputTypes) {
+			t.Fatalf("expeced:\n%#v\ngot:\n%#v\nfor: '%s'", test.outputTypes, rvtypes, test.input)
+		}
+	}
+
 }
 
 func TestUnicodeSegments(t *testing.T) {
@@ -219,14 +248,14 @@ func TestUnicodeSegments(t *testing.T) {
 			t.Fatal(err)
 		}
 		if !reflect.DeepEqual(rv, test.output) {
-			t.Fatalf("expected:\n%#v\ngot:\n%#v\nfor: '%s'", test.output, rv, test.input)
+			t.Fatalf("expected:\n%#v\ngot:\n%#v\nfor: '%s' comment: %s", test.output, rv, test.input, test.comment)
 		}
 	}
 }
 
 func TestUnicodeSegmentsSlowReader(t *testing.T) {
 
-	for _, test := range unicodeWordTests {
+	for i, test := range unicodeWordTests {
 		rv := make([][]byte, 0)
 		segmenter := NewWordSegmenter(&slowReader{1, bytes.NewReader(test.input)})
 		for segmenter.Segment() {
@@ -236,7 +265,7 @@ func TestUnicodeSegmentsSlowReader(t *testing.T) {
 			t.Fatal(err)
 		}
 		if !reflect.DeepEqual(rv, test.output) {
-			t.Fatalf("expected:\n%#v\ngot:\n%#v\nfor: '%s'", test.output, rv, test.input)
+			t.Fatalf("expected:\n%#v\ngot:\n%#v\nfor: %d '%s' comment: %s", test.output, rv, i, test.input, test.comment)
 		}
 	}
 }
@@ -259,14 +288,42 @@ func TestWordSegmentLongInputSlowReader(t *testing.T) {
 	}
 }
 
+func BenchmarkSplitWords(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		vals := make([][]byte, 0)
+		scanner := bufio.NewScanner(bytes.NewReader(bleveWikiArticle))
+		scanner.Split(SplitWords)
+		for scanner.Scan() {
+			vals = append(vals, scanner.Bytes())
+		}
+		if err := scanner.Err(); err != nil {
+			b.Fatal(err)
+		}
+		if len(vals) != 3465 {
+			b.Fatalf("expected 3465 tokens, got %d", len(vals))
+		}
+	}
+
+}
+
 func BenchmarkWordSegmenter(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
+		vals := make([][]byte, 0)
+		types := make([]int, 0)
 		segmenter := NewWordSegmenter(bytes.NewReader(bleveWikiArticle))
 		for segmenter.Segment() {
+			vals = append(vals, segmenter.Bytes())
+			types = append(types, segmenter.Type())
 		}
 		if err := segmenter.Err(); err != nil {
 			b.Fatal(err)
+		}
+		if vals == nil {
+			b.Fatalf("expected non-nil vals")
+		}
+		if types == nil {
+			b.Fatalf("expected non-nil types")
 		}
 	}
 }
@@ -274,11 +331,39 @@ func BenchmarkWordSegmenter(b *testing.B) {
 func BenchmarkWordSegmenterDirect(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
+		vals := make([][]byte, 0)
+		types := make([]int, 0)
 		segmenter := NewWordSegmenterDirect(bleveWikiArticle)
 		for segmenter.Segment() {
+			vals = append(vals, segmenter.Bytes())
+			types = append(types, segmenter.Type())
 		}
 		if err := segmenter.Err(); err != nil {
 			b.Fatal(err)
+		}
+		if vals == nil {
+			b.Fatalf("expected non-nil vals")
+		}
+		if types == nil {
+			b.Fatalf("expected non-nil types")
+		}
+	}
+}
+
+func BenchmarkDirect(b *testing.B) {
+
+	for i := 0; i < b.N; i++ {
+		vals := make([][]byte, 0, 10000)
+		types := make([]int, 0, 10000)
+		vals, types, _, err := SegmentWordsDirect(bleveWikiArticle, vals, types)
+		if err != nil {
+			b.Fatal(err)
+		}
+		if vals == nil {
+			b.Fatalf("expected non-nil vals")
+		}
+		if types == nil {
+			b.Fatalf("expected non-nil types")
 		}
 	}
 }
