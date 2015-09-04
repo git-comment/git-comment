@@ -17,15 +17,14 @@ const (
 // @return result.Result<bool, error>
 func ConfigureRemoteForComments(repoPath, remoteName string) result.Result {
 	return gitg.WithRemote(repoPath, remoteName, func(remote *git.Remote) result.Result {
-		pushRef := commentDefaultPush
-		fetchRef := fmt.Sprintf(commentDefaultFetch, remoteName)
 		success := func(values ...interface{}) result.Result {
-			if err := remote.Save(); err != nil {
-				return result.NewFailure(err)
-			}
 			return result.NewSuccess(true)
 		}
-		return result.Combine(success, gitg.AddPush(remote, pushRef), gitg.AddFetch(remote, fetchRef))
+		return gitg.WithRepository(repoPath, func(repo *git.Repository) result.Result {
+			pushRef := commentDefaultPush
+			fetchRef := fmt.Sprintf(commentDefaultFetch, remoteName)
+			return result.Combine(success, gitg.AddPush(repo, remote, pushRef), gitg.AddFetch(repo, remote, fetchRef))
+		})
 	})
 }
 

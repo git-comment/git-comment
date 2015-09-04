@@ -11,7 +11,7 @@ const defaultPushMessage = ""
 // @return result.Result<*git.Remote, error>
 func WithRemote(repoPath, remoteName string, ifSuccess func(*git.Remote) result.Result) result.Result {
 	return WithRepository(repoPath, func(repo *git.Repository) result.Result {
-		return result.NewResult(repo.LookupRemote(remoteName))
+		return result.NewResult(repo.Remotes.Lookup(remoteName))
 	}).FlatMap(func(remote interface{}) result.Result {
 		return ifSuccess(remote.(*git.Remote))
 	})
@@ -21,17 +21,17 @@ func WithRemote(repoPath, remoteName string, ifSuccess func(*git.Remote) result.
 // @return result.Result<bool, error>
 func Push(repoPath, remoteName string, refspecs []string, sig *git.Signature) result.Result {
 	return WithRemote(repoPath, remoteName, func(remote *git.Remote) result.Result {
-		return BoolResult(true, remote.Push(refspecs, &git.PushOptions{1}, sig, defaultPushMessage))
+		return BoolResult(true, remote.Push(refspecs, &git.PushOptions{}))
 	})
 }
 
 // Add a push refspec to a remote. Return true if added.
 // @return result.Result<bool, error>
-func AddPush(remote *git.Remote, pushRef string) result.Result {
+func AddPush(repo *git.Repository, remote *git.Remote, pushRef string) result.Result {
 	p := result.NewResult(remote.PushRefspecs())
 	return p.FlatMap(func(pushes interface{}) result.Result {
 		if !contains(pushes.([]string), pushRef) {
-			return BoolResult(true, remote.AddPush(pushRef))
+			return BoolResult(true, repo.Remotes.AddPush(remote.Name(), pushRef))
 		}
 		return result.NewSuccess(false)
 	})
@@ -39,11 +39,11 @@ func AddPush(remote *git.Remote, pushRef string) result.Result {
 
 // Add a fetch refspec to a remote. Return true if added.
 // @return result.Result<bool, error>
-func AddFetch(remote *git.Remote, fetchRef string) result.Result {
+func AddFetch(repo *git.Repository, remote *git.Remote, fetchRef string) result.Result {
 	f := result.NewResult(remote.FetchRefspecs())
 	return f.FlatMap(func(fetches interface{}) result.Result {
 		if !contains(fetches.([]string), fetchRef) {
-			return BoolResult(true, remote.AddFetch(fetchRef))
+			return BoolResult(true, repo.Remotes.AddFetch(remote.Name(), fetchRef))
 		}
 		return result.NewSuccess(false)
 	})

@@ -76,12 +76,8 @@ func writeVersion(repo *git.Repository, version string) result.Result {
 	oid := result.NewResult(repo.CreateBlobFromBuffer([]byte(version)))
 	return oid.FlatMap(func(oid interface{}) result.Result {
 		path := filepath.Join(gitg.CommentRefBase, versionRef)
-		committer := CreatePerson(gitg.ConfiguredCommitter(repo.Path()))
-		return committer.FlatMap(func(p interface{}) result.Result {
-			person := p.(*Person)
-			return result.NewResult(repo.CreateReference(path,
-				oid.(*git.Oid), false, person.Signature(), upgradeMessage))
-		})
+		return result.NewResult(repo.References.Create(path,
+			oid.(*git.Oid), false, upgradeMessage))
 	}).FlatMap(func(ref interface{}) result.Result {
 		return result.NewSuccess(VersionStatusEqual)
 	})
@@ -90,7 +86,7 @@ func writeVersion(repo *git.Repository, version string) result.Result {
 // @return result.Result<string, error>
 func readVersion(repo *git.Repository) result.Result {
 	path := filepath.Join(gitg.CommentRefBase, versionRef)
-	ref := result.NewResult(repo.LookupReference(path))
+	ref := result.NewResult(repo.References.Lookup(path))
 	return ref.FlatMap(func(ref interface{}) result.Result {
 		oid := ref.(*git.Reference).Target()
 		return result.NewResult(repo.LookupBlob(oid))

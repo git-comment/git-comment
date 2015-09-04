@@ -108,10 +108,9 @@ func writeCommentToDisk(repo *git.Repository, comment *Comment) result.Result {
 	return gitg.CreateBlob(repo, comment.Serialize()).FlatMap(func(oid interface{}) result.Result {
 		id := fmt.Sprintf("%v", oid)
 		return RefPath(comment, id).FlatMap(func(file interface{}) result.Result {
-			sig := comment.Amender.Signature()
 			commit := *comment.Commit
 			message := fmt.Sprintf(defaultMessageFormat, commit[:7], id[:7])
-			return result.NewResult(repo.CreateReference(file.(string), oid.(*git.Oid), false, sig, message))
+			return result.NewResult(repo.References.Create(file.(string), oid.(*git.Oid), false, message))
 		}).FlatMap(func(value interface{}) result.Result {
 			comment.ID = &id
 			return result.NewSuccess(comment)
@@ -132,7 +131,7 @@ func validatedCommitForComment(repo *git.Repository, commit string) result.Resul
 
 func deleteReference(repo *git.Repository, comment *Comment, identifier string) error {
 	_, err := RefPath(comment, identifier).FlatMap(func(refPath interface{}) result.Result {
-		return result.NewResult(repo.LookupReference(refPath.(string)))
+		return result.NewResult(repo.References.Lookup(refPath.(string)))
 	}).Analysis(func(ref interface{}) result.Result {
 		return gitg.DeleteReference(ref.(*git.Reference))
 	}, func(err error) result.Result {
