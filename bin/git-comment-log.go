@@ -17,17 +17,18 @@ const (
 )
 
 var (
-	buildVersion string
-	app          = kp.New("git-comment-log", "List git commit comments")
-	fullDiff     = app.Flag("full-diff", "Show the full diff surrounding the comments").Bool()
-	pretty       = app.Flag("pretty", "Pretty-print the comments in a format such as short, full, raw, or custom placeholders.").String()
-	noPager      = app.Flag("nopager", "Disable pager").Bool()
-	noColor      = app.Flag("nocolor", "Disable color").Bool()
-	lineNumbers  = app.Flag("line-numbers", "Show line numbers").Bool()
-	linesBefore  = app.Flag("lines-before", "Number of context lines to show before comments").Short('B').Int64()
-	linesAfter   = app.Flag("lines-after", "Number of context lines to show after comments").Short('A').Int64()
-	revision     = app.Arg("revision range", "Filter comments to comments on commits from the specified range").String()
-	contextLines uint32
+	buildVersion     string
+	app              = kp.New("git-comment-log", "List git commit comments")
+	fullDiff         = app.Flag("full-diff", "Show the full diff surrounding the comments").Bool()
+	pretty           = app.Flag("pretty", "Pretty-print the comments in a format such as short, full, raw, or custom placeholders.").String()
+	enablePager      = app.Flag("pager", "Use pager (Default)").Default("true").Bool()
+	enableColor      = app.Flag("color", "Use color (Default)").Default("true").Bool()
+	enableMarginLine = app.Flag("margin-line", "Use margin line (Default)").Default("true").Bool()
+	lineNumbers      = app.Flag("line-numbers", "Show line numbers").Bool()
+	linesBefore      = app.Flag("lines-before", "Number of context lines to show before comments").Short('B').Int64()
+	linesAfter       = app.Flag("lines-after", "Number of context lines to show after comments").Short('A').Int64()
+	revision         = app.Arg("revision range", "Filter comments to comments on commits from the specified range").String()
+	contextLines     uint32
 )
 
 func main() {
@@ -41,7 +42,7 @@ func main() {
 
 func showComments(pwd string) {
 	termHeight, termWidth := gite.CalculateDimensions()
-	pager := gite.NewPager(app, pwd, termHeight, *noPager)
+	pager := gite.NewPager(app, pwd, termHeight, !*enablePager)
 	computeContextLines(pwd)
 	diff := gitc.DiffCommits(pwd, *revision, contextLines)
 	app.FatalIfError(diff.Failure, "diff")
@@ -52,10 +53,10 @@ func showComments(pwd string) {
 
 func newFormatter(wd string, termWidth uint16) *gitl.Formatter {
 	var useColor bool
-	if !*noColor {
+	if *enableColor {
 		useColor = gitg.ConfiguredBool(wd, "color.pager", false)
 	}
-	return gitl.NewFormatter(*pretty, *lineNumbers, useColor, termWidth)
+	return gitl.NewFormatter(*pretty, *lineNumbers, useColor, *enableMarginLine, termWidth)
 }
 
 func newPrinter(pager *gite.Pager, formatter *gitl.Formatter) *gitl.DiffPrinter {

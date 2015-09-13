@@ -56,12 +56,13 @@ type Formatter struct {
 	format         string
 	useLineNumbers bool
 	useColor       bool
+	useMargin      bool
 	termWidth      uint16
 	colorMapping   map[string]string
 	indent         string
 }
 
-func NewFormatter(format string, useLineNumbers, useColor bool, termWidth uint16) *Formatter {
+func NewFormatter(format string, useLineNumbers, useColor, useMargin bool, termWidth uint16) *Formatter {
 	var indent = "\n  "
 	var colorMapping map[string]string
 	if useLineNumbers {
@@ -92,7 +93,7 @@ func NewFormatter(format string, useLineNumbers, useColor bool, termWidth uint16
 			resetColor: "",
 		}
 	}
-	return &Formatter{format, useLineNumbers, useColor, termWidth, colorMapping, indent}
+	return &Formatter{format, useLineNumbers, useColor, useMargin, termWidth, colorMapping, indent}
 }
 
 func (f *Formatter) FormatLine(line *gitc.DiffLine) string {
@@ -120,7 +121,11 @@ func (f *Formatter) FormatComment(comment *gitc.Comment) string {
 
 	var components []byte
 	for _, lineContent := range strings.Split(content, "\n") {
-		components = append(components, []byte(fmt.Sprintf("%s%s│%s%s", f.indent, ex.Magenta, ex.Clear, lineContent))...)
+		if f.useMargin {
+			components = append(components, []byte(fmt.Sprintf("%s%s│%s%s", f.indent, f.colorMapping["magenta"], f.colorMapping["resetColor"], lineContent))...)
+		} else {
+			components = append(components, []byte(fmt.Sprintf("%s\n", lineContent))...)
+		}
 	}
 	components = append(components, []byte("\n\n")...)
 	return string(components)

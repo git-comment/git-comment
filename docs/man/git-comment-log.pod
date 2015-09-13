@@ -6,7 +6,7 @@
 
 =head1 SYNOPSIS
 
-    git comment-log [--pretty <format>] [<revision range>]
+    git comment-log [--pretty <format>] [<flags>] [<revision range>]
     git comment-log --help
     git comment-log --version
 
@@ -38,13 +38,18 @@ Number of lines of context to show after comments
 
 Print line numbers for diff lines
 
-=item --nocolor
+=item --color, --no-color
 
-Disable color in comments and diffs
+Enable or disable color in comments and diffs. Enabled by default.
 
-=item --nopager
+=item --pager, --no-pager
 
-Disable pager for long output
+Enable or disable pager for long output. Enabled by default.
+
+=item --margin-line, --no-margin-line
+
+Enable of disable indenting comment content to align with line numbers
+or text. Enabled by default.
 
 =item --pretty <format>
 
