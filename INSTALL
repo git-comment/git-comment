@@ -1,6 +1,6 @@
 Requirements:
 
-- Go 1.4: http://golang.org/doc/install
+- Go 1.5: http://golang.org/doc/install
 
 - libgit2 0.23: https://libgit2.github.com
 
