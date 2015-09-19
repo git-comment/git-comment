@@ -9,6 +9,8 @@ Comments on git commits are siloed into various web services or backed
 up externally, when all repo history can be stored together and
 accessible offline.
 
+![log](docs/git-comment.com/images/log-screenshot.png)
+
 ## Uses
 
 * Storing git comment history in every local copy
@@ -25,8 +27,7 @@ components:
 * `git-comment`: adds comments
 * `git-comment-log`: prints comments inline with diffs
 * `git-comment-grep`: searches comment content for text
-* `git-comment-web`: launches a web server hosting a friendly web UI for
-  comment editing
+* `git-comment-web` (Incomplete): launches a web server hosting a friendly web UI for comment editing
 * `git-comment-remote`: helpful tools for working with a remote server
   with git comment, like configuring remotes to push and pull comments
   by default, indexing comments for search after push, and deleting remote
@@ -42,12 +43,10 @@ Instructions for source installation are provided in the `INSTALL` file.
 
 ## Support
 
-* [User
-  Guide](https://github.com/kattrali/git-comment/blob/master/docs/User%20Guide.md)
+* [User Guide](https://github.com/kattrali/git-comment/blob/master/docs/User%20Guide.md)
 * [Manual](https://github.com/kattrali/git-comment/tree/master/docs/man)
 * `#git-comment` on freenode IRC
-* [Search open and closed
-  issues](https://github.com/kattrali/git-comment/issues?utf8=✓&q=is%3Aissue) for similar problems
+* [Search open and closed issues](https://github.com/kattrali/git-comment/issues?utf8=✓&q=is%3Aissue) for similar problems
 * [Open an issue](https://github.com/kattrali/git-comment/issues/new)
 
 ## Contributing
@@ -59,6 +58,6 @@ collaboration tool. Contributions welcome!
 
 ## License
 
-Copyright (c) 2015, Delisa Mason <delisam@acm.org>. All rights reserved.
+Copyright (c) 2015, Delisa Mason. All rights reserved.
 
 `git-comment` uses the BSD license as detailed in the `LICENSE` file.
