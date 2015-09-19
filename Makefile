@@ -73,7 +73,7 @@ install: doc
 	rm -r $(MAN_BUILD_DIR)
 
 uninstall:
-	$(foreach bin,$(BIN_FILE_LIST), rm $(MAN_PATH)$(bin).1 $(BIN_PATH)$(bin);)
+	$(foreach bin,$(BIN_FILE_LIST), rm $(MAN_PATH)$(bin).1.gz $(BIN_PATH)$(bin);)
 
 test: copy
 	go test $(PROJECT) $(foreach pkg,$(PACKAGES),$(PROJECT)/$(pkg));
