@@ -35,6 +35,8 @@ build: copy
 	mkdir -p $(BUILD_BIN_DIR)
 	$(foreach bin,$(BIN_FILE_LIST),$(BIN_BUILD_CMD) -o $(BUILD_BIN_DIR)/$(bin) bin/$(bin).go;)
 
+ci: bootstrap test
+
 clean: env
 	$(GOCLEAN) -i -x $(PROJECT) || true
 	rm -rf $(SRC_PATH) $(BUILD_DIR)
