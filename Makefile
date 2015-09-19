@@ -53,6 +53,7 @@ dep: env
 deploy_website:
 	git checkout -B gh-pages
 	git filter-branch -f --subdirectory-filter docs/git-comment.com
+	git clean -df
 	# git push -f origin gh-pages
 
 doc:
