@@ -1,6 +1,6 @@
 DESTDIR := /usr/local
-DESTBIN=$(DESTDIR)/bin
-DESTMAN=$(DESTDIR)/share/man/man1
+DESTBIN := $(DESTDIR)/bin
+DESTMAN := $(DESTDIR)/share/man/man1
 
 PROJECT=libgitcomment
 PACKAGES=exec log git search
@@ -53,7 +53,7 @@ builddeps_osx:
 
 build: $(GOPATHSRC_FILES) $(BUILD_BIN_FILES)
 
-$(BUILD_BIN_DIR)/%: $(GOPATHPKG_DEPS) bin/%.go
+$(BUILD_BIN_DIR)/%: $(GOPATHSRC_FILES) $(GOPATHPKG_DEPS) bin/%.go
 	@install -d $(BUILD_BIN_DIR)
 	$(BIN_BUILD_CMD) -o $(BUILD_BIN_DIR)/$* bin/$*.go
 
@@ -64,7 +64,7 @@ $(GOPATHSRC)/%.go: $(GOPATHPKG_DEPS) $(PROJECT)/%.go
 $(GOPATH):
 	@install -d $(GOPATH)
 
-$(GOPATHPKG)/%: $(GOPATH)
+$(GOPATHPKG)/%.a: $(GOPATH)
 	GOPATH=$(GOPATH) go get $*
 
 ci: build test
@@ -90,7 +90,13 @@ $(BUILD_MAN_DIR)/%.1: $(MANSRC)/%.pod
 
 doc: $(BUILD_MAN_FILES)
 
-install: $(BUILD_BIN_FILES) $(BUILD_MAN_FILES)
+$(DESTBIN):
+	@install -d $(DESTBIN)
+
+$(DESTMAN):
+	@install -d $(DESTMAN)
+
+install: $(DESTBIN) $(DESTMAN) $(BUILD_BIN_FILES) $(BUILD_MAN_FILES)
 	chmod 444 $(BUILD_MAN_FILES)
 	install -C $(BUILD_BIN_FILES) $(DESTBIN)
 	install -C $(BUILD_MAN_FILES) $(DESTMAN)
