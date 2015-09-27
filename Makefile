@@ -1,19 +1,26 @@
+DESTDIR := /usr/local
+
 PROJECT=git_comment
-GOPATH=$(shell pwd)/_workspace/
 PACKAGES=exec log git search
 VERSION=$(shell cat VERSION)
+
+GOPATH=$(shell pwd)/_workspace/
 SRC_PATH=$(GOPATH)src/$(PROJECT)
-BUILD_DIR=build
-BUILD_BIN_DIR=$(BUILD_DIR)/bin
 GOBUILD=GOPATH=$(GOPATH) go build
 GOCLEAN=GOPATH=$(GOPATH) go clean
-BIN_PATH=/usr/local/bin/
+
+BUILD_DIR=build
+BUILD_BIN_DIR=$(BUILD_DIR)/bin
+BIN_PATH=$(DESTDIR)/bin/
 BIN_FILE_LIST=git-comment git-comment-grep git-comment-log git-comment-remote git-comment-web
 BIN_BUILD_CMD=$(GOBUILD) -ldflags "-X main.buildVersion=$(VERSION)"
-MAN_PATH=/usr/local/man/man1/
+
+MAN_PATH=$(DESTDIR)/man/man1/
 MAN_BUILD_DIR=$(BUILD_DIR)/man/
 MAN_TITLE=Git Comment Manual
 MAN_CMD=pod2man --center="$(MAN_TITLE)" --release="$(VERSION)"
+
+all: bootstrap build install
 
 default: build
 
