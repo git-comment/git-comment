@@ -5,10 +5,18 @@ PROJECT=libgitcomment
 PACKAGES=exec log git search
 VERSION=$(shell cat VERSION)
 BIN_FILES=git-comment git-comment-grep git-comment-log git-comment-remote git-comment-web
-SRC_FILES=$(PROJECT)/*.go $(foreach pkg,$(PACKAGES), $(PROJECT)/$(pkg)/*.go)
+SRC_FILES=comment.go diff.go errors.go file_ref.go lookup.go person.go property_blob.go \
+					remote.go storage.go version.go \
+					exec/editor.go exec/exec.go exec/pager.go exec/term.go \
+					git/commit.go git/commit_range.go git/config.go git/remote.go git/repo.go \
+					git/result.go git/var.go \
+					log/diff_printer.go log/formatter.go \
+					search/formatter.go search/printer.go search/search.go
+LIBSRC=$(addprefix $(PROJECT)/,$(SRC_FILES))
 
-GOPATH=$(shell pwd)/_workspace/
-SRC_PATH=$(GOPATH)src/$(PROJECT)
+GOPATH=$(shell pwd)/_workspace
+GOPATHSRC=$(GOPATH)/src/$(PROJECT)
+GOPATHSRC_FILES=$(addprefix $(GOPATHSRC)/,$(SRC_FILES))
 GOBUILD=GOPATH=$(GOPATH) go build
 GOCLEAN=GOPATH=$(GOPATH) go clean
 BIN_BUILD_CMD=$(GOBUILD) -ldflags "-X main.buildVersion=$(VERSION)"
@@ -37,32 +45,32 @@ bootstrap: env
 bootstrap_osx:
 	brew install libgit2
 
-gobuild: copy
+buildlib: $(GOPATHSRC_FILES)
 	$(GOBUILD) $(PROJECT)
 
-build: gobuild $(BUILD_BIN_FILES)
+build: buildlib $(BUILD_BIN_FILES)
 
 build/bin/%: bin/%.go
-	@mkdir -p $(BUILD_BIN_DIR)
+	@install -d $(BUILD_BIN_DIR)
 	$(BIN_BUILD_CMD) -o $(BUILD_BIN_DIR)/$* bin/$*.go
 
-$(SRC_PATH)/%/*.go: $(PROJECT)/%/*.go
-	install -d $(PROJECT)/$* $(SRC_PATH)/$*
-	install $(PROJECT)/$*/*.go $(SRC_PATH)/$*
+$(GOPATHSRC)/%.go: $(PROJECT)/%.go
+	@install -d $(GOPATHSRC)/$*
+	@install $(PROJECT)/$*.go $(GOPATHSRC)/$*.go
 
 ci: bootstrap test
 
 clean: env
 	$(GOCLEAN) -i -x $(PROJECT) || true
-	rm -rf $(SRC_PATH) $(BUILD_DIR)
+	rm -rf $(GOPATHSRC) $(BUILD_DIR)
 
 copy: env
-	$(foreach pack,$(PACKAGES),install -d $(SRC_PATH)/$(pack);)
-	install $(PROJECT)/*.go $(SRC_PATH)
-	$(foreach pack,$(PACKAGES),install $(PROJECT)/$(pack)/*.go $(SRC_PATH)/$(pack);)
+	$(foreach pack,$(PACKAGES),install -d $(GOPATHSRC)/$(pack);)
+	install $(PROJECT)/*.go $(GOPATHSRC)
+	$(foreach pack,$(PACKAGES),install $(PROJECT)/$(pack)/*.go $(GOPATHSRC)/$(pack);)
 
 dep: env
-	rm -r $(GOPATH)*/*/*/.git || true
+	rm -r $(GOPATH)/*/*/*/.git || true
 	git add $(GOPATH)
 
 deploy_website:
