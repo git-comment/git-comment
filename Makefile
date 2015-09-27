@@ -1,9 +1,17 @@
 DESTDIR := /usr/local
-DESTBIN=$(DESTDIR)/bin/
+DESTBIN=$(DESTDIR)/bin
+DESTMAN=$(DESTDIR)/share/man/man1
 
 PROJECT=libgitcomment
 PACKAGES=exec log git search
 VERSION=$(shell cat VERSION)
+DEPENDENCIES=gopkg.in/libgit2/git2go.v23 \
+	github.com/stvp/assert \
+	github.com/cevaris/ordered_map \
+  gopkg.in/alecthomas/kingpin.v2 \
+  github.com/kylef/result.go/src/result \
+  github.com/blevesearch/bleve \
+  github.com/blang/semver
 BIN_FILES=git-comment git-comment-grep git-comment-log git-comment-remote git-comment-web
 SRC_FILES=comment.go diff.go errors.go file_ref.go lookup.go person.go property_blob.go \
 					remote.go storage.go version.go \
@@ -12,64 +20,61 @@ SRC_FILES=comment.go diff.go errors.go file_ref.go lookup.go person.go property_
 					git/result.go git/var.go \
 					log/diff_printer.go log/formatter.go \
 					search/formatter.go search/printer.go search/search.go
-LIBSRC=$(addprefix $(PROJECT)/,$(SRC_FILES))
+TEST_FILES=comment_test.go file_ref_test.go person_test.go property_blob_test.go \
+					 storage_test.go version_test.go exec/term_test.go git/remote_test.go \
+					 log/formatter_test.go
+MANSRC=docs/man
+MAN_FILES=$(foreach bin,$(BIN_FILES),$(bin).pod)
 
+GOOS=$(shell go env GOOS)
+GOARCH=$(shell go env GOARCH)
 GOPATH=$(shell pwd)/_workspace
 GOPATHSRC=$(GOPATH)/src/$(PROJECT)
 GOPATHSRC_FILES=$(addprefix $(GOPATHSRC)/,$(SRC_FILES))
+GOPATHSRC_TESTS=$(addprefix $(GOPATHSRC)/,$(TEST_FILES))
+GOPATHPKG=$(GOPATH)/pkg/$(GOOS)_$(GOARCH)
+GOPATHPKG_DEPS=$(foreach dep,$(DEPENDENCIES),$(GOPATHPKG)/$(dep).a)
 GOBUILD=GOPATH=$(GOPATH) go build
-GOCLEAN=GOPATH=$(GOPATH) go clean
 BIN_BUILD_CMD=$(GOBUILD) -ldflags "-X main.buildVersion=$(VERSION)"
 
 BUILD_DIR=build
 BUILD_BIN_DIR=$(BUILD_DIR)/bin
+BUILD_MAN_DIR=$(BUILD_DIR)/man
 BUILD_BIN_FILES=$(foreach bin,$(BIN_FILES),$(BUILD_BIN_DIR)/$(bin))
+BUILD_MAN_FILES=$(foreach bin,$(BIN_FILES),$(BUILD_MAN_DIR)/$(bin).1)
 
-MAN_PATH=$(DESTDIR)/man/man1/
-MAN_BUILD_DIR=$(BUILD_DIR)/man/
 MAN_TITLE=Git Comment Manual
 MAN_CMD=pod2man --center="$(MAN_TITLE)" --release="$(VERSION)"
 
 default: build
 
-bootstrap: env
-	GOPATH=$(GOPATH) go get \
-				 gopkg.in/libgit2/git2go.v23 \
-				 github.com/stvp/assert \
-	       github.com/cevaris/ordered_map \
-	       gopkg.in/alecthomas/kingpin.v2 \
-	       github.com/kylef/result.go/src/result \
-	       github.com/blevesearch/bleve \
-	       github.com/blang/semver
-
-bootstrap_osx:
+builddeps_osx:
 	brew install libgit2
 
-buildlib: $(GOPATHSRC_FILES)
-	$(GOBUILD) $(PROJECT)
+build: $(GOPATHSRC_FILES) $(BUILD_BIN_FILES)
 
-build: buildlib $(BUILD_BIN_FILES)
-
-build/bin/%: bin/%.go
+$(BUILD_BIN_DIR)/%: $(GOPATHPKG_DEPS) bin/%.go
 	@install -d $(BUILD_BIN_DIR)
 	$(BIN_BUILD_CMD) -o $(BUILD_BIN_DIR)/$* bin/$*.go
 
-$(GOPATHSRC)/%.go: $(PROJECT)/%.go
-	@install -d $(GOPATHSRC)/$*
+$(GOPATHSRC)/%.go: $(GOPATHPKG_DEPS) $(PROJECT)/%.go
+	@install -d $(GOPATHSRC)/$(dir $*)
 	@install $(PROJECT)/$*.go $(GOPATHSRC)/$*.go
 
-ci: bootstrap test
+$(GOPATH):
+	@install -d $(GOPATH)
 
-clean: env
-	$(GOCLEAN) -i -x $(PROJECT) || true
+$(GOPATHPKG)/%: $(GOPATH)
+	GOPATH=$(GOPATH) go get $*
+
+ci: build test
+
+clean: $(GOPATH)
+	GOPATH=$(GOPATH) go clean -i -x $(PROJECT) || true
 	rm -rf $(GOPATHSRC) $(BUILD_DIR)
 
-copy: env
-	$(foreach pack,$(PACKAGES),install -d $(GOPATHSRC)/$(pack);)
-	install $(PROJECT)/*.go $(GOPATHSRC)
-	$(foreach pack,$(PACKAGES),install $(PROJECT)/$(pack)/*.go $(GOPATHSRC)/$(pack);)
-
-dep: env
+adddep: $(GOPATHPKG_DEPS)
+	@echo Checking in new vendored dependency...
 	rm -r $(GOPATH)/*/*/*/.git || true
 	git add $(GOPATH)
 
@@ -79,24 +84,19 @@ deploy_website:
 	git clean -df
 	# git push -f origin gh-pages
 
-doc:
-	mkdir -p $(MAN_BUILD_DIR)
-	$(foreach bin,$(BIN_FILES), $(MAN_CMD) docs/man/$(bin).pod > $(MAN_BUILD_DIR)$(bin).1;)
+$(BUILD_MAN_DIR)/%.1: $(MANSRC)/%.pod
+	@install -d $(BUILD_MAN_DIR)
+	$(MAN_CMD) $(MANSRC)/$*.pod > $(BUILD_MAN_DIR)/$*.1
 
-env:
-	install -d $(GOPATH)
+doc: $(BUILD_MAN_FILES)
 
-install: bootstrap build doc
-	$(foreach bin,$(BIN_FILES), \
-		chown root:admin $(MAN_BUILD_DIR)$(bin).1; \
-		chmod 444 $(MAN_BUILD_DIR)$(bin).1; \
-		install $(BUILD_BIN_DIR)/$(bin) $(DESTBIN)$(bin); \
-		gzip -f $(MAN_BUILD_DIR)$(bin).1; \
-		install -C $(MAN_BUILD_DIR)$(bin).1.gz $(MAN_PATH)$(bin).1.gz;)
-	rm -r $(MAN_BUILD_DIR)
+install: $(BUILD_BIN_FILES) $(BUILD_MAN_FILES)
+	chmod 444 $(BUILD_MAN_FILES)
+	install -C $(BUILD_BIN_FILES) $(DESTBIN)
+	install -C $(BUILD_MAN_FILES) $(DESTMAN)
 
 uninstall:
-	$(foreach bin,$(BIN_FILES), rm $(MAN_PATH)$(bin).1.gz $(DESTBIN)$(bin);)
+	rm $(foreach bin,$(BIN_FILES), $(DESTMAN)/$(bin).1 $(DESTBIN)/$(bin));
 
-test: copy
+test: $(GOPATHSRC_FILES) $(GOPATHSRC_TESTS)
 	go test $(PROJECT) $(foreach pkg,$(PACKAGES),$(PROJECT)/$(pkg));
