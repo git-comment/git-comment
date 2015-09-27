@@ -1,19 +1,21 @@
 DESTDIR := /usr/local
+DESTBIN=$(DESTDIR)/bin/
 
 PROJECT=libgitcomment
 PACKAGES=exec log git search
 VERSION=$(shell cat VERSION)
+BIN_FILES=git-comment git-comment-grep git-comment-log git-comment-remote git-comment-web
+SRC_FILES=$(PROJECT)/*.go $(foreach pkg,$(PACKAGES), $(PROJECT)/$(pkg)/*.go)
 
 GOPATH=$(shell pwd)/_workspace/
 SRC_PATH=$(GOPATH)src/$(PROJECT)
 GOBUILD=GOPATH=$(GOPATH) go build
 GOCLEAN=GOPATH=$(GOPATH) go clean
+BIN_BUILD_CMD=$(GOBUILD) -ldflags "-X main.buildVersion=$(VERSION)"
 
 BUILD_DIR=build
 BUILD_BIN_DIR=$(BUILD_DIR)/bin
-BIN_PATH=$(DESTDIR)/bin/
-BIN_FILE_LIST=git-comment git-comment-grep git-comment-log git-comment-remote git-comment-web
-BIN_BUILD_CMD=$(GOBUILD) -ldflags "-X main.buildVersion=$(VERSION)"
+BUILD_BIN_FILES=$(foreach bin,$(BIN_FILES),$(BUILD_BIN_DIR)/$(bin))
 
 MAN_PATH=$(DESTDIR)/man/man1/
 MAN_BUILD_DIR=$(BUILD_DIR)/man/
@@ -35,10 +37,18 @@ bootstrap: env
 bootstrap_osx:
 	brew install libgit2
 
-build: copy
+gobuild: copy
 	$(GOBUILD) $(PROJECT)
-	mkdir -p $(BUILD_BIN_DIR)
-	$(foreach bin,$(BIN_FILE_LIST),$(BIN_BUILD_CMD) -o $(BUILD_BIN_DIR)/$(bin) bin/$(bin).go;)
+
+build: gobuild $(BUILD_BIN_FILES)
+
+build/bin/%: bin/%.go
+	@mkdir -p $(BUILD_BIN_DIR)
+	$(BIN_BUILD_CMD) -o $(BUILD_BIN_DIR)/$* bin/$*.go
+
+$(SRC_PATH)/%/*.go: $(PROJECT)/%/*.go
+	install -d $(PROJECT)/$* $(SRC_PATH)/$*
+	install $(PROJECT)/$*/*.go $(SRC_PATH)/$*
 
 ci: bootstrap test
 
@@ -63,22 +73,22 @@ deploy_website:
 
 doc:
 	mkdir -p $(MAN_BUILD_DIR)
-	$(foreach bin,$(BIN_FILE_LIST), $(MAN_CMD) docs/man/$(bin).pod > $(MAN_BUILD_DIR)$(bin).1;)
+	$(foreach bin,$(BIN_FILES), $(MAN_CMD) docs/man/$(bin).pod > $(MAN_BUILD_DIR)$(bin).1;)
 
 env:
 	install -d $(GOPATH)
 
 install: bootstrap build doc
-	$(foreach bin,$(BIN_FILE_LIST), \
+	$(foreach bin,$(BIN_FILES), \
 		chown root:admin $(MAN_BUILD_DIR)$(bin).1; \
 		chmod 444 $(MAN_BUILD_DIR)$(bin).1; \
-		install $(BUILD_BIN_DIR)/$(bin) $(BIN_PATH)$(bin); \
+		install $(BUILD_BIN_DIR)/$(bin) $(DESTBIN)$(bin); \
 		gzip -f $(MAN_BUILD_DIR)$(bin).1; \
 		install -C $(MAN_BUILD_DIR)$(bin).1.gz $(MAN_PATH)$(bin).1.gz;)
 	rm -r $(MAN_BUILD_DIR)
 
 uninstall:
-	$(foreach bin,$(BIN_FILE_LIST), rm $(MAN_PATH)$(bin).1.gz $(BIN_PATH)$(bin);)
+	$(foreach bin,$(BIN_FILES), rm $(MAN_PATH)$(bin).1.gz $(DESTBIN)$(bin);)
 
 test: copy
 	go test $(PROJECT) $(foreach pkg,$(PACKAGES),$(PROJECT)/$(pkg));
