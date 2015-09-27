@@ -1,6 +1,6 @@
 DESTDIR := /usr/local
 
-PROJECT=git_comment
+PROJECT=libgitcomment
 PACKAGES=exec log git search
 VERSION=$(shell cat VERSION)
 
@@ -19,8 +19,6 @@ MAN_PATH=$(DESTDIR)/man/man1/
 MAN_BUILD_DIR=$(BUILD_DIR)/man/
 MAN_TITLE=Git Comment Manual
 MAN_CMD=pod2man --center="$(MAN_TITLE)" --release="$(VERSION)"
-
-all: bootstrap build install
 
 default: build
 
@@ -70,7 +68,7 @@ doc:
 env:
 	install -d $(GOPATH)
 
-install: doc
+install: bootstrap build doc
 	$(foreach bin,$(BIN_FILE_LIST), \
 		chown root:admin $(MAN_BUILD_DIR)$(bin).1; \
 		chmod 444 $(MAN_BUILD_DIR)$(bin).1; \

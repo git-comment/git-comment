@@ -1,12 +1,12 @@
-package git_comment
+package libgitcomment
 
 import (
 	"errors"
 	"fmt"
-	gitg "git_comment/git"
 	"github.com/blang/semver"
 	"github.com/kylef/result.go/src/result"
 	git "gopkg.in/libgit2/git2go.v23"
+	gg "libgitcomment/git"
 	"path/filepath"
 )
 
@@ -30,7 +30,7 @@ const (
 // the version in use in the repository.
 // @return result.Result<VersionStatus, error>
 func VersionCheck(repoPath, toolVersion string) result.Result {
-	return gitg.WithRepository(repoPath, func(repo *git.Repository) result.Result {
+	return gg.WithRepository(repoPath, func(repo *git.Repository) result.Result {
 		return readVersion(repo).Analysis(func(version interface{}) result.Result {
 			return compareVersion(toolVersion, version.(string))
 		}, func(err error) result.Result {
@@ -75,7 +75,7 @@ func comparisonStatus(code int) result.Result {
 func writeVersion(repo *git.Repository, version string) result.Result {
 	oid := result.NewResult(repo.CreateBlobFromBuffer([]byte(version)))
 	return oid.FlatMap(func(oid interface{}) result.Result {
-		path := filepath.Join(gitg.CommentRefBase, versionRef)
+		path := filepath.Join(gg.CommentRefBase, versionRef)
 		return result.NewResult(repo.References.Create(path,
 			oid.(*git.Oid), false, upgradeMessage))
 	}).FlatMap(func(ref interface{}) result.Result {
@@ -85,7 +85,7 @@ func writeVersion(repo *git.Repository, version string) result.Result {
 
 // @return result.Result<string, error>
 func readVersion(repo *git.Repository) result.Result {
-	path := filepath.Join(gitg.CommentRefBase, versionRef)
+	path := filepath.Join(gg.CommentRefBase, versionRef)
 	ref := result.NewResult(repo.References.Lookup(path))
 	return ref.FlatMap(func(ref interface{}) result.Result {
 		oid := ref.(*git.Reference).Target()

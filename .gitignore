@@ -3,4 +3,4 @@ build
 
 # Project temp location
 _workspace/pkg
-_workspace/src/git_comment
+_workspace/src/libgitcomment

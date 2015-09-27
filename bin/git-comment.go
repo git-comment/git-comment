@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	gc "git_comment"
-	gx "git_comment/exec"
-	gg "git_comment/git"
 	kp "gopkg.in/alecthomas/kingpin.v2"
+	gc "libgitcomment"
+	gx "libgitcomment/exec"
+	gg "libgitcomment/git"
 	"os"
 )
 

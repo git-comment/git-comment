@@ -1,9 +1,9 @@
-package git_comment
+package libgitcomment
 
 import (
-	gitg "git_comment/git"
 	"github.com/kylef/result.go/src/result"
 	git "gopkg.in/libgit2/git2go.v23"
+	gg "libgitcomment/git"
 	"path"
 	"sort"
 )
@@ -11,7 +11,7 @@ import (
 // Finds a comment by ID
 // @return result.Result<*Comment, error>
 func CommentByID(repo *git.Repository, identifier string) result.Result {
-	return gitg.LookupBlob(repo, identifier, commentNotFoundError).FlatMap(func(blob interface{}) result.Result {
+	return gg.LookupBlob(repo, identifier, commentNotFoundError).FlatMap(func(blob interface{}) result.Result {
 		return DeserializeComment(string(blob.(*git.Blob).Contents()))
 	}).FlatMap(func(c interface{}) result.Result {
 		comment := c.(*Comment)
@@ -23,10 +23,10 @@ func CommentByID(repo *git.Repository, identifier string) result.Result {
 // Find comments in a commit range or on a single commit
 // @return result.Result<[]*Comment, error>
 func CommentsOnCommittish(repoPath string, committish string) result.Result {
-	return gitg.WithRepository(repoPath, func(repo *git.Repository) result.Result {
-		resolution := gitg.ResolveCommits(repo, committish)
+	return gg.WithRepository(repoPath, func(repo *git.Repository) result.Result {
+		resolution := gg.ResolveCommits(repo, committish)
 		return resolution.FlatMap(func(commitRange interface{}) result.Result {
-			return CommentsOnCommits(repo, commitRange.(*gitg.CommitRange).Commits())
+			return CommentsOnCommits(repo, commitRange.(*gg.CommitRange).Commits())
 		})
 	})
 }
@@ -34,10 +34,10 @@ func CommentsOnCommittish(repoPath string, committish string) result.Result {
 // Finds all comments on a given commit
 // @return result.Result<[]*Comment, error>
 func CommentsOnCommit(repoPath string, commitHash string) result.Result {
-	return gitg.WithRepository(repoPath, func(repo *git.Repository) result.Result {
-		hash := gitg.ResolveSingleCommitHash(repo, commitHash)
+	return gg.WithRepository(repoPath, func(repo *git.Repository) result.Result {
+		hash := gg.ResolveSingleCommitHash(repo, commitHash)
 		return hash.FlatMap(func(commit interface{}) result.Result {
-			return gitg.LookupCommit(repo, *(commit.(*string)))
+			return gg.LookupCommit(repo, *(commit.(*string)))
 		}).FlatMap(func(commit interface{}) result.Result {
 			return commentsOnCommit(repo, commit.(*git.Commit))
 		})
@@ -67,7 +67,7 @@ func CommentsOnCommits(repo *git.Repository, commits []*git.Commit) result.Resul
 // @return result.Result<uint16, error>
 func CommentCountOnCommit(repo *git.Repository, commit string) result.Result {
 	var count uint16 = 0
-	return gitg.CommitCommentRefIterator(repo, commit, func(ref *git.Reference) {
+	return gg.CommitCommentRefIterator(repo, commit, func(ref *git.Reference) {
 		count += 1
 	}).FlatMap(func(value interface{}) result.Result {
 		return result.NewSuccess(count)
@@ -83,7 +83,7 @@ func CommentFromRef(repo *git.Repository, refName string) result.Result {
 // @return result.Result<[]*Comment, error>
 func commentsOnCommit(repo *git.Repository, commit *git.Commit) result.Result {
 	var comments []interface{}
-	return gitg.CommitCommentRefIterator(repo, commit.Id().String(), func(ref *git.Reference) {
+	return gg.CommitCommentRefIterator(repo, commit.Id().String(), func(ref *git.Reference) {
 		CommentFromRef(repo, ref.Name()).FlatMap(func(comment interface{}) result.Result {
 			comments = append(comments, comment)
 			return result.Result{}

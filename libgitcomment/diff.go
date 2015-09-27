@@ -1,10 +1,10 @@
-package git_comment
+package libgitcomment
 
 import (
 	"fmt"
-	gitg "git_comment/git"
 	"github.com/kylef/result.go/src/result"
 	git "gopkg.in/libgit2/git2go.v23"
+	gg "libgitcomment/git"
 )
 
 type DiffLineType int
@@ -47,16 +47,16 @@ type DiffLine struct {
 // between the commit and its parent.
 // @return result.Result<*Diff, error>
 func DiffCommits(repoPath, commitish string, contextLines uint32) result.Result {
-	return gitg.WithRepository(repoPath, func(repo *git.Repository) result.Result {
-		commits := gitg.ResolveCommits(repo, gitg.ExpandCommitish(commitish))
+	return gg.WithRepository(repoPath, func(repo *git.Repository) result.Result {
+		commits := gg.ResolveCommits(repo, gg.ExpandCommitish(commitish))
 		return commits.FlatMap(func(commitRange interface{}) result.Result {
-			return diffCommits(repo, commitRange.(*gitg.CommitRange), contextLines)
+			return diffCommits(repo, commitRange.(*gg.CommitRange), contextLines)
 		})
 	})
 }
 
 // @return result.Result<*Diff, error>
-func diffCommits(repo *git.Repository, commitRange *gitg.CommitRange, contextLines uint32) result.Result {
+func diffCommits(repo *git.Repository, commitRange *gg.CommitRange, contextLines uint32) result.Result {
 	comments := CommentsOnCommits(repo, commitRange.Commits())
 	diff := diffRange(repo, commitRange, contextLines)
 	return result.Combine(func(values ...interface{}) result.Result {
@@ -71,7 +71,7 @@ func commitTree(commit *git.Commit) result.Result {
 	return result.NewResult(commit.Tree())
 }
 
-func diffRange(repo *git.Repository, commitRange *gitg.CommitRange, contextLines uint32) result.Result {
+func diffRange(repo *git.Repository, commitRange *gg.CommitRange, contextLines uint32) result.Result {
 	return result.Combine(func(values ...interface{}) result.Result {
 		opts := values[2].(git.DiffOptions)
 		opts.ContextLines = contextLines
@@ -134,23 +134,32 @@ func fileForAdditionalComments(mapping map[string][]*Comment) *DiffFile {
 }
 
 func commentsForLine(delta git.DiffDelta, line git.DiffLine, mapping map[string][]*Comment) []*Comment {
-	var comments []*Comment = nil
 	if line.Origin == git.DiffLineDeletion {
-		oldCommentKey := fileRefMappingKey(delta.OldFile.Path, line.OldLineno)
-		if list, ok := mapping[oldCommentKey]; ok {
-			for _, comment := range list {
-				if comment.FileRef.LineType == RefLineTypeOld {
-					comments = append(comments, comment)
-				}
+		return removedCommentForLine(delta, line, mapping)
+	}
+	return addedCommentsForLine(delta, line, mapping)
+}
+
+func removedCommentForLine(delta git.DiffDelta, line git.DiffLine, mapping map[string][]*Comment) []*Comment {
+	var comments []*Comment = nil
+	oldCommentKey := fileRefMappingKey(delta.OldFile.Path, line.OldLineno)
+	if list, ok := mapping[oldCommentKey]; ok {
+		for _, comment := range list {
+			if comment.FileRef.LineType == RefLineTypeOld {
+				comments = append(comments, comment)
 			}
 		}
-	} else {
-		newCommentKey := fileRefMappingKey(delta.NewFile.Path, line.NewLineno)
-		if list, ok := mapping[newCommentKey]; ok {
-			for _, comment := range list {
-				if comment.FileRef.LineType == RefLineTypeNew {
-					comments = append(comments, comment)
-				}
+	}
+	return comments
+}
+
+func addedCommentsForLine(delta git.DiffDelta, line git.DiffLine, mapping map[string][]*Comment) []*Comment {
+	var comments []*Comment = nil
+	newCommentKey := fileRefMappingKey(delta.NewFile.Path, line.NewLineno)
+	if list, ok := mapping[newCommentKey]; ok {
+		for _, comment := range list {
+			if comment.FileRef.LineType == RefLineTypeNew {
+				comments = append(comments, comment)
 			}
 		}
 	}

@@ -1,11 +1,11 @@
 package main
 
 import (
-	gitc "git_comment"
-	gite "git_comment/exec"
-	gitg "git_comment/git"
-	gitl "git_comment/log"
 	kp "gopkg.in/alecthomas/kingpin.v2"
+	gc "libgitcomment"
+	gx "libgitcomment/exec"
+	gg "libgitcomment/git"
+	gl "libgitcomment/log"
 	"math"
 	"os"
 )
@@ -36,42 +36,42 @@ func main() {
 	kp.MustParse(app.Parse(os.Args[1:]))
 	pwd, err := os.Getwd()
 	app.FatalIfError(err, "pwd")
-	gite.FatalIfError(app, gitc.VersionCheck(pwd, buildVersion), "version")
+	gx.FatalIfError(app, gc.VersionCheck(pwd, buildVersion), "version")
 	showComments(pwd)
 }
 
 func showComments(pwd string) {
-	termHeight, termWidth := gite.CalculateDimensions()
-	pager := gite.NewPager(app, pwd, termHeight, !*enablePager)
+	termHeight, termWidth := gx.CalculateDimensions()
+	pager := gx.NewPager(app, pwd, termHeight, !*enablePager)
 	computeContextLines(pwd)
-	diff := gitc.DiffCommits(pwd, *revision, contextLines)
+	diff := gc.DiffCommits(pwd, *revision, contextLines)
 	app.FatalIfError(diff.Failure, "diff")
 	formatter := newFormatter(pwd, termWidth)
 	printer := newPrinter(pager, formatter)
-	printer.PrintDiff(diff.Success.(*gitc.Diff))
+	printer.PrintDiff(diff.Success.(*gc.Diff))
 }
 
-func newFormatter(wd string, termWidth uint16) *gitl.Formatter {
+func newFormatter(wd string, termWidth uint16) *gl.Formatter {
 	var useColor bool
 	if *enableColor {
-		useColor = gitg.ConfiguredBool(wd, "color.pager", false)
+		useColor = gg.ConfiguredBool(wd, "color.pager", false)
 	}
-	return gitl.NewFormatter(*pretty, *lineNumbers, useColor, *enableMarginLine, termWidth)
+	return gl.NewFormatter(*pretty, *lineNumbers, useColor, *enableMarginLine, termWidth)
 }
 
-func newPrinter(pager *gite.Pager, formatter *gitl.Formatter) *gitl.DiffPrinter {
-	printer := gitl.NewDiffPrinter(pager, formatter, *linesBefore, *linesAfter)
+func newPrinter(pager *gx.Pager, formatter *gl.Formatter) *gl.DiffPrinter {
+	printer := gl.NewDiffPrinter(pager, formatter, *linesBefore, *linesAfter)
 	printer.PrintFullDiff = *fullDiff
 	return printer
 }
 
 func computeContextLines(wd string) {
 	if *linesBefore == 0 {
-		before := int64(gitg.ConfiguredInt32(wd, linesBeforeConfig, defaultContextLines))
+		before := int64(gg.ConfiguredInt32(wd, linesBeforeConfig, defaultContextLines))
 		linesBefore = &before
 	}
 	if *linesAfter == 0 {
-		after := int64(gitg.ConfiguredInt32(wd, linesAfterConfig, defaultContextLines))
+		after := int64(gg.ConfiguredInt32(wd, linesAfterConfig, defaultContextLines))
 		linesAfter = &after
 	}
 	contextLines = uint32(math.Max(float64(*linesBefore), float64(*linesAfter)))

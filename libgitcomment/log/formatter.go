@@ -2,8 +2,8 @@ package log
 
 import (
 	"fmt"
-	gitc "git_comment"
-	ex "git_comment/exec"
+	gc "libgitcomment"
+	gx "libgitcomment/exec"
 	"strings"
 	"time"
 )
@@ -70,15 +70,15 @@ func NewFormatter(format string, useLineNumbers, useColor, useMargin bool, termW
 	}
 	if useColor {
 		colorMapping = map[string]string{
-			black:      ex.Black,
-			red:        ex.Red,
-			green:      ex.Green,
-			yellow:     ex.Yellow,
-			blue:       ex.Blue,
-			magenta:    ex.Magenta,
-			cyan:       ex.Cyan,
-			white:      ex.White,
-			resetColor: ex.Clear,
+			black:      gx.Black,
+			red:        gx.Red,
+			green:      gx.Green,
+			yellow:     gx.Yellow,
+			blue:       gx.Blue,
+			magenta:    gx.Magenta,
+			cyan:       gx.Cyan,
+			white:      gx.White,
+			resetColor: gx.Clear,
 		}
 	} else {
 		colorMapping = map[string]string{
@@ -96,14 +96,14 @@ func NewFormatter(format string, useLineNumbers, useColor, useMargin bool, termW
 	return &Formatter{format, useLineNumbers, useColor, useMargin, termWidth, colorMapping, indent}
 }
 
-func (f *Formatter) FormatLine(line *gitc.DiffLine) string {
+func (f *Formatter) FormatLine(line *gc.DiffLine) string {
 	prefix := f.formatLinePrefix(line)
 	number := f.formatLineNumbers(line.OldLineNumber, line.NewLineNumber)
 	content := f.formatLineContent(line)
 	return fmt.Sprintf("%v %v %v", prefix, number, content)
 }
 
-func (f *Formatter) FormatComment(comment *gitc.Comment) string {
+func (f *Formatter) FormatComment(comment *gc.Comment) string {
 	var content string
 	switch {
 	case f.format == Short || len(f.format) == 0:
@@ -153,15 +153,15 @@ func (f *Formatter) formatLineNumbers(oldNum, newNum int) string {
 	if oldNum == newNum || newNum == -1 {
 		newLine = f.formatLineNumber(-1)
 	} else {
-		newLine = ex.Colorize(ex.Green, f.formatLineNumber(newNum), f.useColor)
+		newLine = gx.Colorize(gx.Green, f.formatLineNumber(newNum), f.useColor)
 	}
 	if oldNum != -1 {
-		oldLine = ex.Colorize(ex.Red, oldLine, f.useColor)
+		oldLine = gx.Colorize(gx.Red, oldLine, f.useColor)
 	}
 	return fmt.Sprintf("%v%v", oldLine, newLine)
 }
 
-func (f *Formatter) FormatFilePath(file *gitc.DiffFile) string {
+func (f *Formatter) FormatFilePath(file *gc.DiffFile) string {
 	var path string
 	if file.OldPath == file.NewPath {
 		path = file.OldPath
@@ -175,35 +175,35 @@ func (f *Formatter) FormatFilePath(file *gitc.DiffFile) string {
 	return fmt.Sprintf("\n%v\n", path)
 }
 
-func (f *Formatter) formatLinePrefix(line *gitc.DiffLine) string {
+func (f *Formatter) formatLinePrefix(line *gc.DiffLine) string {
 	switch line.Type {
-	case gitc.DiffAdd, gitc.DiffAddNewline:
-		return ex.Colorize(ex.Green, "+", f.useColor)
-	case gitc.DiffRemove, gitc.DiffRemoveNewline:
-		return ex.Colorize(ex.Red, "-", f.useColor)
+	case gc.DiffAdd, gc.DiffAddNewline:
+		return gx.Colorize(gx.Green, "+", f.useColor)
+	case gc.DiffRemove, gc.DiffRemoveNewline:
+		return gx.Colorize(gx.Red, "-", f.useColor)
 	default:
 		return " "
 	}
 }
 
-func (f *Formatter) formatLineContent(line *gitc.DiffLine) string {
+func (f *Formatter) formatLineContent(line *gc.DiffLine) string {
 	switch line.Type {
-	case gitc.DiffAddNewline, gitc.DiffRemoveNewline:
+	case gc.DiffAddNewline, gc.DiffRemoveNewline:
 		return "↵"
-	case gitc.DiffAdd:
-		return ex.Colorize(ex.Green, line.Content, f.useColor)
-	case gitc.DiffRemove:
-		return ex.Colorize(ex.Red, line.Content, f.useColor)
+	case gc.DiffAdd:
+		return gx.Colorize(gx.Green, line.Content, f.useColor)
+	case gc.DiffRemove:
+		return gx.Colorize(gx.Red, line.Content, f.useColor)
 	default:
 		return line.Content
 	}
 }
 
-func (f *Formatter) substituteVariables(format string, comment *gitc.Comment) string {
+func (f *Formatter) substituteVariables(format string, comment *gc.Comment) string {
 	return replaceAll(replaceAll(format, f.commentMapping(comment)), f.colorMapping)
 }
 
-func (f *Formatter) commentMapping(comment *gitc.Comment) map[string]string {
+func (f *Formatter) commentMapping(comment *gc.Comment) map[string]string {
 	var path = ""
 	var line = ""
 	if comment.FileRef != nil {

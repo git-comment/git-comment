@@ -2,9 +2,9 @@ package exec
 
 import (
 	"errors"
-	gg "git_comment/git"
 	kp "gopkg.in/alecthomas/kingpin.v2"
 	"io/ioutil"
+	gg "libgitcomment/git"
 	"os"
 	"os/user"
 	"path/filepath"

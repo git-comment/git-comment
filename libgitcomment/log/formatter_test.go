@@ -1,8 +1,8 @@
 package log
 
 import (
-	gitc "git_comment"
 	"github.com/stvp/assert"
+	gc "libgitcomment"
 	"regexp"
 	"testing"
 	"time"
@@ -186,11 +186,11 @@ func TestPrettyFormatWhiteNoColor(t *testing.T) {
 	assert.Equal(t, formatter.FormatComment(comment()), "yes\n\n\n")
 }
 
-func comment() *gitc.Comment {
+func comment() *gc.Comment {
 	id := "abcabcabcabc"
-	ref := &gitc.FileRef{"src/file.c", 12, gitc.RefLineTypeOld}
-	author := &gitc.Person{"Simon", "iceking@example.com", time.Now(), "+0200"}
-	comment := gitc.NewComment("new comment\nmore context", "123444abcabc", ref, author).Success.(*gitc.Comment)
+	ref := &gc.FileRef{"src/file.c", 12, gc.RefLineTypeOld}
+	author := &gc.Person{"Simon", "iceking@example.com", time.Now(), "+0200"}
+	comment := gc.NewComment("new comment\nmore context", "123444abcabc", ref, author).Success.(*gc.Comment)
 	comment.ID = &id
 	return comment
 }
