@@ -9,7 +9,7 @@ Comments on git commits are siloed into various web services or backed
 up externally, when all repo history can be stored together and
 accessible offline.
 
-![log](docs/git-comment.com/images/log-screenshot.png)
+![log](docs/log-screenshot.png)
 
 ## Uses
 
