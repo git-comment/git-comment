@@ -1,4 +1,4 @@
-# ![git-comment](docs/header.png)
+# ![git-comment](docs/header.png) [![Circle CI](https://circleci.com/gh/git-comment/git-comment/tree/master.svg?style=svg)](https://circleci.com/gh/git-comment/git-comment/tree/master)
 
 Comments for git commits and files. Open and distributed collaboration
 around code and other version-controlled text and resources.
