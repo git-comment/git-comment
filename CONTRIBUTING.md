@@ -2,9 +2,9 @@
 
 ## Development Dependencies
 
-Development dependencies are listed in the `INSTALL` file and include [Go](http://golang.org), [libgit2](https://libgit2.github.com), [make](https://www.gnu.com/software/make), and various libraries available via `go get`. The command `make bootstrap` installs the library dependencies.
+Development dependencies are listed in the `INSTALL` file and include [Go](http://golang.org), [libgit2](https://libgit2.github.com), [make](https://www.gnu.com/software/make), and various libraries available via `go get`.
 
-The manual is written using [pod2man](http://perldoc.perl.org/pod2man.html), which should be available on most GNU/Linux and OS X distributions by default. Changes should be documented with friendliness in mind.
+The manual is written using [pod2man](http://perldoc.perl.org/pod2man.html), which should be available on most GNU/Linux and BSD distributions by default. Changes should be documented with friendliness in mind.
 
 ## Submitting a Change
 
@@ -12,7 +12,7 @@ The manual is written using [pod2man](http://perldoc.perl.org/pod2man.html), whi
 
 1. Install the requirements listed in the `INSTALL` file
 
-2. Run `make bootstrap` to get the library dependencies
+2. Run `make` to build and install the library dependencies
 
 3. Make your changes, adding tests where necessary. `git-comment` is tested using [assert](https://github.com/stvp/assert).
 

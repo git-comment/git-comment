@@ -27,7 +27,8 @@ components:
 * `git-comment`: adds comments
 * `git-comment-log`: prints comments inline with diffs
 * `git-comment-grep`: searches comment content for text
-* `git-comment-web` (Incomplete): launches a web server hosting a friendly web UI for comment editing
+* `git-comment-web` (Incomplete): launches a web server hosting a friendly
+  web UI for comment editing
 * `git-comment-remote`: helpful tools for working with a remote server
   with git comment, like configuring remotes to push and pull comments
   by default, indexing comments for search after push, and deleting remote

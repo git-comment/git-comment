@@ -1,14 +1,21 @@
 Requirements:
 
 - Go 1.5: http://golang.org/doc/install
-
+- git 2.3 or higher: http://www.git-scm.com
 - libgit2 0.23: https://libgit2.github.com
-
 - make 3.7 or greater: https://www.gnu.org/software/make/
 
 
 Installation:
 
-- Install library dependencies using `make bootstrap`, which fetches the necessary components via `go get`
+- Run `make install` to build and install the project
 
-- Run `make` to build the project, and `make install` to install it
+Configuration:
+
+- $DESTDIR sets the base installation directory. Default is /usr/local
+- $DESTBIN sets the binary installation directory. Default is $DESTDIR/bin
+- $DESTMAN sets the manual installation directory. Default is
+  $DESTDIR/share/man/man1
+
+- $INSTALLCMD installs files. Default is "install -C" (BSD-style)
+- $INSTALLDIRCMD installs directories. Default is "install -d" (BSD-style)
