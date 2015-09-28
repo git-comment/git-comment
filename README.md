@@ -42,20 +42,25 @@ More information and usage is available in the manual or the User Guide.
 
 Instructions for source installation are provided in the `INSTALL` file.
 
+### OS X via Homebrew
+
+There is an automated source installation available for OS X from the [git-comment tap](https://github.com/git-comment/homebrew-formulae). To install, run:
+
+```
+brew install git-comment/formulae/git-comment
+```
+
 ## Support
 
-* [User Guide](https://github.com/kattrali/git-comment/blob/master/docs/User%20Guide.md)
-* [Manual](https://github.com/kattrali/git-comment/tree/master/docs/man)
+* [User Guide](https://github.com/git-comment/git-comment/blob/master/docs/User%20Guide.md)
+* [Manual](https://github.com/git-comment/git-comment/tree/master/docs/man)
 * `#git-comment` on freenode IRC
-* [Search open and closed issues](https://github.com/kattrali/git-comment/issues?utf8=✓&q=is%3Aissue) for similar problems
-* [Open an issue](https://github.com/kattrali/git-comment/issues/new)
+* [Search open and closed issues](https://github.com/git-comment/git-comment/issues?utf8=✓&q=is%3Aissue) for similar problems
+* [Open an issue](https://github.com/git-comment/git-comment/issues/new)
 
 ## Contributing
 
-The `CONTRIBUTING.md` file details the setup process for building
-`git-comment` from source and submitting a change. There are many tasks
-in the roadmap (`docs/Roadmap.md`) to make git-comment a more robust
-collaboration tool. Contributions welcome!
+The [CONTRIBUTING.md](https://github.com/git-comment/git-comment/blob/master/CONTRIBUTING.md) file details the setup process for building `git-comment` from source and submitting a change. There are many tasks in the roadmap ([docs/Roadmap.md](https://github.com/git-comment/git-comment/blob/master/docs/Roadmap.md)) to make git-comment a more robust collaboration tool. Contributions welcome!
 
 ## License
 
