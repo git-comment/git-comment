@@ -2,6 +2,9 @@ DESTDIR := /usr/local
 DESTBIN := $(DESTDIR)/bin
 DESTMAN := $(DESTDIR)/share/man/man1
 
+INSTALLCMD    := install -C
+INSTALLDIRCMD := install -d
+
 PROJECT=libgitcomment
 PACKAGES=exec log git search
 VERSION=$(shell cat VERSION)
@@ -34,8 +37,6 @@ GOPATHSRC_FILES=$(addprefix $(GOPATHSRC)/,$(SRC_FILES))
 GOPATHSRC_TESTS=$(addprefix $(GOPATHSRC)/,$(TEST_FILES))
 GOPATHPKG=$(GOPATH)/pkg/$(GOOS)_$(GOARCH)
 GOPATHPKG_DEPS=$(foreach dep,$(DEPENDENCIES),$(GOPATHPKG)/$(dep).a)
-GOBUILD=GOPATH=$(GOPATH) go build
-BIN_BUILD_CMD=$(GOBUILD) -ldflags "-X main.buildVersion=$(VERSION)"
 
 BUILD_DIR=build
 BUILD_BIN_DIR=$(BUILD_DIR)/bin
@@ -48,21 +49,20 @@ MAN_CMD=pod2man --center="$(MAN_TITLE)" --release="$(VERSION)"
 
 default: build
 
-builddeps_osx:
-	brew install libgit2
-
 build: $(GOPATHSRC_FILES) $(BUILD_BIN_FILES)
 
 $(BUILD_BIN_DIR)/%: $(GOPATHSRC_FILES) $(GOPATHPKG_DEPS) bin/%.go
-	@install -d $(BUILD_BIN_DIR)
-	$(BIN_BUILD_CMD) -o $(BUILD_BIN_DIR)/$* bin/$*.go
+	@$(INSTALLDIRCMD) $(BUILD_BIN_DIR)
+	GOPATH=$(GOPATH) go build \
+				 -ldflags "-X main.buildVersion=$(VERSION)" \
+				 -o $(BUILD_BIN_DIR)/$* bin/$*.go
 
 $(GOPATHSRC)/%.go: $(GOPATHPKG_DEPS) $(PROJECT)/%.go
-	@install -d $(GOPATHSRC)/$(dir $*)
-	@install $(PROJECT)/$*.go $(GOPATHSRC)/$*.go
+	@$(INSTALLDIRCMD) $(GOPATHSRC)/$(dir $*)
+	@$(INSTALLCMD) $(PROJECT)/$*.go $(GOPATHSRC)/$*.go
 
 $(GOPATH):
-	@install -d $(GOPATH)
+	@$(INSTALLDIRCMD) $(GOPATH)
 
 $(GOPATHPKG)/%.a: $(GOPATH)
 	GOPATH=$(GOPATH) go get $*
@@ -85,21 +85,22 @@ deploy_website:
 	# git push -f origin gh-pages
 
 $(BUILD_MAN_DIR)/%.1: $(MANSRC)/%.pod
-	@install -d $(BUILD_MAN_DIR)
+	@$(INSTALLDIRCMD) $(BUILD_MAN_DIR)
 	$(MAN_CMD) $(MANSRC)/$*.pod > $(BUILD_MAN_DIR)/$*.1
+	chmod 444 $(BUILD_MAN_DIR)/$*.1
 
 doc: $(BUILD_MAN_FILES)
 
 $(DESTBIN):
-	@install -d $(DESTBIN)
+	@$(INSTALLDIRCMD) $(DESTBIN)
 
 $(DESTMAN):
-	@install -d $(DESTMAN)
+	@$(INSTALLDIRCMD) $(DESTMAN)
 
 install: $(DESTBIN) $(DESTMAN) $(BUILD_BIN_FILES) $(BUILD_MAN_FILES)
-	chmod 444 $(BUILD_MAN_FILES)
-	install -C $(BUILD_BIN_FILES) $(DESTBIN)
-	install -C $(BUILD_MAN_FILES) $(DESTMAN)
+	@$(INSTALLCMD) $(BUILD_BIN_FILES) $(DESTBIN)
+	@$(INSTALLCMD) $(BUILD_MAN_FILES) $(DESTMAN)
+	@echo Successfully installed git-comment.
 
 uninstall:
 	rm $(foreach bin,$(BIN_FILES), $(DESTMAN)/$(bin).1 $(DESTBIN)/$(bin));
