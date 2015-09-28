@@ -42,9 +42,10 @@ func TestPrettyFormatAuthorDateUnix(t *testing.T) {
 
 func TestPrettyFormatAuthorDateISO(t *testing.T) {
 	formatter := NewFormatter("format:%ad", false, false, false, 0)
-	dateRe := regexp.MustCompile(`^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}-[0-9]{2}:[0-9]{2})\s{3}$`)
-	match := dateRe.FindStringSubmatch(formatter.FormatComment(comment()))
-	assert.Equal(t, len(match), 2)
+	dateRe := regexp.MustCompile(`^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2})`)
+	text := formatter.FormatComment(comment())
+	match := dateRe.FindStringSubmatch(text)
+	assert.Equal(t, len(match), 2, "Date not in correct format: ", text)
 }
 
 func TestPrettyFormatCommitterName(t *testing.T) {
@@ -66,9 +67,10 @@ func TestPrettyFormatCommitterDateUnix(t *testing.T) {
 
 func TestPrettyFormatCommitterDateISO(t *testing.T) {
 	formatter := NewFormatter("format:%kd", false, false, false, 0)
-	dateRe := regexp.MustCompile(`([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}-[0-9]{2}:[0-9]{2})`)
-	match := dateRe.FindStringSubmatch(formatter.FormatComment(comment()))
-	assert.Equal(t, len(match), 2)
+	dateRe := regexp.MustCompile(`([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2})`)
+	text := formatter.FormatComment(comment())
+	match := dateRe.FindStringSubmatch(text)
+	assert.Equal(t, len(match), 2, "Date not in correct format: ", text)
 }
 
 func TestPrettyFormatBodyNoMarginLine(t *testing.T) {
