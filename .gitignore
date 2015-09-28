@@ -1,5 +1,6 @@
 # Build artifacts
 build
+.DS_Store
 
 # Project temp location
 _workspace/pkg
