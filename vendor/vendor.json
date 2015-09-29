@@ -13,6 +13,11 @@
 			"revisionTime": "2015-05-30T10:01:04+10:00"
 		},
 		{
+			"path": "github.com/alecthomas/units",
+			"revision": "6b4e7dc5e3143b85ea77909c72caf89416fc2915",
+			"revisionTime": "2015-01-09T11:21:28+11:00"
+		},
+		{
 			"path": "github.com/blang/semver",
 			"revision": "31b736133b98f26d5e078ec9eb591666edfd091f",
 			"revisionTime": "2015-06-20T10:58:49+02:00"
