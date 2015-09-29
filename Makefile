@@ -5,7 +5,7 @@ DESTMAN := $(DESTDIR)/share/man/man1
 INSTALLCMD    := install -C
 INSTALLDIRCMD := install -d
 
-PROJECT=libgitcomment
+PROJECT=.
 PACKAGES=exec log git search
 VERSION=$(shell cat VERSION)
 DEPENDENCIES=gopkg.in/libgit2/git2go.v23 \
@@ -31,12 +31,12 @@ MAN_FILES=$(foreach bin,$(BIN_FILES),$(bin).pod)
 
 GOOS=$(shell go env GOOS)
 GOARCH=$(shell go env GOARCH)
-GOPATH=$(shell pwd)/_workspace
 GOPATHSRC=$(GOPATH)/src/$(PROJECT)
 GOPATHSRC_FILES=$(addprefix $(GOPATHSRC)/,$(SRC_FILES))
 GOPATHSRC_TESTS=$(addprefix $(GOPATHSRC)/,$(TEST_FILES))
 GOPATHPKG=$(GOPATH)/pkg/$(GOOS)_$(GOARCH)
 GOPATHPKG_DEPS=$(foreach dep,$(DEPENDENCIES),$(GOPATHPKG)/$(dep).a)
+GO15VENDOREXPERIMENT=1
 
 BUILD_DIR=build
 BUILD_BIN_DIR=$(BUILD_DIR)/bin
@@ -105,5 +105,5 @@ install: $(DESTBIN) $(DESTMAN) $(BUILD_BIN_FILES) $(BUILD_MAN_FILES)
 uninstall:
 	rm $(foreach bin,$(BIN_FILES), $(DESTMAN)/$(bin).1 $(DESTBIN)/$(bin));
 
-test: $(GOPATHSRC_FILES) $(GOPATHSRC_TESTS)
-	go test $(PROJECT) $(foreach pkg,$(PACKAGES),$(PROJECT)/$(pkg));
+test:
+	go test $(foreach pkg,$(PACKAGES),$(PROJECT)/$(pkg)/...)
