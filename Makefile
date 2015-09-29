@@ -15,27 +15,19 @@ DEPENDENCIES=gopkg.in/libgit2/git2go.v23 \
   github.com/kylef/result.go/src/result \
   github.com/blevesearch/bleve \
   github.com/blang/semver
-BIN_FILES=git-comment git-comment-grep git-comment-log git-comment-remote git-comment-web
-SRC_FILES=comment.go diff.go errors.go file_ref.go lookup.go person.go property_blob.go \
-					remote.go storage.go version.go \
-					exec/editor.go exec/exec.go exec/pager.go exec/term.go \
-					git/commit.go git/commit_range.go git/config.go git/remote.go git/repo.go \
-					git/result.go git/var.go \
-					log/diff_printer.go log/formatter.go \
-					search/formatter.go search/printer.go search/search.go
-TEST_FILES=comment_test.go file_ref_test.go person_test.go property_blob_test.go \
-					 storage_test.go version_test.go exec/term_test.go git/remote_test.go \
-					 log/formatter_test.go
+BIN_FILES=$(basename $(shell ls bin))
+SRC_FILES=$(filter-out test,$(shell git ls-files "$(PROJECT)/**.go"))
+TEST_FILES=$(shell git ls-files "$(PROJECT)/**_test.go")
 MANSRC=docs/man
 MAN_FILES=$(foreach bin,$(BIN_FILES),$(bin).pod)
 
 GOOS=$(shell go env GOOS)
 GOARCH=$(shell go env GOARCH)
 GOPATH=$(shell pwd)/_workspace
-GO=GOPATH=$(GOPATH) go
+GO=GOPATH="$(GOPATH)" go
 GOPATHSRC=$(GOPATH)/src/$(PROJECT)
-GOPATHSRC_FILES=$(addprefix $(GOPATHSRC)/,$(SRC_FILES))
-GOPATHSRC_TESTS=$(addprefix $(GOPATHSRC)/,$(TEST_FILES))
+GOPATHSRC_FILES=$(addprefix $(GOPATH)/src/,$(SRC_FILES))
+GOPATHSRC_TESTS=$(addprefix $(GOPATH)/src/,$(TEST_FILES))
 GOPATHPKG=$(GOPATH)/pkg/$(GOOS)_$(GOARCH)
 GOPATHPKG_DEPS=$(foreach dep,$(DEPENDENCIES),$(GOPATHPKG)/$(dep).a)
 
@@ -60,16 +52,14 @@ $(GOPATHSRC)/%.go: $(GOPATHPKG_DEPS) $(PROJECT)/%.go
 	@$(INSTALLDIRCMD) $(GOPATHSRC)/$(dir $*)
 	@$(INSTALLCMD) $(PROJECT)/$*.go $(GOPATHSRC)/$*.go
 
-$(GOPATH):
-	@$(INSTALLDIRCMD) $(GOPATH)
-
-$(GOPATHPKG)/%.a: $(GOPATH)
+$(GOPATHPKG)/%.a:
 	$(GO) get $*
+	@rm -rf $(GOPATH)/src/$*/.git
 
 ci: build test
 
-clean: $(GOPATH)
-	$(GO) clean -i -x $(PROJECT) || true
+clean:
+	$(GO) clean $(PROJECT) || true
 	rm -rf $(GOPATHSRC) $(BUILD_DIR)
 
 deploy_website:
