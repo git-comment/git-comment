@@ -1,13 +1,14 @@
 package main
 
 import (
-	kp "gopkg.in/alecthomas/kingpin.v2"
 	gc "libgitcomment"
 	gx "libgitcomment/exec"
 	gg "libgitcomment/git"
 	gl "libgitcomment/log"
 	"math"
 	"os"
+
+	kp "gopkg.in/alecthomas/kingpin.v2"
 )
 
 const (

@@ -1,0 +1,226 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"path": "github.com/alecthomas/template",
+			"revision": "b867cc6ab45cece8143cfcc6fc9c77cf3f2c23c0",
+			"revisionTime": "2015-05-30T10:01:04+10:00"
+		},
+		{
+			"path": "github.com/alecthomas/template/parse",
+			"revision": "b867cc6ab45cece8143cfcc6fc9c77cf3f2c23c0",
+			"revisionTime": "2015-05-30T10:01:04+10:00"
+		},
+		{
+			"path": "github.com/blang/semver",
+			"revision": "31b736133b98f26d5e078ec9eb591666edfd091f",
+			"revisionTime": "2015-06-20T10:58:49+02:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/analysis",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/analysis/analyzers/standard_analyzer",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/analysis/byte_array_converters/json",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/analysis/datetime_parsers/datetime_optional",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/analysis/datetime_parsers/flexible_go",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/analysis/language/en",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/analysis/token_filters/lower_case_filter",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/analysis/token_filters/porter",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/analysis/token_filters/stop_tokens_filter",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/analysis/tokenizers/unicode",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/document",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/index",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/index/store",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/index/store/boltdb",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/index/store/inmem",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/index/upside_down",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/numeric_util",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/registry",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/search",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/search/collectors",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/search/facets",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/search/highlight",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/search/highlight/fragment_formatters/html",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/search/highlight/fragmenters/simple",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/search/highlight/highlighters/html",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/search/highlight/highlighters/simple",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/search/scorers",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/bleve/search/searchers",
+			"revision": "c3a4fab911f66b982d81b5a2518698f6038e2e29",
+			"revisionTime": "2015-09-28T17:05:46-04:00"
+		},
+		{
+			"path": "github.com/blevesearch/go-porterstemmer",
+			"revision": "23a2c8e5cf1f380f27722c6d2ae8896431dc7d0e",
+			"revisionTime": "2014-12-29T17:30:33-08:00"
+		},
+		{
+			"path": "github.com/blevesearch/segment",
+			"revision": "1075dc18be4c90a4f1972ef2734bb7d6dcf29db8",
+			"revisionTime": "2015-09-08T21:24:10-04:00"
+		},
+		{
+			"path": "github.com/boltdb/bolt",
+			"revision": "51f99c862475898df9773747d3accd05a7ca33c1",
+			"revisionTime": "2015-09-21T14:14:00-06:00"
+		},
+		{
+			"path": "github.com/cevaris/ordered_map",
+			"revision": "7ec217774c8f906e32d6f49060bdacdf9237d767",
+			"revisionTime": "2015-03-02T21:13:27-07:00"
+		},
+		{
+			"path": "github.com/golang/protobuf/proto",
+			"revision": "0c959e80d8acfedb1ecd50c9f14a58cee287dc95",
+			"revisionTime": "2015-09-28T15:17:00+10:00"
+		},
+		{
+			"path": "github.com/kr/pretty",
+			"revision": "e6ac2fc51e89a3249e82157fa0bb7a18ef9dd5bb",
+			"revisionTime": "2015-05-20T12:35:14-04:00"
+		},
+		{
+			"path": "github.com/kr/text",
+			"revision": "bb797dc4fb8320488f47bf11de07a733d7233e1f",
+			"revisionTime": "2015-09-05T15:45:08-07:00"
+		},
+		{
+			"path": "github.com/kylef/result.go/src/result",
+			"revision": "3365e0bf53523b5974178d7588c8100b47cf6b68",
+			"revisionTime": "2015-07-15T21:00:49-07:00"
+		},
+		{
+			"path": "github.com/ryszard/goskiplist/skiplist",
+			"revision": "2dfbae5fcf46374f166f8969cb07e167f1be6273",
+			"revisionTime": "2015-03-12T23:13:10+01:00"
+		},
+		{
+			"path": "github.com/stvp/assert",
+			"revision": "488e5f84a1e0e947e909f1f4f1e851502f61972d",
+			"revisionTime": "2013-07-05T18:12:49-07:00"
+		},
+		{
+			"path": "gopkg.in/alecthomas/kingpin.v2",
+			"revision": "72bf19f454c6822cfb2cf128c77ef8d70667df35",
+			"revisionTime": "2015-09-19T13:27:48+10:00"
+		},
+		{
+			"path": "gopkg.in/libgit2/git2go.v23",
+			"revision": "6d3a3499f1639a6272e334f9f74b1e0cf6b0bb49",
+			"revisionTime": "2015-08-31T19:58:29+02:00"
+		}
+	]
+}
