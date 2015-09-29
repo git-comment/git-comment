@@ -1,9 +1,10 @@
 package libgitcomment
 
 import (
-	"github.com/stvp/assert"
 	"strings"
 	"testing"
+
+	"github.com/stvp/assert"
 )
 
 func TestCompareVersionsSame(t *testing.T) {

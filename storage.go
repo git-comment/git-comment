@@ -3,10 +3,12 @@ package libgitcomment
 import (
 	"errors"
 	"fmt"
+	"path"
+
+	gg "github.com/git-comment/git-comment/git"
+
 	"github.com/kylef/result.go/src/result"
 	git "gopkg.in/libgit2/git2go.v23"
-	gg "libgitcomment/git"
-	"path"
 )
 
 const (

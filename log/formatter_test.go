@@ -1,11 +1,13 @@
 package log
 
 import (
-	"github.com/stvp/assert"
-	gc "libgitcomment"
 	"regexp"
 	"testing"
 	"time"
+
+	gc "github.com/git-comment/git-comment"
+
+	"github.com/stvp/assert"
 )
 
 func TestPrettyFormatFilePath(t *testing.T) {

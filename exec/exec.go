@@ -1,13 +1,14 @@
 package exec
 
 import (
-	"github.com/kylef/result.go/src/result"
-	kp "gopkg.in/alecthomas/kingpin.v2"
 	"io"
-	gg "libgitcomment/git"
 	"os"
 	"os/exec"
 	"strings"
+
+	gg "github.com/git-comment/git-comment/git"
+	"github.com/kylef/result.go/src/result"
+	kp "gopkg.in/alecthomas/kingpin.v2"
 )
 
 // Start an arbitrary command with arguments and wait got

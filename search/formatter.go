@@ -2,10 +2,11 @@ package search
 
 import (
 	"fmt"
-	gc "libgitcomment"
-	gx "libgitcomment/exec"
 	"path/filepath"
 	"strings"
+
+	gc "github.com/git-comment/git-comment"
+	gx "github.com/git-comment/git-comment/exec"
 )
 
 type Formatter struct {

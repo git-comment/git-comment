@@ -2,9 +2,10 @@ package git
 
 import (
 	"errors"
+	"path"
+
 	"github.com/kylef/result.go/src/result"
 	git "gopkg.in/libgit2/git2go.v23"
-	"path"
 )
 
 const (

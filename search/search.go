@@ -1,13 +1,14 @@
 package search
 
 import (
-	"github.com/blevesearch/bleve"
-	"github.com/kylef/result.go/src/result"
-	git "gopkg.in/libgit2/git2go.v23"
-	gc "libgitcomment"
-	gg "libgitcomment/git"
 	"os"
 	"path/filepath"
+
+	"github.com/blevesearch/bleve"
+	gc "github.com/git-comment/git-comment"
+	gg "github.com/git-comment/git-comment/git"
+	"github.com/kylef/result.go/src/result"
+	git "gopkg.in/libgit2/git2go.v23"
 )
 
 const (

@@ -1,9 +1,10 @@
 package libgitcomment
 
 import (
-	"github.com/stvp/assert"
 	"path"
 	"testing"
+
+	"github.com/stvp/assert"
 )
 
 func TestRefPath(t *testing.T) {

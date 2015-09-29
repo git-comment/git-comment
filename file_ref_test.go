@@ -1,8 +1,9 @@
 package libgitcomment
 
 import (
-	"github.com/stvp/assert"
 	"testing"
+
+	"github.com/stvp/assert"
 )
 
 func TestCreateFileRefNoLine(t *testing.T) {

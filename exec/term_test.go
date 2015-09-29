@@ -1,8 +1,9 @@
 package exec
 
 import (
-	"github.com/stvp/assert"
 	"testing"
+
+	"github.com/stvp/assert"
 )
 
 func TestColorizeActive(t *testing.T) {

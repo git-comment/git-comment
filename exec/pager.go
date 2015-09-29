@@ -3,9 +3,10 @@ package exec
 import (
 	"bytes"
 	"fmt"
-	kp "gopkg.in/alecthomas/kingpin.v2"
 	"io"
 	"os/exec"
+
+	kp "gopkg.in/alecthomas/kingpin.v2"
 )
 
 type Pager struct {

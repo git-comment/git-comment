@@ -2,10 +2,11 @@ package log
 
 import (
 	"fmt"
-	gc "libgitcomment"
-	gx "libgitcomment/exec"
 	"strings"
 	"time"
+
+	gc "github.com/git-comment/git-comment"
+	gx "github.com/git-comment/git-comment/exec"
 )
 
 const (

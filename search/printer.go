@@ -1,9 +1,9 @@
 package search
 
 import (
+	gc "github.com/git-comment/git-comment"
+	gx "github.com/git-comment/git-comment/exec"
 	"github.com/kylef/result.go/src/result"
-	gc "libgitcomment"
-	gx "libgitcomment/exec"
 )
 
 type Printer struct {

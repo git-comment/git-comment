@@ -2,14 +2,15 @@ package exec
 
 import (
 	"errors"
-	kp "gopkg.in/alecthomas/kingpin.v2"
 	"io/ioutil"
-	gg "libgitcomment/git"
 	"os"
 	"os/user"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	gg "github.com/git-comment/git-comment/git"
+	kp "gopkg.in/alecthomas/kingpin.v2"
 )
 
 const (

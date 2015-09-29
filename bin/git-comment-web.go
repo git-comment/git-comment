@@ -1,7 +1,7 @@
 package main
 
 import (
-	gx "libgitcomment/exec"
+	gx "github.com/git-comment/git-comment/exec"
 )
 
 func main() {

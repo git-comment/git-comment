@@ -1,12 +1,13 @@
 package main
 
 import (
-	gc "libgitcomment"
-	gx "libgitcomment/exec"
-	gg "libgitcomment/git"
-	gl "libgitcomment/log"
 	"math"
 	"os"
+
+	gc "github.com/git-comment/git-comment"
+	gx "github.com/git-comment/git-comment/exec"
+	gg "github.com/git-comment/git-comment/git"
+	gl "github.com/git-comment/git-comment/log"
 
 	kp "gopkg.in/alecthomas/kingpin.v2"
 )

@@ -1,10 +1,11 @@
 package libgitcomment
 
 import (
-	"github.com/cevaris/ordered_map"
-	"github.com/stvp/assert"
 	"strings"
 	"testing"
+
+	"github.com/cevaris/ordered_map"
+	"github.com/stvp/assert"
 )
 
 func TestPropertiesFromBlob(t *testing.T) {

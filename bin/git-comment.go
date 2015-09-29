@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	kp "gopkg.in/alecthomas/kingpin.v2"
-	gc "libgitcomment"
-	gx "libgitcomment/exec"
-	gg "libgitcomment/git"
 	"os"
+
+	gc "github.com/git-comment/git-comment"
+	gx "github.com/git-comment/git-comment/exec"
+	gg "github.com/git-comment/git-comment/git"
+	kp "gopkg.in/alecthomas/kingpin.v2"
 )
 
 var (

@@ -2,9 +2,10 @@ package libgitcomment
 
 import (
 	"bytes"
-	"github.com/cevaris/ordered_map"
 	"strings"
 	"time"
+
+	"github.com/cevaris/ordered_map"
 )
 
 type PropertyBlob struct {

@@ -1,8 +1,9 @@
 package git
 
 import (
-	"github.com/stvp/assert"
 	"testing"
+
+	"github.com/stvp/assert"
 )
 
 func TestContains(t *testing.T) {
