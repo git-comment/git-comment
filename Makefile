@@ -32,6 +32,7 @@ MAN_FILES=$(foreach bin,$(BIN_FILES),$(bin).pod)
 GOOS=$(shell go env GOOS)
 GOARCH=$(shell go env GOARCH)
 GOPATH=$(shell pwd)/_workspace
+GO=GOPATH=$(GOPATH) go
 GOPATHSRC=$(GOPATH)/src/$(PROJECT)
 GOPATHSRC_FILES=$(addprefix $(GOPATHSRC)/,$(SRC_FILES))
 GOPATHSRC_TESTS=$(addprefix $(GOPATHSRC)/,$(TEST_FILES))
@@ -53,9 +54,7 @@ build: $(GOPATHSRC_FILES) $(BUILD_BIN_FILES)
 
 $(BUILD_BIN_DIR)/%: $(GOPATHSRC_FILES) $(GOPATHPKG_DEPS) bin/%.go
 	@$(INSTALLDIRCMD) $(BUILD_BIN_DIR)
-	GOPATH=$(GOPATH) go build \
-				 -ldflags "-X main.buildVersion=$(VERSION)" \
-				 -o $(BUILD_BIN_DIR)/$* bin/$*.go
+	$(GO) build -ldflags "-X main.buildVersion=$(VERSION)" -o $(BUILD_BIN_DIR)/$* bin/$*.go
 
 $(GOPATHSRC)/%.go: $(GOPATHPKG_DEPS) $(PROJECT)/%.go
 	@$(INSTALLDIRCMD) $(GOPATHSRC)/$(dir $*)
@@ -65,18 +64,13 @@ $(GOPATH):
 	@$(INSTALLDIRCMD) $(GOPATH)
 
 $(GOPATHPKG)/%.a: $(GOPATH)
-	GOPATH=$(GOPATH) go get $*
+	$(GO) get $*
 
 ci: build test
 
 clean: $(GOPATH)
-	GOPATH=$(GOPATH) go clean -i -x $(PROJECT) || true
+	$(GO) clean -i -x $(PROJECT) || true
 	rm -rf $(GOPATHSRC) $(BUILD_DIR)
-
-adddep: $(GOPATHPKG_DEPS)
-	@echo Checking in new vendored dependency...
-	rm -r $(GOPATH)/*/*/*/.git || true
-	git add $(GOPATH)
 
 deploy_website:
 	git checkout -B gh-pages
@@ -106,4 +100,4 @@ uninstall:
 	rm $(foreach bin,$(BIN_FILES), $(DESTMAN)/$(bin).1 $(DESTBIN)/$(bin));
 
 test: $(GOPATHSRC_FILES) $(GOPATHSRC_TESTS)
-	go test $(PROJECT) $(foreach pkg,$(PACKAGES),$(PROJECT)/$(pkg));
+	$(GO) test $(PROJECT) $(foreach pkg,$(PACKAGES),$(PROJECT)/$(pkg));
