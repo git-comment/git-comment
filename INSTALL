@@ -4,6 +4,7 @@ Requirements:
 - git 2.3 or higher: http://www.git-scm.com
 - libgit2 0.23: https://libgit2.github.com
 - make 3.7 or greater: https://www.gnu.org/software/make/
+- export GO15VENDOREXPERIMENT=1
 
 
 Installation:
