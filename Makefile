@@ -27,7 +27,6 @@ MAN_FILES=$(foreach bin,$(BIN_FILES),$(bin).pod)
 
 GOOS=$(shell go env GOOS)
 GOARCH=$(shell go env GOARCH)
-GO15VENDOREXPERIMENT=1
 
 BUILD_DIR=build
 BUILD_BIN_DIR=$(BUILD_DIR)/bin
