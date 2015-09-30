@@ -22,6 +22,12 @@ The manual is written using [pod2man](http://perldoc.perl.org/pod2man.html), whi
 
 6. Push to your fork and [submit a pull request](https://github.com/kattrali/git-comment/compare/)
 
+## Updating dependencies
+
+Dependencies are managed with [govendor](https://github.com/kardianos/govendor) and the experimental vendoring in go1.5.
+
+Refer to the above link for modifying dependencies.
+
 ## Useful References
 
 * [Git Internals Guide](http://www.git-scm.com/book/en/v2/Git-Internals-Plumbing-and-Porcelain)
