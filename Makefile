@@ -87,5 +87,5 @@ push-docker: build-docker
 	docker push $(REGISTRY_OWNER)/$(REPO_NAME)
 
 test-docker:
-	docker run -w /go/src/github.com/git-comment/$(REPO_NAME) -v $(shell pwd):/go/src/github.com/git-comment/$(REPO_NAME) $(REGISTRY_OWNER)/$(REPO_NAME):latest bash -c "go test $(foreach pkg,$(PACKAGES),$(PROJECT)/$(pkg)/...)"
+	docker run -w /go/src/github.com/git-comment/$(REPO_NAME) -v $(shell pwd):/go/src/github.com/git-comment/$(REPO_NAME) $(REGISTRY_OWNER)/$(REPO_NAME):latest bash -c "go test $(PROJECT) $(foreach pkg,$(PACKAGES),$(PROJECT)/$(pkg)/...)"
 
