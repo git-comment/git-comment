@@ -1,0 +1,20 @@
+clone_folder: c:\projects\git-comment
+
+install:
+- cinst make pkgconfiglite wget mingw
+- ps: |
+    wget -OutFile libgit2.tar.gz https://github.com/libgit2/libgit2/archive/v0.23.2.tar.gz  > $null
+    tar xzvf libgit2.tar.gz
+    cd libgit2-0.23.2
+    cmake .
+    cd ..
+
+environment:
+  GOPATH: c:\projects\git-comment\_workspace
+  PKG_CONFIG_PATH: c:\projects\git-comment\libgit2-0.23.2
+
+test_script:
+- ps: |
+    $env:Path += ";C:\tools\mingw64\bin"
+    cp -r libgitcomment _workspace/src/libgitcomment
+    go test libgitcomment libgitcomment/exec libgitcomment/git libgitcomment/log libgitcomment/search

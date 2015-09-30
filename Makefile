@@ -101,8 +101,8 @@ src_libgit2:
 # builds each binary with a flag specifying the version of the git-comment
 # project.
 $(BUILD_BIN_DIR)/%: $(GOPATHSRC_FILES) $(GOPATHPKG_DEPS) bin/%.go
-	@$(INSTALLDIRCMD) $(BUILD_BIN_DIR)
-	$(GO) build -ldflags "-X main.buildVersion=$(VERSION)" -o $(BUILD_BIN_DIR)/$* bin/$*.go
+	$(INSTALLDIRCMD) $(BUILD_BIN_DIR)
+	$(GO) build -ldflags "-X main.buildVersion=$(VERSION)" -o "$(BUILD_BIN_DIR)/$*" bin/$*.go
 
 # $(GOPATHSRC) is a temporary build directory within the local $GOPATH for
 # the source files in libgitcomment/. Building the library depends on the
@@ -111,8 +111,8 @@ $(BUILD_BIN_DIR)/%: $(GOPATHSRC_FILES) $(GOPATHPKG_DEPS) bin/%.go
 # This target ensures the temporary build directory exists or creates it, then
 # installs changed source files into it.
 $(GOPATHSRC)/%.go: $(GOPATHPKG_DEPS) $(PROJECT)/%.go
-	@$(INSTALLDIRCMD) $(GOPATHSRC)/$(dir $*)
-	@$(INSTALLCMD) $(PROJECT)/$*.go $(GOPATHSRC)/$*.go
+	$(INSTALLDIRCMD) "$(GOPATHSRC)/$(dir $*)"
+	$(INSTALLCMD) "$(PROJECT)/$*.go" "$(GOPATHSRC)/$*.go"
 
 # $(GOPATHPKG) is the compiled binary path within the local $GOPATH.
 # This target builds a library file for any repository specified by the
@@ -120,13 +120,13 @@ $(GOPATHSRC)/%.go: $(GOPATHPKG_DEPS) $(PROJECT)/%.go
 # can be checked into source control.
 $(GOPATHPKG)/%.a:
 	$(GO) get $*
-	@rm -rf $(GOPATH)/src/$*/.git
+	rm -rf "$(GOPATH)/src/$*/.git"
 
 # Remove compiled files and build directories for the project so it can be
 # rebuilt from a clean slate.
 clean:
 	$(GO) clean $(PROJECT) || true
-	rm -rf $(GOPATHSRC) $(BUILD_DIR)
+	rm -rf "$(GOPATHSRC)" "$(BUILD_DIR)"
 
 # Convert the POD-format manual page source files into *roff output. Depends
 # on the documentation source files in $(MANSRC)
