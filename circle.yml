@@ -1,0 +1,11 @@
+machine:
+  services:
+    - docker
+
+dependencies:
+  override:
+    - docker pull stuartnelson3/git-comment
+
+test:
+  override:
+    - make test-docker
