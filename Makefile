@@ -2,6 +2,9 @@ DESTDIR := /usr/local
 DESTBIN := $(DESTDIR)/bin
 DESTMAN := $(DESTDIR)/share/man/man1
 
+REPO_NAME := git-comment
+REGISTRY_OWNER := stuartnelson3
+
 INSTALLCMD    := install -C
 INSTALLDIRCMD := install -d
 
@@ -78,7 +81,11 @@ test:
 	go test $(foreach pkg,$(PACKAGES),$(PROJECT)/$(pkg)/...)
 
 build-docker:
-	docker build --no-cache --force-rm -t stuartnelson3/git-comment:latest .
+	docker build --no-cache --force-rm -t $(REGISTRY_OWNER)/$(REPO_NAME):latest .
+
+push-docker: build-docker
+	docker push $(REGISTRY_OWNER)/$(REPO_NAME)
 
 test-docker:
-	docker run -w /go/src/github.com/git-comment/git-comment -v $(shell pwd):/go/src/github.com/git-comment/git-comment stuartnelson3/git-comment:latest bash -c "go test $(foreach pkg,$(PACKAGES),$(PROJECT)/$(pkg)/...)"
+	docker run -w /go/src/github.com/git-comment/$(REPO_NAME) -v $(shell pwd):/go/src/github.com/git-comment/$(REPO_NAME) $(REGISTRY_OWNER)/$(REPO_NAME):latest bash -c "go test $(foreach pkg,$(PACKAGES),$(PROJECT)/$(pkg)/...)"
+
