@@ -77,7 +77,7 @@ uninstall:
 	rm $(foreach bin,$(BIN_FILES), $(DESTMAN)/$(bin).1 $(DESTBIN)/$(bin));
 
 test:
-	go test $(foreach pkg,$(PACKAGES),$(PROJECT)/$(pkg)/...)
+	go test ./$(PROJECT)/...
 
 build-docker:
 	docker build --no-cache --force-rm -t $(REGISTRY_OWNER)/$(REPO_NAME):latest .
