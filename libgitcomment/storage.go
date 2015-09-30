@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"path"
 
-	gg "github.com/git-comment/git-comment/git"
+	gg "github.com/git-comment/git-comment/libgitcomment/git"
 
 	"github.com/kylef/result.go/src/result"
 	git "gopkg.in/libgit2/git2go.v23"

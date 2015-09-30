@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"strings"
 
-	gg "github.com/git-comment/git-comment/git"
+	gg "github.com/git-comment/git-comment/libgitcomment/git"
 	kp "gopkg.in/alecthomas/kingpin.v2"
 )
 

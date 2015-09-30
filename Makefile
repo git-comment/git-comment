@@ -8,7 +8,7 @@ REGISTRY_OWNER := stuartnelson3
 INSTALLCMD    := install -C
 INSTALLDIRCMD := install -d
 
-PROJECT=.
+PROJECT=libgitcomment
 PACKAGES=exec log git search
 VERSION=$(shell cat VERSION)
 BIN_FILES=git-comment git-comment-grep git-comment-log git-comment-remote git-comment-web
@@ -86,5 +86,5 @@ push-docker: build-docker
 	docker push $(REGISTRY_OWNER)/$(REPO_NAME)
 
 test-docker:
-	docker run -w /go/src/github.com/git-comment/$(REPO_NAME) -v $(shell pwd):/go/src/github.com/git-comment/$(REPO_NAME) $(REGISTRY_OWNER)/$(REPO_NAME):latest bash -c "go test $(PROJECT) $(foreach pkg,$(PACKAGES),$(PROJECT)/$(pkg)/...)"
+	docker run -w /go/src/github.com/git-comment/$(REPO_NAME) -v $(shell pwd):/go/src/github.com/git-comment/$(REPO_NAME) $(REGISTRY_OWNER)/$(REPO_NAME):latest bash -c "go test ./$(PROJECT)/..."
 

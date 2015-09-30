@@ -2,9 +2,10 @@ package libgitcomment
 
 import (
 	"errors"
-	"github.com/kylef/result.go/src/result"
 	"strings"
 	"time"
+
+	"github.com/kylef/result.go/src/result"
 )
 
 type Comment struct {

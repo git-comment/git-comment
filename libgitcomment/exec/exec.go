@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"strings"
 
-	gg "github.com/git-comment/git-comment/git"
+	gg "github.com/git-comment/git-comment/libgitcomment/git"
 	"github.com/kylef/result.go/src/result"
 	kp "gopkg.in/alecthomas/kingpin.v2"
 )

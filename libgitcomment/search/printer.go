@@ -1,8 +1,8 @@
 package search
 
 import (
-	gc "github.com/git-comment/git-comment"
-	gx "github.com/git-comment/git-comment/exec"
+	gc "github.com/git-comment/git-comment/libgitcomment"
+	gx "github.com/git-comment/git-comment/libgitcomment/exec"
 	"github.com/kylef/result.go/src/result"
 )
 

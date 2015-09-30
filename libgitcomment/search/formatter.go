@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	gc "github.com/git-comment/git-comment"
-	gx "github.com/git-comment/git-comment/exec"
+	gc "github.com/git-comment/git-comment/libgitcomment"
+	gx "github.com/git-comment/git-comment/libgitcomment/exec"
 )
 
 type Formatter struct {

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	gc "github.com/git-comment/git-comment"
+	gc "github.com/git-comment/git-comment/libgitcomment"
 
 	"github.com/stvp/assert"
 )

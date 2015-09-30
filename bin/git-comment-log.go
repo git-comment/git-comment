@@ -4,10 +4,10 @@ import (
 	"math"
 	"os"
 
-	gc "github.com/git-comment/git-comment"
-	gx "github.com/git-comment/git-comment/exec"
-	gg "github.com/git-comment/git-comment/git"
-	gl "github.com/git-comment/git-comment/log"
+	gc "github.com/git-comment/git-comment/libgitcomment"
+	gx "github.com/git-comment/git-comment/libgitcomment/exec"
+	gg "github.com/git-comment/git-comment/libgitcomment/git"
+	gl "github.com/git-comment/git-comment/libgitcomment/log"
 
 	kp "gopkg.in/alecthomas/kingpin.v2"
 )

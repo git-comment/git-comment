@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	gc "github.com/git-comment/git-comment"
-	gx "github.com/git-comment/git-comment/exec"
+	gc "github.com/git-comment/git-comment/libgitcomment"
+	gx "github.com/git-comment/git-comment/libgitcomment/exec"
 	kp "gopkg.in/alecthomas/kingpin.v2"
 )
 

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	gg "github.com/git-comment/git-comment/git"
+	gg "github.com/git-comment/git-comment/libgitcomment/git"
 
 	"github.com/blang/semver"
 	"github.com/kylef/result.go/src/result"
