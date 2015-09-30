@@ -107,3 +107,9 @@ uninstall:
 
 test:
 	go test $(foreach pkg,$(PACKAGES),$(PROJECT)/$(pkg)/...)
+
+build-docker:
+	docker build --no-cache --force-rm -t stuartnelson3/git-comment:latest .
+
+test-docker:
+	docker run -w /go/src/github.com/git-comment/git-comment -v $(shell pwd):/go/src/github.com/git-comment/git-comment stuartnelson3/git-comment:latest bash -c "go test $(foreach pkg,$(PACKAGES),$(PROJECT)/$(pkg)/...)"
