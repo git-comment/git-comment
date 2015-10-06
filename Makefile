@@ -71,27 +71,9 @@ MAN_TITLE=Git Comment Manual
 # Command to build the manual pages denoting the title and release number
 MAN_CMD=pod2man --center="$(MAN_TITLE)" --release="$(VERSION)"
 
+.SECONDARY:
+
 default: build
-
-# Build the core library 'libgitcomment' as well as the tool binaries
-# listed in bin/.
-build: $(BUILD_BIN_FILES)
-
-# Install necessary dependencies for building git-comment on Ubuntu 12.04
-ci_deps: apt_deps src_libgit2
-
-# Install necessary dependencies via apt-get for building from an empty env
-# on Ubuntu 12.04
-apt_deps:
-	apt-get update
-	apt-get install -y cmake pkg-config
-
-# Download and install libgit2 0.23.2 from source. Depends on cmake, pkg-config.
-src_libgit2:
-	wget -O libgit2.tar.gz https://github.com/libgit2/libgit2/archive/v0.23.2.tar.gz
-	tar xzvf libgit2.tar.gz
-	cd libgit2-0.23.2 && cmake . && make && make install
-	ldconfig
 
 # $(BUILD_BIN_DIR) is the target directory for the compiled binaries of the
 # tools listed in the bin/ directory. Building each binary depends on the
@@ -122,22 +104,12 @@ $(GOPATHPKG)/%.a:
 	$(GO) get $*
 	@rm -rf $(GOPATH)/src/$*/.git
 
-# Remove compiled files and build directories for the project so it can be
-# rebuilt from a clean slate.
-clean:
-	$(GO) clean $(PROJECT) || true
-	rm -rf $(GOPATHSRC) $(BUILD_DIR)
-
 # Convert the POD-format manual page source files into *roff output. Depends
 # on the documentation source files in $(MANSRC)
 $(BUILD_MAN_DIR)/%.1: $(MANSRC)/%.pod
 	@$(INSTALLDIRCMD) $(BUILD_MAN_DIR)
 	$(MAN_CMD) $(MANSRC)/$*.pod > $(BUILD_MAN_DIR)/$*.1
 	chmod 444 $(BUILD_MAN_DIR)/$*.1
-
-# Generate *roff-format manual pages for each of the tool binaries manual
-# sources in $(MANSRC)
-doc: $(BUILD_MAN_FILES)
 
 # Create the target directory for installing tool binaries if it does not
 # exist
@@ -148,6 +120,23 @@ $(DESTBIN):
 # exist
 $(DESTMAN):
 	@$(INSTALLDIRCMD) $(DESTMAN)
+
+
+.PHONY:
+
+# Build the core library 'libgitcomment' as well as the tool binaries
+# listed in bin/.
+build: $(BUILD_BIN_FILES)
+
+# Remove compiled files and build directories for the project so it can be
+# rebuilt from a clean slate.
+clean:
+	$(GO) clean $(PROJECT) || true
+	rm -rf $(GOPATHSRC) $(BUILD_DIR)
+
+# Generate *roff-format manual pages for each of the tool binaries manual
+# sources in $(MANSRC)
+doc: $(BUILD_MAN_FILES)
 
 # Install git-comment into the preferred path on the host machine. Depends
 # on building the tool binaries and manual
@@ -163,3 +152,19 @@ uninstall:
 # Run the unit test suite on the libgitcomment library
 test: $(GOPATHSRC_FILES) $(GOPATHSRC_TESTS)
 	$(GO) test $(PROJECT) $(foreach pkg,$(PACKAGES),$(PROJECT)/$(pkg));
+
+# Install necessary dependencies for building git-comment on Ubuntu 12.04
+ci_deps: apt_deps src_libgit2
+
+# Install necessary dependencies via apt-get for building from an empty env
+# on Ubuntu 12.04
+apt_deps:
+	apt-get update
+	apt-get install -y cmake pkg-config
+
+# Download and install libgit2 0.23.2 from source. Depends on cmake, pkg-config.
+src_libgit2:
+	wget -O libgit2.tar.gz https://github.com/libgit2/libgit2/archive/v0.23.2.tar.gz
+	tar xzvf libgit2.tar.gz
+	cd libgit2-0.23.2 && cmake . && make && make install
+	ldconfig
