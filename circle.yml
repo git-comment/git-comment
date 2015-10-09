@@ -1,0 +1,6 @@
+dependencies:
+  post:
+    - sudo make ci_deps
+test:
+  override:
+    - make test
