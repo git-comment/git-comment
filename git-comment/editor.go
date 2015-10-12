@@ -1,4 +1,4 @@
-package exec
+package main
 
 import (
 	"errors"
@@ -18,7 +18,7 @@ const (
 	defaultMessageTemplate = "\n# Enter comment content\n# Lines beginning with '#' will be stripped"
 )
 
-func GetMessageFromEditor(app *kp.Application, repoPath string) string {
+func getMessageFromEditor(app *kp.Application, repoPath string) string {
 	editor := gg.ConfiguredEditor(repoPath)
 	file, err := ioutil.TempFile("", "gitc")
 	app.FatalIfError(err, "io")

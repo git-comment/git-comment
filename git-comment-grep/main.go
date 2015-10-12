@@ -1,12 +1,11 @@
 package main
 
 import (
+	gx "../exec"
+	gc "../libgitcomment"
+	gg "../libgitcomment/git"
 	"fmt"
 	kp "gopkg.in/alecthomas/kingpin.v2"
-	gc "libgitcomment"
-	gx "libgitcomment/exec"
-	gg "libgitcomment/git"
-	gs "libgitcomment/search"
 	"os"
 )
 
@@ -39,7 +38,7 @@ func findText(wd, text string) {
 	if !*noColor {
 		useColor = gg.ConfiguredBool(wd, "color.pager", false)
 	}
-	pager := gx.NewPager(app, wd, termHeight, *noPager)
+	pager := gx.NewPager(app, wd, gg.ConfiguredPager(wd), termHeight, *noPager)
 	printer := gs.NewPrinter(useColor, pager)
 	gx.FatalIfError(app, printer.PrintCommentsMatching(wd, text), "find")
 }

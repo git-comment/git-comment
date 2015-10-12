@@ -1,11 +1,10 @@
 package main
 
 import (
+	gx "../exec"
+	gg "../git"
+	gc "../libgitcomment"
 	kp "gopkg.in/alecthomas/kingpin.v2"
-	gc "libgitcomment"
-	gx "libgitcomment/exec"
-	gg "libgitcomment/git"
-	gl "libgitcomment/log"
 	"math"
 	"os"
 )
@@ -42,7 +41,7 @@ func main() {
 
 func showComments(pwd string) {
 	termHeight, termWidth := gx.CalculateDimensions()
-	pager := gx.NewPager(app, pwd, termHeight, !*enablePager)
+	pager := gx.NewPager(app, pwd, gg.ConfiguredPager(pwd), termHeight, !*enablePager)
 	computeContextLines(pwd)
 	diff := gc.DiffCommits(pwd, *revision, contextLines)
 	app.FatalIfError(diff.Failure, "diff")
@@ -51,16 +50,16 @@ func showComments(pwd string) {
 	printer.PrintDiff(diff.Success.(*gc.Diff))
 }
 
-func newFormatter(wd string, termWidth uint16) *gl.Formatter {
+func newFormatter(wd string, termWidth uint16) *Formatter {
 	var useColor bool
 	if *enableColor {
 		useColor = gg.ConfiguredBool(wd, "color.pager", false)
 	}
-	return gl.NewFormatter(*pretty, *lineNumbers, useColor, *enableMarginLine, termWidth)
+	return NewFormatter(*pretty, *lineNumbers, useColor, *enableMarginLine, termWidth)
 }
 
-func newPrinter(pager *gx.Pager, formatter *gl.Formatter) *gl.DiffPrinter {
-	printer := gl.NewDiffPrinter(pager, formatter, *linesBefore, *linesAfter)
+func newPrinter(pager *gx.Pager, formatter *Formatter) *DiffPrinter {
+	printer := NewDiffPrinter(pager, formatter, *linesBefore, *linesAfter)
 	printer.PrintFullDiff = *fullDiff
 	return printer
 }

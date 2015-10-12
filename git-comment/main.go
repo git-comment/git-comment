@@ -4,7 +4,6 @@ import (
 	"fmt"
 	kp "gopkg.in/alecthomas/kingpin.v2"
 	gc "libgitcomment"
-	gx "libgitcomment/exec"
 	gg "libgitcomment/git"
 	"os"
 )
@@ -31,7 +30,7 @@ func main() {
 		gc.VersionUpdate(pwd, buildVersion)
 		return
 	}
-	gx.FatalIfError(app, gc.VersionCheck(pwd, buildVersion), "version")
+	fatalIfError(app, gc.VersionCheck(pwd, buildVersion), "version")
 	if len(*deleteID) > 0 {
 		app.FatalIfError(gc.DeleteComment(pwd, *deleteID).Failure, "git")
 		fmt.Println("Comment deleted")
@@ -41,19 +40,26 @@ func main() {
 }
 
 func editComment(pwd string) {
-	resolved := gx.FatalIfError(app, gg.ResolvedCommit(pwd, *commit), "git")
+	resolved := fatalIfError(app, gg.ResolvedCommit(pwd, *commit), "git")
 	parsedCommit := resolved.(*string)
 	if len(*message) == 0 {
-		*message = gx.GetMessageFromEditor(app, pwd)
+		*message = getMessageFromEditor(app, pwd)
 	}
 	if len(*amendID) > 0 {
-		id := gx.FatalIfError(app, gc.UpdateComment(pwd, *amendID, *author, *message), "git")
+		id := fatalIfError(app, gc.UpdateComment(pwd, *amendID, *author, *message), "git")
 		fmt.Printf("[%v] Comment updated\n", (*id.(*string))[:7])
 	} else {
 		ref := gc.CreateFileRef(*fileref, *markDeleted)
-		id := gx.FatalIfError(app, gc.CreateComment(pwd, *parsedCommit, *author, *message, ref), "git")
+		id := fatalIfError(app, gc.CreateComment(pwd, *parsedCommit, *author, *message, ref), "git")
 
 		hash := *(id.(*string))
 		fmt.Printf("[%v] Comment created\n", hash[:7])
 	}
+}
+
+// Return the success value, otherwise kill the app with
+// the error code specified
+func fatalIfError(app *kp.Application, r result.Result, code string) interface{} {
+	app.FatalIfError(r.Failure, code)
+	return r.Success
 }

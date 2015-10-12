@@ -1,11 +1,11 @@
 package libgitcomment
 
 import (
+	gg "../git"
 	"errors"
 	"fmt"
 	"github.com/kylef/result.go/src/result"
 	git "gopkg.in/libgit2/git2go.v23"
-	gg "libgitcomment/git"
 	"path"
 )
 

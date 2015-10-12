@@ -10,6 +10,7 @@ import (
 
 type Pager struct {
 	disablePager bool
+	cmdArgs      string
 	usePager     bool
 	content      []byte
 	writer       io.WriteCloser
@@ -19,10 +20,11 @@ type Pager struct {
 	termHeight   uint16
 }
 
-func NewPager(app *kp.Application, wd string, termHeight uint16, disablePager bool) *Pager {
+func NewPager(app *kp.Application, wd string, pagerCmdArgs string, termHeight uint16, disablePager bool) *Pager {
 	pager := &Pager{}
 	pager.app = app
 	pager.wd = wd
+	pager.cmdArgs = pagerCmdArgs
 	pager.disablePager = disablePager
 	pager.termHeight = termHeight
 	pager.usePager = termHeight == 0 && !disablePager
@@ -41,7 +43,7 @@ func (p *Pager) AddContent(data string) {
 		}
 		if p.usePager {
 			if p.writer == nil {
-				p.cmd, p.writer, err = ExecPager(p.wd)
+				p.cmd, p.writer, err = ExecPager(p.wd, p.cmdArgs)
 				p.app.FatalIfError(err, "pager")
 			}
 			if len(p.content) > 0 {

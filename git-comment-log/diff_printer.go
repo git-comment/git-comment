@@ -1,8 +1,8 @@
-package log
+package main
 
 import (
-	gc "libgitcomment"
-	gx "libgitcomment/exec"
+	gx "../exec"
+	gc "../libgitcomment"
 )
 
 const FullDiffContext = -1

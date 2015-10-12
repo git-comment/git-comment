@@ -1,9 +1,9 @@
-package log
+package main
 
 import (
+	gx "../exec"
+	gc "../libgitcomment"
 	"fmt"
-	gc "libgitcomment"
-	gx "libgitcomment/exec"
 	"strings"
 	"time"
 )

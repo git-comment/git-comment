@@ -1,13 +1,12 @@
 package exec
 
 import (
-	"github.com/kylef/result.go/src/result"
-	kp "gopkg.in/alecthomas/kingpin.v2"
 	"io"
-	gg "libgitcomment/git"
 	"os"
 	"os/exec"
 	"strings"
+	"syscall"
+	"unsafe"
 )
 
 // Start an arbitrary command with arguments and wait got
@@ -24,8 +23,8 @@ func ExecCommand(program string, args ...string) error {
 // Open the configured pager and a writer for Stdin.
 // When the process is complete, close the writer and
 // invoke Wait() on the command.
-func ExecPager(pwd string) (*exec.Cmd, io.WriteCloser, error) {
-	pager := strings.Split(gg.ConfiguredPager(pwd), " ")
+func ExecPager(pwd, pagerCmd string) (*exec.Cmd, io.WriteCloser, error) {
+	pager := strings.Split(pagerCmd, " ")
 	cmd := exec.Command(pager[0], pager[1:]...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -39,9 +38,16 @@ func ExecPager(pwd string) (*exec.Cmd, io.WriteCloser, error) {
 	return cmd, pipe, nil
 }
 
-// Return the success value, otherwise kill the app with
-// the error code specified
-func FatalIfError(app *kp.Application, r result.Result, code string) interface{} {
-	app.FatalIfError(r.Failure, code)
-	return r.Success
+// Calculate the number of lines visible in the current
+// terminal.
+// Windows compatibility is uncertain.
+func CalculateDimensions() (height uint16, width uint16) {
+	var dimensions [4]uint16
+	if _, _, err := syscall.Syscall6(syscall.SYS_IOCTL,
+		uintptr(syscall.Stdin),
+		uintptr(syscall.TIOCGWINSZ),
+		uintptr(unsafe.Pointer(&dimensions)), 0, 0, 0); err != 0 {
+		return 0, 0
+	}
+	return dimensions[0], dimensions[1]
 }

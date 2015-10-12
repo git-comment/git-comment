@@ -1,4 +1,4 @@
-package search
+package main
 
 import (
 	"github.com/kylef/result.go/src/result"
