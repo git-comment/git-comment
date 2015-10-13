@@ -1,10 +1,11 @@
 package main
 
 import (
-	gx "../exec"
-	gg "../git"
-	gc "../libgitcomment"
+	gx "exec"
+	gg "git"
+	"github.com/kylef/result.go/src/result"
 	kp "gopkg.in/alecthomas/kingpin.v2"
+	gc "libgitcomment"
 	"math"
 	"os"
 )
@@ -35,7 +36,7 @@ func main() {
 	kp.MustParse(app.Parse(os.Args[1:]))
 	pwd, err := os.Getwd()
 	app.FatalIfError(err, "pwd")
-	gx.FatalIfError(app, gc.VersionCheck(pwd, buildVersion), "version")
+	fatalIfError(app, gc.VersionCheck(pwd, buildVersion), "version")
 	showComments(pwd)
 }
 
@@ -74,4 +75,11 @@ func computeContextLines(wd string) {
 		linesAfter = &after
 	}
 	contextLines = uint32(math.Max(float64(*linesBefore), float64(*linesAfter)))
+}
+
+// Return the success value, otherwise kill the app with
+// the error code specified
+func fatalIfError(app *kp.Application, r result.Result, code string) interface{} {
+	app.FatalIfError(r.Failure, code)
+	return r.Success
 }

@@ -2,9 +2,10 @@ package main
 
 import (
 	"errors"
+	gx "exec"
+	gg "git"
 	kp "gopkg.in/alecthomas/kingpin.v2"
 	"io/ioutil"
-	gg "libgitcomment/git"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -25,7 +26,7 @@ func getMessageFromEditor(app *kp.Application, repoPath string) string {
 	path := file.Name()
 	file.Write(commentTemplateText(app, repoPath))
 	file.Close()
-	err = ExecCommand(editor, path)
+	err = gx.ExecCommand(editor, path)
 	app.FatalIfError(err, "io")
 	content, err := ioutil.ReadFile(path)
 	os.Remove(path)

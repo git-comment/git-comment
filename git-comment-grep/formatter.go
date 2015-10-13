@@ -1,9 +1,9 @@
 package main
 
 import (
+	gx "exec"
 	"fmt"
 	gc "libgitcomment"
-	gx "libgitcomment/exec"
 	"path/filepath"
 	"strings"
 )

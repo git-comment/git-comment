@@ -1,8 +1,8 @@
 package main
 
 import (
-	gc "../libgitcomment"
 	"github.com/stvp/assert"
+	gc "libgitcomment"
 	"regexp"
 	"testing"
 	"time"

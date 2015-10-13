@@ -1,11 +1,11 @@
 package main
 
 import (
+	gg "git"
 	"github.com/blevesearch/bleve"
 	"github.com/kylef/result.go/src/result"
 	git "gopkg.in/libgit2/git2go.v23"
 	gc "libgitcomment"
-	gg "libgitcomment/git"
 	"os"
 	"path/filepath"
 )

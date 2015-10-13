@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
+	gg "git"
+	"github.com/kylef/result.go/src/result"
 	kp "gopkg.in/alecthomas/kingpin.v2"
 	gc "libgitcomment"
-	gg "libgitcomment/git"
 	"os"
 )
 

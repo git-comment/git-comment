@@ -1,8 +1,8 @@
 package main
 
 import (
-	gx "../exec"
-	gc "../libgitcomment"
+	gx "exec"
+	gc "libgitcomment"
 )
 
 const FullDiffContext = -1

@@ -19,17 +19,16 @@ VERSION=$(shell cat VERSION)
 DEPENDENCIES=gopkg.in/libgit2/git2go.v23 \
 	github.com/stvp/assert \
 	github.com/cevaris/ordered_map \
-  gopkg.in/alecthomas/kingpin.v2 \
-  github.com/kylef/result.go/src/result \
-  github.com/blevesearch/bleve \
-  github.com/blang/semver
+	gopkg.in/alecthomas/kingpin.v2 \
+	github.com/kylef/result.go/src/result \
+	github.com/blevesearch/bleve \
+	github.com/blang/semver
 # List of binary packages within the git-comment suite
-BIN_FILES=git-comment git-comment-grep git-comment-log \
-					git-comment-remote git-comment-web
+BIN_FILES=git-comment git-comment-grep git-comment-log git-comment-remote git-comment-web
 # List of non-test source files within libgitcomment
-SRC_FILES=$(foreach lib,$(LIBRARIES),$(filter-out test,$(shell git ls-files "$(LIBRARIES)/**.go")))
+SRC_FILES=$(foreach lib,$(LIBRARIES),$(filter-out test,$(shell git ls-files "$(lib)/*.go")))
 # List of test files within libgitcomment
-TEST_FILES=$(foreach lib,$(LIBRARIES), $(shell git ls-files "$(LIBRARIES)/**_test.go"))
+TEST_FILES=$(foreach lib,$(LIBRARIES), $(shell git ls-files "$(lib)/**_test.go"))
 # Directory containing manual page source files
 MANSRC=docs/man
 # List of source files in the manual directory
@@ -46,10 +45,10 @@ GO=GOPATH="$(GOPATH)" go
 GOPATHSRC=$(GOPATH)/src
 # List of files within libgitcomment copied within the temporary build
 # directory
-GOPATHSRC_FILES=$(addprefix $(GOPATHSRC),$(SRC_FILES))
+GOPATHSRC_FILES=$(addprefix $(GOPATHSRC)/,$(SRC_FILES))
 # List of test files within libgitcomment copied within the temporary build
 # directory
-GOPATHSRC_TESTS=$(addprefix $(GOPATHSRC),$(TEST_FILES))
+GOPATHSRC_TESTS=$(addprefix $(GOPATHSRC)/,$(TEST_FILES))
 # Target directory for compiled dependent libraries
 GOPATHPKG=$(GOPATH)/pkg/$(GOOS)_$(GOARCH)
 # List of all dependent libraries
@@ -84,9 +83,29 @@ all: build
 # This target first ensures the build directory exists or creates it, then
 # builds each binary with a flag specifying the version of the git-comment
 # project.
-$(BUILD_BIN_DIR)/%: $(GOPATHPKG_DEPS) $(GOPATHSRC_FILES) $(shell ls $%)
+GIT_COMMENT_FILES=$(shell ls git-comment/*.go)
+$(BUILD_BIN_DIR)/git-comment: $(GOPATHPKG_DEPS) $(GOPATHSRC_FILES) $(GIT_COMMENT_FILES)
 	@$(INSTALLDIRCMD) $(BUILD_BIN_DIR)
-	$(GO) build $(BUILD_FLAGS) -o $(BUILD_BIN_DIR)/$* $(shell ls $*/*.go)
+	$(GO) build $(BUILD_FLAGS) -o $@ $(GIT_COMMENT_FILES)
+
+GIT_COMMENT_GREP_FILES=$(shell ls git-comment-grep/*.go)
+$(BUILD_BIN_DIR)/git-comment-grep: $(GOPATHPKG_DEPS $(GOPATHSRC_FILES) $(GIT_COMMENT_GREP_FILES)
+	@$(INSTALLDIRCMD) $(BUILD_BIN_DIR)
+	$(GO) build $(BUILD_FLAGS) -o $@ $(GIT_COMMENT_GREP_FILES)
+
+GIT_COMMENT_LOG_FILES=$(shell ls git-comment-log/*.go)
+$(BUILD_BIN_DIR)/git-comment-log: $(GOPATHPKG_DEPS $(GOPATHSRC_FILES) $(GIT_COMMENT_LOG_FILES)
+	@$(INSTALLDIRCMD) $(BUILD_BIN_DIR)
+	$(GO) build $(BUILD_FLAGS) -o $@ $(GIT_COMMENT_LOG_FILES)
+
+$(BUILD_BIN_DIR)/git-comment-remote: $(GOPATHPKG_DEPS $(GOPATHSRC_FILES) git-comment-remote/main.go
+	@$(INSTALLDIRCMD) $(BUILD_BIN_DIR)
+	$(GO) build $(BUILD_FLAGS) -o $@ git-comment-remote/main.go
+
+$(BUILD_BIN_DIR)/git-comment-web: $(GOPATHPKG_DEPS $(GOPATHSRC_FILES) git-comment-web/main.go
+	@$(INSTALLDIRCMD) $(BUILD_BIN_DIR)
+	$(GO) build $(BUILD_FLAGS) -o $@ git-comment-web/main.go
+
 
 # $(GOPATHSRC) is a temporary build directory within the local $GOPATH for
 # the source files in libgitcomment/, git/, and exec/. Building the libraries
@@ -94,9 +113,9 @@ $(BUILD_BIN_DIR)/%: $(GOPATHPKG_DEPS) $(GOPATHSRC_FILES) $(shell ls $%)
 # versions of the source files.
 # This target ensures the temporary build directory exists or creates it, then
 # installs changed source files into it.
-$(GOPATHSRC)/%.go: $(GOPATHPKG_DEPS)
+$(GOPATHSRC)/%: $(GOPATHPKG_DEPS) %
 	@$(INSTALLDIRCMD) $(GOPATHSRC)/$(dir $*)
-	@$(INSTALLCMD) $(PROJECT)/$*.go $(GOPATHSRC)/$*.go
+	@$(INSTALLCMD) $* $(GOPATHSRC)/$*
 
 # $(GOPATHPKG) is the compiled binary path within the local $GOPATH.
 # This target builds a library file for any repository specified by the
@@ -170,3 +189,4 @@ src_libgit2:
 	tar xzvf libgit2.tar.gz
 	cd libgit2-0.23.2 && cmake . && make && make install
 	ldconfig
+

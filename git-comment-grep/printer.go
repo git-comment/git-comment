@@ -1,9 +1,9 @@
 package main
 
 import (
+	gx "exec"
 	"github.com/kylef/result.go/src/result"
 	gc "libgitcomment"
-	gx "libgitcomment/exec"
 )
 
 type Printer struct {

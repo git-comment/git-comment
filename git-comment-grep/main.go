@@ -1,11 +1,12 @@
 package main
 
 import (
-	gx "../exec"
-	gc "../libgitcomment"
-	gg "../libgitcomment/git"
+	gx "exec"
 	"fmt"
+	gg "git"
+	"github.com/kylef/result.go/src/result"
 	kp "gopkg.in/alecthomas/kingpin.v2"
+	gc "libgitcomment"
 	"os"
 )
 
@@ -23,7 +24,7 @@ func main() {
 	app.Version(buildVersion)
 	pwd, err := os.Getwd()
 	app.FatalIfError(err, "pwd")
-	gx.FatalIfError(app, gc.VersionCheck(pwd, buildVersion), "version")
+	fatalIfError(app, gc.VersionCheck(pwd, buildVersion), "version")
 	switch kp.MustParse(app.Parse(os.Args[1:])) {
 	case "find":
 		findText(pwd, *text)
@@ -39,12 +40,19 @@ func findText(wd, text string) {
 		useColor = gg.ConfiguredBool(wd, "color.pager", false)
 	}
 	pager := gx.NewPager(app, wd, gg.ConfiguredPager(wd), termHeight, *noPager)
-	printer := gs.NewPrinter(useColor, pager)
-	gx.FatalIfError(app, printer.PrintCommentsMatching(wd, text), "find")
+	printer := NewPrinter(useColor, pager)
+	fatalIfError(app, printer.PrintCommentsMatching(wd, text), "find")
 }
 
 func indexComments(wd string) {
 	fmt.Printf("Indexing...")
-	gx.FatalIfError(app, gs.IndexComments(wd), "index")
+	fatalIfError(app, IndexComments(wd), "index")
 	fmt.Printf("done\n")
+}
+
+// Return the success value, otherwise kill the app with
+// the error code specified
+func fatalIfError(app *kp.Application, r result.Result, code string) interface{} {
+	app.FatalIfError(r.Failure, code)
+	return r.Success
 }
