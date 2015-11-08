@@ -1,0 +1,110 @@
+FORMAT: 1A
+
+# Git Comment
+Git Comment API allowing consumers to view commit diffs and add comments
+
+## Commits [/commits/{revisions}]
+
++ Parameters
+    + revisions: `45e1ffa9` (string) - revision range
+
++ Attributes
+    + files (array[DiffFile]) - files changed
+    + metrics (array[Metric]) - changeset metadata
+    + revisions: `45e1ffa9` (string) - revision range
+
+### View the changed content of a set of commits [GET]
+
++ Request (application/json)
+    + Attributes
+        + revisions: `3bc37cb..9d7022f` (required, string) Commit revision range as specified by `gitrevisions(7)`. If the range resolves to a single revision, then it is compared against the HEAD commit
+        + `context_lines`: `4` (optional, number) - Number of lines of context to show before and after changed lines. Defaults to the configured option for the repository
+
++ Response 200 (application/json)
+    + Attributes
+
+### Create a comment [POST]
+
++ Request (application/json)
+    + Attributes
+        + content: `need more space here` (required, string) - The body of the comment
+        + fileref: `src/file.c:12` (optional, string) - The file and line to annotate, delimited by a colon
+
++ Response 201 (application/json)
+    + Attributes
+
+## DiffFile [/commits/{revisions}/file]
+
++ Parameters
+    + revisions: `45e1ffa9` (string) - revision range
+
++ Attributes
+    + path: `src/file.c` (string) - Path of the file relative to the repo root
+    + lines (array[DiffLine]) - Lines added or removed
+
+### View which lines were changed of a particular file [GET]
+
++ Request (application/json)
+    + Attributes
+        + path: `src/local/file.c` (required, string) - File path relative to the repo root
+        + `context_lines`: `4` (optional, number) - Number of lines of context to show before and after changed lines
+
++ Response 200 (application/json)
+    + Attributes
+
+## DiffLine [/commits/{revisions}/line]
+
++ Parameters
+    + revisions: `45e1ffa9` (string) - revision range
+
++ Attributes
+    + type: `ADDED`, (required, enum) - Indicator for whether the line was added, removed, or displayed for context
+        + Items
+            + Members
+                + `ADDED`
+                + `REMOVED`
+                + `CONTEXT`
+    + content (required, string) - The text content of the line
+    + oldlineno: 402 (optional, number) - The line number before the revisions, if any
+    + newlineno: 401 (optional, number) - The line number after the revisions, if any
+    + comments (required, array[Comment])
+
+## Comment [/comment/{id}]
+
++ Parameters
+    + id: `3bc37cb42a9d7022f350d50447dd42aefb8ce158` (string) - comment identifier
+
++ Attributes
+    + id: `3bc37cb42a9d7022f350d50447dd42aefb8ce158` (string) - comment identifier
+    + content: `needs whitespace here` (string)
+    + commit: `3bc37cb42a9d7022f350d50447dd42aefb8ce158` (string)
+    + `author_name`: `Delisa` (string)
+    + `author_email`: `delisa@example.com` (string)
+
+## View a comment [GET]
+
++ Request (application/json)
+    + Attributes
+        + id (required, string) The ID of a comment
+
++ Response 200 (application/json)
+    + Attributes
+
+## Metric [/commits/{revisions}/metric]
+
++ Parameters
+    + revisions: `45e1ffa9` (string) - revision range
+
++ Attributes
+    + name: `ADDED` (enum)
+        + Items
+            + Members
+                + `ADDED`
+                + `REMOVED`
+                + `FILES_CHANGED`
+    + value: `24` (number)
+
+### View a metric value [GET]
+
++ Response 200 (application/json)
+    + Attributes
