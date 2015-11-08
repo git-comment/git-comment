@@ -6,9 +6,9 @@
 
 =head1 SYNOPSIS
 
-    git comment-web [<revision range>] [--port <port>]
-    git comment-log --help
-    git comment-log --version
+    git comment-web [--port <port>] [--host <host>]
+    git comment-web --help
+    git comment-web --version
 
 =head1 DESCRIPTION
 
@@ -26,14 +26,13 @@ Print a usage message
 
 Print the current version number
 
-=item <revision range>
-
-Edit comments from commits in the specified revision range. When
-not specified, it defaults to HEAD.
-
-=item -I<-p> <port>, -port <port>
+=item I<-p> <port>, --port <port>
 
 Bind the web server to the provided port
+
+=item --host <host>
+
+Bind the web server to the provided host
 
 =back
 
@@ -44,6 +43,10 @@ Bind the web server to the provided port
 =item I<comment.web-port>
 
 Default port to which to bind the web server
+
+=item I<comment.web-host>
+
+Default host to which to bind the web server
 
 =back
 
