@@ -3,6 +3,8 @@
 Comments for git commits and files. Open and distributed collaboration
 around code and other version-controlled text and resources.
 
+**Project Status:** Early Alpha
+
 ## Why?
 
 Comments on git commits are siloed into various web services or backed
