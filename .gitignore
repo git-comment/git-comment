@@ -5,3 +5,5 @@ build
 # Project temp location
 _workspace/pkg
 _workspace/src/libgitcomment
+_workspace/src/exec
+_workspace/src/git

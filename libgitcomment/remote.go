@@ -3,9 +3,9 @@ package libgitcomment
 import (
 	"errors"
 	"fmt"
+	gg "git"
 	"github.com/kylef/result.go/src/result"
 	git "gopkg.in/libgit2/git2go.v23"
-	gg "libgitcomment/git"
 )
 
 const (

@@ -2,9 +2,9 @@ package libgitcomment
 
 import (
 	"fmt"
+	gg "git"
 	"github.com/kylef/result.go/src/result"
 	git "gopkg.in/libgit2/git2go.v23"
-	gg "libgitcomment/git"
 )
 
 type DiffLineType int
